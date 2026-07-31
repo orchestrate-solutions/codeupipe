@@ -1,30 +1,29 @@
 // orchestrate.solutions/cup — live demo wiring.
-// Imports the real @codeupipe/core runtime plus cup-ui components.
+//
+// This file eats its own cooking: bootstrapping the page IS a CUP pipeline.
+// Each concern (theme toggle, primitive cards, demo wiring, doc modal, mermaid
+// rendering) is a named Filter with a `call(payload)` contract. The boot
+// Pipeline runs them once at load. The demo transformations (Trim, Upper,
+// WordCount) are the same Filter interface used inside the visible demos.
+//
+// Payload carries { doc, root } so every Filter reads the DOM through the
+// same handle instead of touching globals ad-hoc.
+
 import { Payload, Pipeline } from "./runtime/index.js";
 
+// ---------------------------------------------------------------------------
+// DOM helpers (pure — no side effects)
+// ---------------------------------------------------------------------------
 const $ = (id) => document.getElementById(id);
 const fmt = (obj) => JSON.stringify(obj, null, 2);
-
 // cup-input renders an inner <input>; cup-checkbox renders inner checkbox.
 const innerInput = (el) => el && el.querySelector("input");
-const inputVal = (el) => {
-  const i = innerInput(el);
-  return i ? i.value : "";
-};
-const checkboxChecked = (el) => {
-  const i = innerInput(el);
-  return i ? i.checked : false;
-};
+const inputVal = (el) => { const i = innerInput(el); return i ? i.value : ""; };
+const checkboxChecked = (el) => { const i = innerInput(el); return i ? i.checked : false; };
 
-async function ready() {
-  await customElements.whenDefined("cup-input");
-  await customElements.whenDefined("cup-checkbox");
-  await customElements.whenDefined("cup-button");
-  await customElements.whenDefined("cup-chip");
-  await Promise.resolve();
-}
-
-// Chrome
+// ---------------------------------------------------------------------------
+// Mermaid rendering + pan/zoom (used by RenderMermaid Filter and doc modal)
+// ---------------------------------------------------------------------------
 function renderInlineMermaid() {
   if (typeof window.mermaid === "undefined") return;
   const nodes = document.querySelectorAll(".mermaid:not([data-processed])");
@@ -55,7 +54,6 @@ function installMermaidPanZoom() {
     if (!svg) return;
     host.dataset.panzoom = "1";
     host.classList.add("panzoom-host");
-    // Neutralize mermaid's auto-fit sizing so our transform can drive layout.
     svg.style.maxWidth = "none";
     svg.style.width = "100%";
     svg.style.height = "auto";
@@ -89,9 +87,7 @@ function installMermaidPanZoom() {
     const endDrag = (ev) => { if (!dragging) return; dragging = false; svg.releasePointerCapture(ev.pointerId); svg.style.cursor = "grab"; };
     svg.addEventListener("pointerup", endDrag);
     svg.addEventListener("pointercancel", endDrag);
-    // Double-click resets.
     host.addEventListener("dblclick", () => { state.scale = 1; state.x = 0; state.y = 0; apply(); });
-    // Zoom control buttons if present.
     const wrap = host.closest(".overview-diagram");
     if (wrap) {
       wrap.querySelectorAll("[data-zoom]").forEach((btn) => {
@@ -114,83 +110,11 @@ function installMermaidPanZoom() {
   });
 }
 
-function bindChrome() {
-  // Theme toggle — persists to localStorage, honors system preference on first load.
-  const root = document.documentElement;
-  const toggle = $("theme-toggle");
-  const stored = localStorage.getItem("cup-theme");
-  const prefersLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
-  const initial = stored || (prefersLight ? "light" : "dark");
-  const applyTheme = (t) => {
-    root.setAttribute("data-theme", t);
-    if (toggle) {
-      const isDark = t === "dark";
-      toggle.querySelector(".icon").textContent = isDark ? "\u263e" : "\u2600";
-      toggle.querySelector(".label").textContent = isDark ? "Dark" : "Light";
-      toggle.setAttribute("aria-pressed", String(isDark));
-    }
-  };
-  applyTheme(initial);
-  toggle?.addEventListener("click", () => {
-    const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    localStorage.setItem("cup-theme", next);
-    applyTheme(next);
-  });
-  // Make the whole primitive card toggle open/close on click, and sync row-mates.
-  const primCards = Array.from(document.querySelectorAll("details.prim"));
-  const rowMates = (det) => {
-    // Group by rounded offsetTop while cards are in their closed state.
-    // We recompute each time so it works across viewport resizes.
-    const top = Math.round(det.getBoundingClientRect().top);
-    return primCards.filter((other) => Math.abs(Math.round(other.getBoundingClientRect().top) - top) < 8);
-  };
-  let syncing = false;
-  primCards.forEach((det) => {
-    det.addEventListener("click", (e) => {
-      if (e.target.closest("a, button")) return;
-      if (e.target.closest("summary")) return; // native toggles it
-      det.open = !det.open;
-    });
-    det.addEventListener("toggle", () => {
-      if (syncing) return;
-      syncing = true;
-      const mates = rowMates(det);
-      mates.forEach((m) => { if (m !== det) m.open = det.open; });
-      syncing = false;
-    });
-  });
-  document.querySelectorAll("cup-chip[data-jump]").forEach((chip) => {
-    chip.addEventListener("click", () => {
-      const target = chip.getAttribute("data-jump");
-      if (target) document.querySelector(target)?.scrollIntoView({ behavior: "smooth" });
-    });
-  });
-  document.querySelectorAll("cup-chip[data-jump-href]").forEach((chip) => {
-    chip.addEventListener("click", () => {
-      const href = chip.getAttribute("data-jump-href");
-      if (href) location.href = href;
-    });
-  });
-}
+// ===========================================================================
+// Demo pipeline Filters — user-facing data transformations shown in the demos.
+// Each is the canonical CUP shape: { call: (payload) => payload }.
+// ===========================================================================
 
-// Demo 1
-function bindDemo1() {
-  const originalP1 = new Payload({});
-  const render = () => {
-    const key = inputVal($("p1-key")) || "note";
-    const value = inputVal($("p1-value"));
-    const derived = originalP1.insert(key, value);
-    $("p1-original").textContent = fmt(originalP1.toDict());
-    $("p1-derived").textContent = fmt(derived.toDict());
-  };
-  ["p1-key", "p1-value"].forEach((id) => {
-    const el = innerInput($(id));
-    if (el) el.addEventListener("input", render);
-  });
-  render();
-}
-
-// Demo 2
 const Trim = { call: (p) => p.insert("text", (p.get("text") ?? "").trim()) };
 const Upper = { call: (p) => p.insert("text", (p.get("text") ?? "").toUpperCase()) };
 const WordCount = {
@@ -201,30 +125,147 @@ const WordCount = {
   },
 };
 
-function bindDemo2() {
-  $("p2-run")?.addEventListener("click", async () => {
-    const pipe = new Pipeline().observe({ lineage: true, timing: true });
-    if (checkboxChecked($("p2-trim"))) pipe.addFilter(Trim, "Trim");
-    if (checkboxChecked($("p2-upper"))) pipe.addFilter(Upper, "Upper");
-    if (checkboxChecked($("p2-count"))) pipe.addFilter(WordCount, "WordCount");
+// ===========================================================================
+// Boot Filters — each attaches DOM behavior once and returns the payload
+// unchanged. Together they form the boot Pipeline. Filters are pure w.r.t.
+// the payload; their side effects are event-listener wiring on the DOM.
+// ===========================================================================
 
-    const input = new Payload({ text: inputVal($("p2-input")) });
-    const result = await pipe.run(input);
+const AwaitCustomElements = {
+  async call(p) {
+    await customElements.whenDefined("cup-input");
+    await customElements.whenDefined("cup-checkbox");
+    await customElements.whenDefined("cup-button");
+    await customElements.whenDefined("cup-chip");
+    return p;
+  },
+};
 
-    $("p2-result").textContent = fmt({
-      data: result.toDict(),
-      lineage: result.lineage,
+const RenderMermaid = {
+  call(p) {
+    renderInlineMermaid();
+    document.querySelectorAll("details.overview-details").forEach((d) => {
+      d.addEventListener("toggle", () => { if (d.open) renderInlineMermaid(); });
     });
-    $("p2-state").textContent = fmt({
-      executed: pipe.state.executed,
-      skipped: pipe.state.skipped,
-      errors: pipe.state.errors,
-      timings: pipe.state.timings,
-    });
-  });
-}
+    return p;
+  },
+};
 
-// Demo 3
+const BindThemeToggle = {
+  call(p) {
+    const root = p.get("root");
+    const toggle = $("theme-toggle");
+    const stored = localStorage.getItem("cup-theme");
+    const prefersLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
+    const initial = stored || (prefersLight ? "light" : "dark");
+    const applyTheme = (t) => {
+      root.setAttribute("data-theme", t);
+      if (toggle) {
+        const isDark = t === "dark";
+        toggle.querySelector(".icon").textContent = isDark ? "\u263e" : "\u2600";
+        toggle.querySelector(".label").textContent = isDark ? "Dark" : "Light";
+        toggle.setAttribute("aria-pressed", String(isDark));
+      }
+    };
+    applyTheme(initial);
+    toggle?.addEventListener("click", () => {
+      const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      localStorage.setItem("cup-theme", next);
+      applyTheme(next);
+    });
+    return p;
+  },
+};
+
+const BindPrimitiveCards = {
+  call(p) {
+    const primCards = Array.from(document.querySelectorAll("details.prim"));
+    const rowMates = (det) => {
+      const top = Math.round(det.getBoundingClientRect().top);
+      return primCards.filter((other) => Math.abs(Math.round(other.getBoundingClientRect().top) - top) < 8);
+    };
+    let syncing = false;
+    primCards.forEach((det) => {
+      det.addEventListener("click", (e) => {
+        if (e.target.closest("a, button")) return;
+        if (e.target.closest("summary")) return;
+        det.open = !det.open;
+      });
+      det.addEventListener("toggle", () => {
+        if (syncing) return;
+        syncing = true;
+        rowMates(det).forEach((m) => { if (m !== det) m.open = det.open; });
+        syncing = false;
+      });
+    });
+    return p;
+  },
+};
+
+const BindChipJumps = {
+  call(p) {
+    document.querySelectorAll("cup-chip[data-jump]").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const target = chip.getAttribute("data-jump");
+        if (target) document.querySelector(target)?.scrollIntoView({ behavior: "smooth" });
+      });
+    });
+    document.querySelectorAll("cup-chip[data-jump-href]").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const href = chip.getAttribute("data-jump-href");
+        if (href) location.href = href;
+      });
+    });
+    return p;
+  },
+};
+
+const BindDemo1 = {
+  call(p) {
+    const originalP1 = new Payload({});
+    const render = () => {
+      const key = inputVal($("p1-key")) || "note";
+      const value = inputVal($("p1-value"));
+      const derived = originalP1.insert(key, value);
+      $("p1-original").textContent = fmt(originalP1.toDict());
+      $("p1-derived").textContent = fmt(derived.toDict());
+    };
+    ["p1-key", "p1-value"].forEach((id) => {
+      const el = innerInput($(id));
+      if (el) el.addEventListener("input", render);
+    });
+    render();
+    return p;
+  },
+};
+
+const BindDemo2 = {
+  call(p) {
+    $("p2-run")?.addEventListener("click", async () => {
+      // Fresh Pipeline per run — Valve-like inclusion driven by checkboxes.
+      const pipe = new Pipeline().observe({ lineage: true, timing: true });
+      if (checkboxChecked($("p2-trim"))) pipe.addFilter(Trim, "Trim");
+      if (checkboxChecked($("p2-upper"))) pipe.addFilter(Upper, "Upper");
+      if (checkboxChecked($("p2-count"))) pipe.addFilter(WordCount, "WordCount");
+
+      const input = new Payload({ text: inputVal($("p2-input")) });
+      const result = await pipe.run(input);
+
+      $("p2-result").textContent = fmt({
+        data: result.toDict(),
+        lineage: result.lineage,
+      });
+      $("p2-state").textContent = fmt({
+        executed: pipe.state.executed,
+        skipped: pipe.state.skipped,
+        errors: pipe.state.errors,
+        timings: pipe.state.timings,
+      });
+    });
+    return p;
+  },
+};
+
 async function* chunkSource() {
   const chunks = ["  hello ", "codeupipe ", " streaming ", "world ", " done  "];
   for (const c of chunks) {
@@ -233,133 +274,99 @@ async function* chunkSource() {
   }
 }
 
-function bindDemo3() {
-  $("p3-run")?.addEventListener("click", async () => {
-    const log = $("p3-log");
-    log.textContent = "";
-    const pipe = new Pipeline().addFilter(Trim).addFilter(Upper);
-    let i = 0;
-    for await (const chunk of pipe.stream(chunkSource())) {
-      i += 1;
-      log.textContent += `chunk ${i}: ${fmt(chunk.toDict())}\n`;
-    }
-    log.textContent += `\n✓ streamed ${i} chunks through pipeline`;
-  });
-}
-
-await ready();
-  renderInlineMermaid();
-  // Re-run mermaid when the overview <details> opens for the first time.
-  document.querySelectorAll('details.overview-details').forEach((d) => {
-    d.addEventListener('toggle', () => { if (d.open) renderInlineMermaid(); }, { once: false });
-  });
-bindChrome();
-bindDemo1();
-bindDemo2();
-bindDemo3();
-
-// --- .docx modal viewer (rendered via mammoth.js) ---
-(function () {
-  const modal = document.getElementById("doc-modal");
-  if (!modal) return;
-  const titleEl = document.getElementById("doc-modal-title");
-  const bodyEl = document.getElementById("doc-modal-body");
-  const dlEl = document.getElementById("doc-modal-download");
-  let lastFocus = null;
-
-  function openModal(url, title) {
-    lastFocus = document.activeElement;
-    titleEl.textContent = title || "Document";
-    dlEl.href = url;
-    const name = url.split("/").pop();
-    dlEl.setAttribute("download", decodeURIComponent(name));
-    bodyEl.innerHTML = '<p class="doc-modal-loading">Loading&hellip;</p>';
-    modal.hidden = false;
-    modal.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-
-    const ext = (url.split(".").pop() || "").toLowerCase();
-    const isMd = ext === "md" || ext === "markdown";
-
-    const render = (html) => {
-      bodyEl.innerHTML =
-        '<article class="doc-rendered">' + html + "</article>";
-      bodyEl.scrollTop = 0;
-      // Swap ```mermaid fenced code blocks for <div class="mermaid"> and render
-      if (typeof window.mermaid !== "undefined") {
-        try {
-          if (!window.__mermaidInit) {
-            const isDark =
-              document.documentElement.getAttribute("data-theme") === "dark";
-            window.mermaid.initialize({
-              startOnLoad: false,
-              theme: isDark ? "dark" : "default",
-              securityLevel: "loose",
-            });
-            window.__mermaidInit = true;
-          }
-          const blocks = bodyEl.querySelectorAll(
-            "pre > code.language-mermaid, pre > code.lang-mermaid"
-          );
-          let i = 0;
-          blocks.forEach((code) => {
-            const pre = code.parentElement;
-            const div = document.createElement("div");
-            div.className = "mermaid";
-            div.id = "mermaid-" + Date.now() + "-" + i++;
-            div.textContent = code.textContent;
-            pre.replaceWith(div);
-          });
-          if (blocks.length > 0) {
-            window.mermaid.run({
-              nodes: bodyEl.querySelectorAll(".mermaid"),
-            });
-          }
-        } catch (e) {
-          console.warn("mermaid render failed:", e);
-        }
+const BindDemo3 = {
+  call(p) {
+    $("p3-run")?.addEventListener("click", async () => {
+      const log = $("p3-log");
+      log.textContent = "";
+      const pipe = new Pipeline().addFilter(Trim).addFilter(Upper);
+      let i = 0;
+      for await (const chunk of pipe.stream(chunkSource())) {
+        i += 1;
+        log.textContent += `chunk ${i}: ${fmt(chunk.toDict())}\n`;
       }
-    };
-    const fail = (err) => {
-      bodyEl.innerHTML =
-        '<p class="doc-modal-error">Could not render document: ' +
-        String(err.message || err) +
-        '. <a href="' + url + '" download>Download the file</a> instead.</p>';
-    };
+      log.textContent += `\n\u2713 streamed ${i} chunks through pipeline`;
+    });
+    return p;
+  },
+};
 
-    if (isMd) {
-      fetch(url)
-        .then((r) => {
-          if (!r.ok) throw new Error("HTTP " + r.status);
-          return r.text();
-        })
-        .then((text) => {
-          if (typeof window.marked === "undefined") {
-            throw new Error("marked.js failed to load");
-          }
-          const raw = window.marked.parse(text, { gfm: true, breaks: false });
-          const clean = window.DOMPurify
-            ? window.DOMPurify.sanitize(raw)
-            : raw;
-          render(clean);
-        })
-        .catch(fail);
-    } else {
-      fetch(url)
-        .then((r) => {
-          if (!r.ok) throw new Error("HTTP " + r.status);
-          return r.arrayBuffer();
-        })
-        .then((buf) => {
-          if (typeof window.mammoth === "undefined") {
-            throw new Error("mammoth.js failed to load");
-          }
-          // Extract raw text — many .docx files here contain markdown source
-          // pasted as body text, so we want the plain text and then re-render
-          // it through marked.js. Fall back to HTML if that path fails.
-          return window.mammoth
-            .extractRawText({ arrayBuffer: buf })
-            .then((raw) => {
+const WireDocModal = {
+  call(p) {
+    const modal = document.getElementById("doc-modal");
+    if (!modal) return p;
+    const titleEl = document.getElementById("doc-modal-title");
+    const bodyEl = document.getElementById("doc-modal-body");
+    const dlEl = document.getElementById("doc-modal-download");
+    let lastFocus = null;
+
+    function openModal(url, title) {
+      lastFocus = document.activeElement;
+      titleEl.textContent = title || "Document";
+      dlEl.href = url;
+      const name = url.split("/").pop();
+      dlEl.setAttribute("download", decodeURIComponent(name));
+      bodyEl.innerHTML = '<p class="doc-modal-loading">Loading&hellip;</p>';
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+
+      const ext = (url.split(".").pop() || "").toLowerCase();
+      const isMd = ext === "md" || ext === "markdown";
+
+      const render = (html) => {
+        bodyEl.innerHTML = '<article class="doc-rendered">' + html + "</article>";
+        bodyEl.scrollTop = 0;
+        if (typeof window.mermaid !== "undefined") {
+          try {
+            if (!window.__mermaidInit) {
+              const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+              window.mermaid.initialize({
+                startOnLoad: false,
+                theme: isDark ? "dark" : "default",
+                securityLevel: "loose",
+              });
+              window.__mermaidInit = true;
+            }
+            const blocks = bodyEl.querySelectorAll("pre > code.language-mermaid, pre > code.lang-mermaid");
+            let i = 0;
+            blocks.forEach((code) => {
+              const pre = code.parentElement;
+              const div = document.createElement("div");
+              div.className = "mermaid";
+              div.id = "mermaid-" + Date.now() + "-" + i++;
+              div.textContent = code.textContent;
+              pre.replaceWith(div);
+            });
+            if (blocks.length > 0) {
+              window.mermaid.run({ nodes: bodyEl.querySelectorAll(".mermaid") });
+            }
+          } catch (e) { console.warn("mermaid render failed:", e); }
+        }
+      };
+      const fail = (err) => {
+        bodyEl.innerHTML =
+          '<p class="doc-modal-error">Could not render document: ' +
+          String(err.message || err) +
+          '. <a href="' + url + '" download>Download the file</a> instead.</p>';
+      };
+
+      if (isMd) {
+        fetch(url)
+          .then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
+          .then((text) => {
+            if (typeof window.marked === "undefined") throw new Error("marked.js failed to load");
+            const raw = window.marked.parse(text, { gfm: true, breaks: false });
+            const clean = window.DOMPurify ? window.DOMPurify.sanitize(raw) : raw;
+            render(clean);
+          })
+          .catch(fail);
+      } else {
+        fetch(url)
+          .then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.arrayBuffer(); })
+          .then((buf) => {
+            if (typeof window.mammoth === "undefined") throw new Error("mammoth.js failed to load");
+            return window.mammoth.extractRawText({ arrayBuffer: buf }).then((raw) => {
               const text = (raw && raw.value) || "";
               const looksLikeMd =
                 /(^|\n)\s{0,3}#{1,6}\s/.test(text) ||
@@ -367,41 +374,52 @@ bindDemo3();
                 /(^|\n)[-*]\s+\S/.test(text) ||
                 /\*\*[^*]+\*\*/.test(text);
               if (looksLikeMd && typeof window.marked !== "undefined") {
-                const html = window.marked.parse(text, {
-                  gfm: true,
-                  breaks: false,
-                });
-                return { value: window.DOMPurify
-                  ? window.DOMPurify.sanitize(html)
-                  : html };
+                const html = window.marked.parse(text, { gfm: true, breaks: false });
+                return { value: window.DOMPurify ? window.DOMPurify.sanitize(html) : html };
               }
-              // Not markdown — fall back to mammoth's HTML rendering
               return window.mammoth.convertToHtml({ arrayBuffer: buf });
             });
-        })
-        .then((res) => render(res.value))
-        .catch(fail);
+          })
+          .then((res) => render(res.value))
+          .catch(fail);
+      }
     }
-  }
 
-  function closeModal() {
-    modal.hidden = true;
-    modal.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
-    if (lastFocus && typeof lastFocus.focus === "function") lastFocus.focus();
-  }
+    function closeModal() {
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+      if (lastFocus && typeof lastFocus.focus === "function") lastFocus.focus();
+    }
 
-  document.querySelectorAll("button.doc-open").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation(); // don't toggle the enclosing <details>
-      openModal(btn.getAttribute("data-doc"), btn.getAttribute("data-doc-title"));
+    document.querySelectorAll("button.doc-open").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openModal(btn.getAttribute("data-doc"), btn.getAttribute("data-doc-title"));
+      });
     });
-  });
+    modal.querySelectorAll("[data-doc-close]").forEach((el) => el.addEventListener("click", closeModal));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !modal.hidden) closeModal();
+    });
+    return p;
+  },
+};
 
-  modal.querySelectorAll("[data-doc-close]").forEach((el) => {
-    el.addEventListener("click", closeModal);
-  });
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !modal.hidden) closeModal();
-  });
-})();
+// ===========================================================================
+// Boot Pipeline — the blueprint. Reading this top-down tells you exactly
+// what wiring happens, in what order, on page load. Add a step? Add a Filter.
+// ===========================================================================
+
+const bootPipeline = new Pipeline()
+  .addFilter(AwaitCustomElements, "AwaitCustomElements")
+  .addFilter(RenderMermaid, "RenderMermaid")
+  .addFilter(BindThemeToggle, "BindThemeToggle")
+  .addFilter(BindPrimitiveCards, "BindPrimitiveCards")
+  .addFilter(BindChipJumps, "BindChipJumps")
+  .addFilter(BindDemo1, "BindDemo1")
+  .addFilter(BindDemo2, "BindDemo2")
+  .addFilter(BindDemo3, "BindDemo3")
+  .addFilter(WireDocModal, "WireDocModal");
+
+await bootPipeline.run(new Payload({ doc: document, root: document.documentElement }));
