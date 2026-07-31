@@ -1,0 +1,350 @@
+/* cup-ui/css/micro.css — Micro Component Styles
+ * Composed layouts for field groups, buttons, toggles, badges, chips. */
+
+@layer cup-micro {
+
+  /* ── Custom Element Hosts ──
+   * Light-DOM cup elements render styled children inside unstyled hosts.
+   * These rules give the host element the same geometry so effects
+   * (trace, ripple, enchant) and layout work against the real shape. */
+  cup-badge {
+    display: inline-flex;
+    border-radius: var(--cup-radius-full);
+  }
+
+  cup-chip {
+    display: inline-flex;
+    border-radius: var(--cup-radius-full);
+  }
+
+  cup-button {
+    display: inline-flex;
+    border-radius: var(--cup-radius-sm);
+  }
+
+  cup-button[rounded] {
+    border-radius: var(--cup-radius-full);
+  }
+
+  cup-button[round] {
+    border-radius: var(--cup-radius-full);
+  }
+
+  cup-toast {
+    display: block;
+  }
+
+  cup-stepper {
+    display: block;
+    width: 100%;
+  }
+
+  cup-progress {
+    display: block;
+    width: 100%;
+  }
+
+  /* ── Field (wrapper for label + input + hint + error) ── */
+  .cup-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: var(--cup-space-md);
+  }
+
+  /* ── Button ── */
+  .cup-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--cup-space-sm);
+    padding: var(--cup-space-sm) var(--cup-space-lg);
+    font-size: var(--cup-font-size-base);
+    font-weight: var(--cup-font-weight-medium);
+    line-height: var(--cup-line-height-tight);
+    border: 1px solid transparent;
+    border-radius: var(--cup-radius-sm);
+    cursor: pointer;
+    transition: background-color var(--cup-transition-fast),
+                border-color var(--cup-transition-fast),
+                color var(--cup-transition-fast),
+                box-shadow var(--cup-transition-fast);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .cup-button:focus-visible {
+    outline: 2px solid var(--cup-color-focus);
+    outline-offset: 2px;
+  }
+
+  .cup-button:disabled,
+  .cup-button[data-loading] {
+    cursor: not-allowed;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  /* Primary */
+  .cup-button--primary {
+    background-color: var(--cup-color-primary);
+    color: var(--cup-color-on-primary);
+  }
+
+  .cup-button--primary:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
+
+  /* Secondary */
+  .cup-button--secondary {
+    background-color: transparent;
+    color: var(--cup-color-on-surface);
+    border-color: var(--cup-color-border);
+  }
+
+  .cup-button--secondary:hover:not(:disabled) {
+    background-color: var(--cup-color-surface-alt);
+  }
+
+  /* Ghost */
+  .cup-button--ghost {
+    background: transparent;
+    color: var(--cup-color-on-surface);
+  }
+
+  .cup-button--ghost:hover:not(:disabled) {
+    background-color: var(--cup-color-surface-alt);
+  }
+
+  /* Danger */
+  .cup-button--danger {
+    background-color: var(--cup-color-error);
+    color: var(--cup-color-on-error);
+  }
+
+  .cup-button--danger:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
+
+  /* Sizes */
+  .cup-button--sm {
+    padding: var(--cup-space-xs) var(--cup-space-md);
+    font-size: var(--cup-font-size-sm);
+  }
+
+  .cup-button--lg {
+    padding: var(--cup-space-md) var(--cup-space-xl);
+    font-size: var(--cup-font-size-lg);
+  }
+
+  /* Rounded variants */
+  .cup-button--rounded {
+    border-radius: var(--cup-radius-full);
+  }
+
+  .cup-button--round {
+    border-radius: var(--cup-radius-full);
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+  }
+
+  .cup-button--round.cup-button--sm {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .cup-button--round.cup-button--lg {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  /* Loading spinner */
+  .cup-button[data-loading]::before {
+    content: '';
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: var(--cup-radius-full);
+    animation: cup-spin 0.6s linear infinite;
+  }
+
+  @keyframes cup-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ── Toggle ── */
+  .cup-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--cup-space-sm);
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+  }
+
+  .cup-toggle___track {
+    position: relative;
+    width: 2.5rem;
+    height: 1.375rem;
+    background-color: var(--cup-color-border);
+    border-radius: var(--cup-radius-full);
+    transition: background-color var(--cup-transition-fast);
+  }
+
+  .cup-toggle___thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 1.125rem;
+    height: 1.125rem;
+    background-color: var(--cup-color-on-surface);
+    border-radius: var(--cup-radius-full);
+    transition: transform var(--cup-transition-fast);
+    will-change: transform;
+  }
+
+  .cup-toggle[aria-checked="true"] .cup-toggle___track {
+    background-color: var(--cup-color-primary);
+  }
+
+  .cup-toggle[aria-checked="true"] .cup-toggle___thumb {
+    transform: translateX(1.125rem);
+  }
+
+  /* ── Badge ── */
+  .cup-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--cup-space-2xs) var(--cup-space-sm);
+    font-size: var(--cup-font-size-xs);
+    font-weight: var(--cup-font-weight-medium);
+    border-radius: var(--cup-radius-full);
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .cup-badge--default {
+    background-color: var(--cup-color-surface-alt);
+    color: var(--cup-color-on-surface);
+  }
+
+  .cup-badge--success {
+    background-color: color-mix(in srgb, var(--cup-color-success) 20%, transparent);
+    color: var(--cup-color-success);
+  }
+
+  .cup-badge--error {
+    background-color: color-mix(in srgb, var(--cup-color-error) 20%, transparent);
+    color: var(--cup-color-error);
+  }
+
+  .cup-badge--warning {
+    background-color: color-mix(in srgb, var(--cup-color-warning) 20%, transparent);
+    color: var(--cup-color-warning);
+  }
+
+  .cup-badge--info {
+    background-color: color-mix(in srgb, var(--cup-color-info) 20%, transparent);
+    color: var(--cup-color-info);
+  }
+
+  /* ── Chip ── */
+  .cup-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--cup-space-xs);
+    padding: var(--cup-space-xs) var(--cup-space-sm);
+    font-size: var(--cup-font-size-sm);
+    background-color: var(--cup-color-surface-alt);
+    color: var(--cup-color-on-surface);
+    border: 1px solid var(--cup-color-border);
+    border-radius: var(--cup-radius-full);
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .cup-chip___remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.75em;
+    height: 0.75em;
+    border: none;
+    background: none;
+    color: var(--cup-color-secondary);
+    cursor: pointer;
+    border-radius: var(--cup-radius-full);
+    font-size: inherit;
+    padding: 0;
+    line-height: 1;
+  }
+
+  .cup-chip___remove:hover {
+    color: var(--cup-color-error);
+    background-color: color-mix(in srgb, var(--cup-color-error) 15%, transparent);
+  }
+
+  /* ── Checkbox ── */
+  .cup-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--cup-space-sm);
+    cursor: pointer;
+    margin-bottom: var(--cup-space-sm);
+  }
+
+  .cup-checkbox input[type="checkbox"] {
+    width: 1.125rem;
+    height: 1.125rem;
+    accent-color: var(--cup-color-primary);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* ── Radio Group ── */
+  .cup-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cup-space-sm);
+    margin-bottom: var(--cup-space-md);
+  }
+
+  .cup-radio-group legend {
+    font-size: var(--cup-font-size-sm);
+    font-weight: var(--cup-font-weight-medium);
+    color: var(--cup-color-on-surface);
+    margin-bottom: var(--cup-space-sm);
+  }
+
+  .cup-radio-group label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--cup-space-sm);
+    cursor: pointer;
+  }
+
+  .cup-radio-group input[type="radio"] {
+    width: 1.125rem;
+    height: 1.125rem;
+    accent-color: var(--cup-color-primary);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* ── Character Count (for textarea) ── */
+  .cup-char-count {
+    font-size: var(--cup-font-size-xs);
+    color: var(--cup-color-secondary);
+    text-align: right;
+    margin-top: var(--cup-space-2xs);
+  }
+
+  .cup-char-count[data-over] {
+    color: var(--cup-color-error);
+  }
+}

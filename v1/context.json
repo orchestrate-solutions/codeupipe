@@ -1,0 +1,81 @@
+{
+  "$schema": "https://agents.md/schema.json",
+  "name": "codeupipe",
+  "api_version": "v1",
+  "version": "0.1.0",
+  "description": "Codeupipe (CUP) agent context \u2014 stable v1 surface following the agents.md convention.",
+  "base_url": "https://orchestrate.solutions/cup/v1",
+  "entrypoint": "https://orchestrate.solutions/cup/v1/agents.md",
+  "docs": [
+    {
+      "id": "system-overview",
+      "primitive": "system_overview",
+      "summary": "T0 \u2014 the whole picture. Read this first if you don't know CUP.",
+      "url": "https://orchestrate.solutions/cup/v1/docs/system-overview.md"
+    },
+    {
+      "id": "payload",
+      "primitive": "payload",
+      "summary": "T0 \u2014 the immutable data envelope.",
+      "url": "https://orchestrate.solutions/cup/v1/docs/payload.md"
+    },
+    {
+      "id": "filter",
+      "primitive": "filter",
+      "summary": "T0 \u2014 the atomic unit of work (one Payload in, one Payload out).",
+      "url": "https://orchestrate.solutions/cup/v1/docs/filter.md"
+    },
+    {
+      "id": "pipeline",
+      "primitive": "pipeline",
+      "summary": "T0 \u2014 the ordered composition of Filters.",
+      "url": "https://orchestrate.solutions/cup/v1/docs/pipeline.md"
+    },
+    {
+      "id": "valve",
+      "primitive": "valve",
+      "summary": "T0 \u2014 pure predicate gating a Filter.",
+      "url": "https://orchestrate.solutions/cup/v1/docs/valve.md"
+    },
+    {
+      "id": "tap",
+      "primitive": "tap",
+      "summary": "T0 \u2014 read-only observer, async handoff for side-effects.",
+      "url": "https://orchestrate.solutions/cup/v1/docs/tap.md"
+    },
+    {
+      "id": "hook",
+      "primitive": "hook",
+      "summary": "T0 \u2014 before/after/on_error lifecycle callback.",
+      "url": "https://orchestrate.solutions/cup/v1/docs/hook.md"
+    },
+    {
+      "id": "state",
+      "primitive": "state",
+      "summary": "T0 \u2014 execution metadata ledger (never seen by Filters).",
+      "url": "https://orchestrate.solutions/cup/v1/docs/state.md"
+    }
+  ],
+  "runtime": {
+    "language": "typescript",
+    "modules": [
+      "https://orchestrate.solutions/cup/v1/runtime/index.js",
+      "https://orchestrate.solutions/cup/v1/runtime/payload.js",
+      "https://orchestrate.solutions/cup/v1/runtime/pipeline.js",
+      "https://orchestrate.solutions/cup/v1/runtime/valve.js",
+      "https://orchestrate.solutions/cup/v1/runtime/state.js",
+      "https://orchestrate.solutions/cup/v1/runtime/filter.js",
+      "https://orchestrate.solutions/cup/v1/runtime/hook.js",
+      "https://orchestrate.solutions/cup/v1/runtime/tap.js",
+      "https://orchestrate.solutions/cup/v1/runtime/stream_filter.js"
+    ]
+  },
+  "conventions": {
+    "one_sentence": "A Payload (immutable data) flows through a Pipeline of Filters, gated by Valves, observed by Taps and Hooks, while State tracks execution metadata.",
+    "planes": [
+      "Synchronous Conveyor (Payload/Filter/Pipeline/Valve)",
+      "Detached Boundary (Tap/Hook/State)"
+    ],
+    "filter_rule": "One class per file. PascalCase class, snake_case filename. Never branches routing \u2014 that's a Valve."
+  }
+}

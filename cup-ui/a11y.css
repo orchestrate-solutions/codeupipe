@@ -1,0 +1,88 @@
+/* cup-ui/a11y.css — Accessibility Utilities
+ * Focus rings, reduced motion, high contrast, screen reader helpers. */
+
+@layer cup-nano {
+
+  /* ── Focus Ring ── */
+  :focus-visible {
+    outline: 2px solid var(--cup-color-focus);
+    outline-offset: 2px;
+  }
+
+  /* Remove outline for mouse users */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* ── Reduced Motion ── */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* ── High Contrast ── */
+  @media (forced-colors: active) {
+    .cup-input {
+      border: 1px solid ButtonText;
+    }
+
+    .cup-input:focus-visible {
+      outline: 2px solid Highlight;
+    }
+
+    .cup-error {
+      color: LinkText;
+    }
+  }
+
+  /* ── Increased Contrast ── */
+  @media (prefers-contrast: more) {
+    :root {
+      --cup-color-border: #666666;
+      --cup-color-placeholder: #aaaaaa;
+    }
+
+    .cup-button {
+      border-width: 2px;
+    }
+
+    .cup-input {
+      border-width: 2px;
+    }
+  }
+
+  /* ── Hit Fill ── */
+  /* Stretch interactive element to fill flex/grid parent height.
+   * Content stays centered. No sibling disruption.
+   * Use on links, buttons, icons inside flex containers
+   * where the visual element is smaller than the ideal hit area. */
+  .cup-hit-fill {
+    align-self: stretch;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* ── Skip Link ── */
+  .cup-skip-link {
+    position: absolute;
+    top: -100%;
+    left: var(--cup-space-md);
+    padding: var(--cup-space-sm) var(--cup-space-md);
+    background: var(--cup-color-primary);
+    color: var(--cup-color-on-primary);
+    border-radius: var(--cup-radius-sm);
+    z-index: var(--cup-z-toast);
+    font-weight: var(--cup-font-weight-medium);
+    text-decoration: none;
+  }
+
+  .cup-skip-link:focus {
+    top: var(--cup-space-md);
+  }
+}

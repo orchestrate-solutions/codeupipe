@@ -1,0 +1,1935 @@
+/* cup-ui/css/components.css — Component (Organism) Styles
+ * Card, Modal, Toast, Navigation, AppShell, DataTable, Accordion, Tabs, FormSection. */
+
+@layer cup-component {
+
+  /* ── Card ── */
+  .cup-card {
+    background-color: var(--cup-color-surface-alt);
+    border: 1px solid var(--cup-color-border);
+    border-radius: var(--cup-radius-md);
+    overflow: hidden;
+    contain: layout style;
+  }
+
+  .cup-card___header {
+    padding: var(--cup-space-md) var(--cup-space-lg);
+    border-bottom: 1px solid var(--cup-color-border);
+    font-weight: var(--cup-font-weight-medium);
+  }
+
+  .cup-card___body {
+    padding: var(--cup-space-lg);
+  }
+
+  .cup-card___footer {
+    padding: var(--cup-space-md) var(--cup-space-lg);
+    border-top: 1px solid var(--cup-color-border);
+    display: flex;
+    gap: var(--cup-space-sm);
+    justify-content: flex-end;
+  }
+
+  /* ── Modal ── */
+  .cup-modal {
+    border: none;
+    border-radius: var(--cup-radius-lg);
+    background-color: var(--cup-color-surface);
+    color: var(--cup-color-on-surface);
+    padding: 0;
+    max-width: min(90vw, 32rem);
+    width: 100%;
+    box-shadow: var(--cup-shadow-xl);
+  }
+
+  .cup-modal::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+  }
+
+  .cup-modal___header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--cup-space-md) var(--cup-space-lg);
+    border-bottom: 1px solid var(--cup-color-border);
+    font-weight: var(--cup-font-weight-bold);
+  }
+
+  .cup-modal___close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    background: transparent;
+    color: var(--cup-color-secondary);
+    border-radius: var(--cup-radius-sm);
+    cursor: pointer;
+    font-size: var(--cup-font-size-lg);
+  }
+
+  .cup-modal___close:hover {
+    background-color: var(--cup-color-surface-alt);
+  }
+
+  .cup-modal___body {
+    padding: var(--cup-space-lg);
+  }
+
+  .cup-modal___footer {
+    padding: var(--cup-space-md) var(--cup-space-lg);
+    border-top: 1px solid var(--cup-color-border);
+    display: flex;
+    gap: var(--cup-space-sm);
+    justify-content: flex-end;
+  }
+
+  /* ── Toast ── */
+  .cup-toast {
+    display: flex;
+    align-items: center;
+    gap: var(--cup-space-sm);
+    padding: var(--cup-space-sm) var(--cup-space-md);
+    border-radius: var(--cup-radius-md);
+    background-color: var(--cup-color-surface-alt);
+    color: var(--cup-color-on-surface);
+    border: 1px solid var(--cup-color-border);
+    box-shadow: var(--cup-shadow-md);
+    font-size: var(--cup-font-size-sm);
+    max-width: 24rem;
+  }
+
+  .cup-toast--success { border-left: 3px solid var(--cup-color-success); }
+  .cup-toast--error   { border-left: 3px solid var(--cup-color-error); }
+  .cup-toast--warning { border-left: 3px solid var(--cup-color-warning); }
+  .cup-toast--info    { border-left: 3px solid var(--cup-color-info); }
+
+  .cup-toast___message {
+    flex: 1;
+  }
+
+  .cup-toast___close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--cup-touch-min);
+    min-height: var(--cup-touch-min);
+    border: none;
+    background: transparent;
+    color: var(--cup-color-secondary);
+    font-size: var(--cup-font-size-lg);
+    cursor: pointer;
+    border-radius: var(--cup-radius-sm);
+    margin: calc(-1 * var(--cup-space-sm)) calc(-1 * var(--cup-space-sm)) calc(-1 * var(--cup-space-sm)) 0;
+    transition: color var(--cup-transition-fast),
+                background-color var(--cup-transition-fast);
+  }
+
+  .cup-toast___close:hover {
+    color: var(--cup-color-on-surface);
+    background-color: var(--cup-color-surface);
+  }
+
+  .cup-toast-container {
+    position: fixed;
+    bottom: var(--cup-space-lg);
+    right: var(--cup-space-lg);
+    display: flex;
+    flex-direction: column-reverse;
+    gap: var(--cup-space-sm);
+    z-index: var(--cup-z-toast);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     Cup Calendar Design System
+     Components: cup-calendar, cup-calendar-toolbar, cup-calendar-row,
+                 cup-calendar-event, cup-calendar-block (legacy alias)
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* ── Design tokens ─────────────────────────────────────────────── */
+  .cup-calendar-host,
+  .cup-toolbar-host,
+  .cup-calendar-row-host,
+  .cup-cal-event-host {
+    --cup-cal-hour-height:    48px;   /* vertical px per hour in TimeGrid */
+    --cup-cal-gutter-w:       72px;   /* time-label column width */
+    --cup-cal-col-header-h:   72px;   /* day-name + date-number header row */
+    --cup-cal-allday-h:       32px;   /* all-day events strip */
+    --cup-cal-event-radius:   6px;    /* pill border-radius (matches Google) */
+    --cup-cal-event-font:     13px;
+    --cup-cal-now-color:      #ea4335; /* Google's red */
+    /* timeline legacy tokens */
+    --cup-calendar-name-width:  11rem;
+    --cup-calendar-slot-width:  1.625rem;
+    --cup-calendar-row-height:  2.875rem;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     TOOLBAR  (cup-calendar-toolbar)
+     ───────────────────────────────────────────────────────────────── */
+  .cup-toolbar-host {
+    display: block;
+  }
+
+  .cup-toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--cup-space-md);
+    padding: var(--cup-space-sm) var(--cup-space-md);
+    border-bottom: 1px solid var(--cup-color-border);
+    background: var(--cup-color-surface);
+    flex-wrap: wrap;
+  }
+
+  .cup-toolbar___nav {
+    display: flex;
+    align-items: center;
+    gap: var(--cup-space-2xs);
+  }
+
+  .cup-toolbar___nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 var(--cup-space-sm);
+    border: 1px solid var(--cup-color-border);
+    border-radius: var(--cup-radius-sm);
+    background: var(--cup-color-surface);
+    color: var(--cup-color-on-surface);
+    font-size: var(--cup-font-size-sm);
+    cursor: pointer;
+    transition: background-color var(--cup-transition-fast),
+                border-color var(--cup-transition-fast);
+    white-space: nowrap;
+  }
+
+  .cup-toolbar___nav-btn:hover {
+    background: var(--cup-color-surface-alt);
+    border-color: var(--cup-color-primary);
+  }
+
+  .cup-toolbar___nav-btn--icon {
+    width: 36px;
+    padding: 0;
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
+  .cup-toolbar___title {
+    flex: 1;
+    margin: 0;
+    font-size: var(--cup-font-size-lg);
+    font-weight: var(--cup-font-weight-medium);
+    color: var(--cup-color-on-surface);
+    white-space: nowrap;
+  }
+
+  .cup-toolbar___views {
+    display: flex;
+    gap: 2px;
+    background: var(--cup-color-surface-alt);
+    border-radius: var(--cup-radius-sm);
+    padding: 2px;
+  }
+
+  .cup-toolbar___view-btn {
+    height: 32px;
+    padding: 0 var(--cup-space-sm);
+    border: none;
+    border-radius: calc(var(--cup-radius-sm) - 2px);
+    background: transparent;
+    color: var(--cup-color-secondary);
+    font-size: var(--cup-font-size-sm);
+    cursor: pointer;
+    transition: background-color var(--cup-transition-fast),
+                color var(--cup-transition-fast);
+    white-space: nowrap;
+  }
+
+  .cup-toolbar___view-btn:hover {
+    background: var(--cup-color-surface);
+    color: var(--cup-color-on-surface);
+  }
+
+  .cup-toolbar___view-btn--active {
+    background: var(--cup-color-surface);
+    color: var(--cup-color-primary);
+    font-weight: var(--cup-font-weight-medium);
+    box-shadow: var(--cup-shadow-sm);
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     TIMELINE VIEW  (cup-calendar + cup-calendar-row)
+     Horizontal time axis — resources as rows (Family Chaos style)
+     ───────────────────────────────────────────────────────────────── */
+  .cup-calendar-host {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .cup-calendar {
+    display: grid;
+    gap: 0;
+    min-width: max-content;
+  }
+
+  .cup-calendar___head {
+    display: grid;
+    grid-template-columns:
+      var(--cup-calendar-name-width)
+      repeat(auto-fit, minmax(var(--cup-calendar-slot-width), var(--cup-calendar-slot-width)));
+    align-items: end;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--cup-color-surface);
+  }
+
+  .cup-calendar___name-spacer {
+    width: var(--cup-calendar-name-width);
+    min-width: var(--cup-calendar-name-width);
+  }
+
+  .cup-calendar___tick {
+    width: var(--cup-calendar-slot-width);
+    min-width: var(--cup-calendar-slot-width);
+    padding-bottom: var(--cup-space-xs);
+    border-right: 1px solid var(--cup-color-border);
+    color: var(--cup-color-secondary);
+    font-size: var(--cup-font-size-xs);
+    text-align: center;
+    line-height: 1;
+  }
+
+  .cup-calendar___tick--half {
+    border-right-style: dashed;
+    opacity: 0.55;
+  }
+
+  .cup-calendar___tick--minor {
+    border-right-color: transparent;
+  }
+
+  /* ── Timeline row ──────────────────────────────────────────────── */
+  .cup-calendar-row-host {
+    display: block;
+  }
+
+  .cup-calendar-row {
+    display: flex;
+    min-height: var(--cup-calendar-row-height);
+    border-bottom: 1px solid var(--cup-color-border);
+  }
+
+  .cup-calendar-row___label {
+    width: var(--cup-calendar-name-width);
+    min-width: var(--cup-calendar-name-width);
+    display: flex;
+    align-items: center;
+    gap: var(--cup-space-xs);
+    padding: 0 var(--cup-space-sm);
+    border: 0;
+    border-right: 2px solid var(--cup-color-border);
+    background: var(--cup-color-surface-alt);
+    color: var(--cup-color-on-surface);
+    cursor: pointer;
+    text-align: left;
+    transition: background-color var(--cup-transition-fast);
+  }
+
+  .cup-calendar-row___label:hover {
+    background: color-mix(in srgb, var(--cup-color-surface-alt) 72%, var(--cup-color-primary));
+  }
+
+  .cup-calendar-row___pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--cup-radius-full);
+    flex-shrink: 0;
+    background: var(--cup-color-secondary);
+  }
+
+  .cup-calendar-row___name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--cup-font-size-sm);
+    font-weight: var(--cup-font-weight-medium);
+  }
+
+  .cup-calendar-row___note {
+    color: var(--cup-color-error);
+    font-size: var(--cup-font-size-xs);
+    font-weight: var(--cup-font-weight-bold);
+    flex-shrink: 0;
+  }
+
+  .cup-calendar-row___slots {
+    display: flex;
+    position: relative;
+    flex: 1;
+    min-height: var(--cup-calendar-row-height);
+  }
+
+  .cup-calendar-row___slot {
+    width: var(--cup-calendar-slot-width);
+    min-width: var(--cup-calendar-slot-width);
+    min-height: var(--cup-calendar-row-height);
+    border: 0;
+    border-right: 1px solid var(--cup-color-border);
+    background: transparent;
+    cursor: pointer;
+    transition: background-color var(--cup-transition-fast);
+  }
+
+  .cup-calendar-row___slot:hover {
+    background: color-mix(in srgb, var(--cup-color-primary) 14%, transparent);
+  }
+
+  .cup-calendar-row___slot--half {
+    border-right-style: dashed;
+  }
+
+  .cup-calendar-row___slot--minor {
+    border-right-color: transparent;
+  }
+
+  .cup-calendar-row___slot.blocked {
+    pointer-events: none;
+    cursor: default;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     TIMEGRID VIEW  (cup-calendar--tg)
+     Vertical time axis — columns per day (Google Calendar style)
+     ───────────────────────────────────────────────────────────────── */
+  .cup-calendar-host--tg {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    padding-top: var(--cup-cal-host-pad-top, 8px);
+  }
+
+  .cup-tg {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    font-size: var(--cup-font-size-sm);
+  }
+
+  /* Sticky column-header row */
+  .cup-tg___col-headers {
+    display: flex;
+    border-bottom: 1px solid var(--cup-color-border);
+    background: var(--cup-color-surface);
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    padding-right: var(--cup-tg-scrollbar-w, 0px);
+  }
+
+  .cup-tg___gutter-spacer {
+    width: var(--cup-cal-gutter-w);
+    min-width: var(--cup-cal-gutter-w);
+    flex-shrink: 0;
+    border-right: 1px solid var(--cup-color-border);
+  }
+
+  .cup-tg___col-header {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: var(--cup-cal-col-header-h);
+    border-right: 1px solid var(--cup-color-border);
+    color: var(--cup-color-secondary);
+    cursor: default;
+  }
+
+  .cup-tg___col-header--today {
+    color: var(--cup-color-primary);
+  }
+
+  /* Resource column header (person name) */
+  .cup-tg___col-header--resource {
+    height: 52px;
+    padding: 0;
+  }
+
+  .cup-tg___resource-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    gap: 4px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--cup-color-on-surface);
+    transition: background-color var(--cup-transition-fast);
+    padding: 4px 8px;
+  }
+
+  .cup-tg___resource-label:hover {
+    background: color-mix(in srgb, var(--cup-color-surface-alt) 70%, var(--cup-color-primary));
+  }
+
+  .cup-tg___resource-dot {
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--cup-radius-full);
+    background: var(--cup-color-secondary);
+    flex-shrink: 0;
+  }
+
+  .cup-tg___resource-name {
+    font-size: var(--cup-font-size-sm);
+    font-weight: var(--cup-font-weight-medium);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .cup-tg___weekday {
+    font-size: var(--cup-font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: var(--cup-font-weight-medium);
+  }
+
+  .cup-tg___date-num {
+    font-size: 1.5rem;
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .cup-tg___date-num--today {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--cup-radius-full);
+    background: var(--cup-color-primary);
+    color: var(--cup-color-on-primary);
+    font-weight: var(--cup-font-weight-medium);
+    font-size: 1rem;
+  }
+
+  /* Scrollable body */
+  .cup-tg___body-wrap {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Hour label gutter */
+  .cup-tg___gutter {
+    width: var(--cup-cal-gutter-w);
+    min-width: var(--cup-cal-gutter-w);
+    flex-shrink: 0;
+    position: relative;
+    border-right: 1px solid var(--cup-color-border);
+    overflow: visible;
+  }
+
+  .cup-tg___hour-label {
+    position: absolute;
+    right: var(--cup-space-xs);
+    font-size: var(--cup-font-size-xs);
+    color: var(--cup-color-secondary);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Day columns container */
+  .cup-tg___cols {
+    flex: 1;
+    display: flex;
+  }
+
+  /* Single day column */
+  .cup-tg___col {
+    flex: 1;
+    position: relative;
+    border-right: 1px solid var(--cup-color-border);
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* Default pill fill — constrain to column; inline left/right overrides for lane-split */
+  .cup-tg___col cup-calendar-event {
+    left: 2px;
+    right: 2px;
+    width: auto;
+  }
+
+  /* ── Edit mode host indicator ────────────────────────────────────
+     Applied when editable:true — subtle signal the calendar is interactive.
+     Pills already show drag handles via cup-cal-event--draggable class.
+  ─────────────────────────────────────────────────────────────── */
+  .cup-calendar-host--editing {
+    outline: 2px solid color-mix(in srgb, var(--cup-color-primary) 35%, transparent);
+    outline-offset: -2px;
+    border-radius: var(--cup-radius-md);
+  }
+
+  /* Non-draggable pills get pointer cursor so they still feel clickable */
+  cup-calendar-event:not([draggable]) .cup-cal-event {
+    cursor: pointer;
+  }
+
+  /* Drop ghost — shows where a dragged event will land */
+  .cup-tg___drop-ghost {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    border-radius: var(--cup-cal-event-radius);
+    border: 2px dashed var(--cup-color-primary);
+    background: color-mix(in srgb, var(--cup-color-primary) 18%, transparent);
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  /* Pill while being dragged — lifted to viewport via position:fixed by JS.
+     Show a slight scale + shadow so it feels picked up. */
+  .cup-cal-event--dragging {
+    cursor: grabbing;
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--cup-color-fg) 25%, transparent);
+    z-index: 9999;
+    transition: none;
+  }
+  .cup-cal-event--dragging .cup-cal-event {
+    transform: scale(1.02);
+    transition: transform var(--cup-transition-fast);
+  }
+
+  /* ── Hover tooltip ───────────────────────────────────────────── */
+  .cup-cal-tooltip {
+    position: fixed;
+    z-index: 10000;
+    min-width: 220px;
+    max-width: 320px;
+    padding: 0;
+    overflow: hidden;
+    background: var(--cup-color-bg-elevated, var(--cup-color-bg, var(--cup-color-surface)));
+    color: var(--cup-color-fg, var(--cup-color-secondary));
+    border: 1px solid var(--cup-color-border);
+    border-radius: var(--cup-radius-md);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--cup-color-fg) 18%, transparent);
+    font-size: var(--cup-font-size-sm);
+    line-height: var(--cup-line-height-tight);
+    pointer-events: auto;
+    animation: cup-cal-tooltip-in 120ms ease-out;
+  }
+  @keyframes cup-cal-tooltip-in {
+    from { opacity: 0; transform: translateY(2px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Event detail card (used in tooltip + modal) ─────────────── */
+  .cup-cal-detail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cup-space-2);
+  }
+  .cup-cal-detail___head {
+    display: flex;
+    align-items: center;
+    gap: var(--cup-space-2);
+    font-weight: var(--cup-font-weight-semibold);
+  }
+  .cup-cal-detail___dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--cup-color-primary);
+    flex: 0 0 auto;
+  }
+  .cup-cal-detail___title {
+    font-size: var(--cup-font-size-md);
+  }
+  .cup-cal-detail___row {
+    display: flex;
+    gap: var(--cup-space-3);
+    align-items: baseline;
+    font-size: var(--cup-font-size-sm);
+  }
+  .cup-cal-detail___row--block {
+    flex-direction: column;
+    gap: var(--cup-space-1);
+  }
+  .cup-cal-detail___label {
+    min-width: 64px;
+    color: var(--cup-color-fg-muted);
+    text-transform: uppercase;
+    font-size: var(--cup-font-size-xs);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Rich event card (tooltip + modal) ──────────────────────── */
+  .cup-cal-ev-card {
+    display: flex;
+    flex-direction: column;
+  }
+  .cup-cal-ev-card___head {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid color-mix(in srgb, var(--cup-color-fg) 8%, transparent);
+  }
+  .cup-cal-ev-card___stripe {
+    width: 4px;
+    flex-shrink: 0;
+    background: var(--cup-color-primary);
+  }
+  .cup-cal-ev-card___title-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 11px 14px 10px;
+    flex: 1;
+    min-width: 0;
+  }
+  .cup-cal-ev-card___title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--cup-color-fg, var(--cup-color-on-surface));
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cup-cal-ev-card___badges {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .cup-cal-ev-card___badge {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 1px 5px;
+    border-radius: 4px;
+    line-height: 1.6;
+  }
+  .cup-cal-ev-card___badge--easy    { background: #16a34a22; color: #22c55e; }
+  .cup-cal-ev-card___badge--normal  { background: #d9770622; color: #f59e0b; }
+  .cup-cal-ev-card___badge--hard    { background: #dc262622; color: #ef4444; }
+  .cup-cal-ev-card___badge--blocker { background: #71717122; color: #a1a1aa; }
+  .cup-cal-ev-card___body {
+    padding: 9px 14px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .cup-cal-ev-card___row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 11px;
+  }
+  .cup-cal-ev-card___row--desc { align-items: flex-start; }
+  .cup-cal-ev-card___icon {
+    flex-shrink: 0;
+    width: 14px;
+    text-align: center;
+    font-size: 11px;
+    opacity: 0.75;
+    line-height: 1.5;
+  }
+  .cup-cal-ev-card___text {
+    color: var(--cup-color-fg, var(--cup-color-secondary));
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cup-cal-ev-card___text--clamp {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .cup-cal-ev-card___dim {
+    opacity: 0.6;
+  }
+  .cup-cal-ev-card___footer {
+    border-top: 1px solid color-mix(in srgb, var(--cup-color-fg) 8%, transparent);
+    padding: 6px 14px 7px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--cup-color-primary);
+    text-align: right;
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    opacity: 0.8;
+    transition: opacity 80ms;
+  }
+  .cup-cal-ev-card___footer:hover { opacity: 1; }
+  .cup-cal-ev-card___chevron {
+    font-size: 9px;
+    transition: transform 120ms;
+  }
+  .cup-cal-ev-card___footer:hover .cup-cal-ev-card___chevron { transform: translateY(1px); }
+
+  /* ── Modal overlay ───────────────────────────────────────────── */
+  .cup-cal-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    background: color-mix(in srgb, var(--cup-color-fg) 35%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--cup-space-4);
+    animation: cup-cal-modal-fade 140ms ease-out;
+  }
+  @keyframes cup-cal-modal-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .cup-cal-modal {
+    position: relative;
+    min-width: 320px;
+    max-width: 520px;
+    max-height: 80vh;
+    overflow: auto;
+    background: var(--cup-color-bg);
+    color: var(--cup-color-fg);
+    border: 1px solid var(--cup-color-border);
+    border-radius: var(--cup-radius-lg);
+    box-shadow: 0 20px 60px color-mix(in srgb, var(--cup-color-fg) 30%, transparent);
+    padding: var(--cup-space-5);
+    animation: cup-cal-modal-pop 160ms ease-out;
+  }
+  @keyframes cup-cal-modal-pop {
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .cup-cal-modal___close {
+    position: absolute;
+    top: var(--cup-space-2);
+    right: var(--cup-space-2);
+    width: 32px;
+    height: 32px;
+    border: 0;
+    background: transparent;
+    border-radius: var(--cup-radius-sm);
+    color: var(--cup-color-fg-muted);
+    font-size: var(--cup-font-size-lg);
+    line-height: 1;
+    cursor: pointer;
+  }
+  .cup-cal-modal___close:hover {
+    background: var(--cup-color-bg-muted, color-mix(in srgb, var(--cup-color-fg) 8%, transparent));
+    color: var(--cup-color-fg);
+  }
+
+  /* Invisible clickable slot buttons — top + height set via inline style */
+  .cup-tg___slot-btn {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    z-index: 0;
+    transition: background-color var(--cup-transition-fast);
+  }
+
+  .cup-tg___slot-btn:hover {
+    background: color-mix(in srgb, var(--cup-color-primary) 10%, transparent);
+    z-index: 1;
+  }
+
+  /* Horizontal grid lines */
+  .cup-tg___line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--cup-color-border);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .cup-tg___line--half {
+    opacity: 0.45;
+  }
+
+  /* Now indicator */
+  .cup-tg___now-circle {
+    position: absolute;
+    left: -5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--cup-cal-now-color);
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  .cup-tg___now-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--cup-cal-now-color);
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     EVENT PILL  (cup-calendar-event + cup-calendar-block legacy)
+     ───────────────────────────────────────────────────────────────── */
+
+  /* Host element — absolute in timeline row or timegrid column */
+  cup-calendar-event,
+  cup-calendar-block {
+    position: absolute;
+    display: block;
+    pointer-events: auto;
+    z-index: 2;
+    /* timeline defaults — overridden by inline style.top/height for timegrid */
+    top: 3px;
+    height: calc(100% - 6px);
+  }
+
+  /* Host-level drag affordance so the whole pill hit area feels draggable. */
+  cup-calendar-event[draggable],
+  cup-calendar-event[draggable="true"] {
+    cursor: grab;
+  }
+
+  .cup-cal-event-host {
+    height: 100%;
+  }
+
+  .cup-cal-event {
+    height: 100%;
+    display: flex;
+    align-items: flex-start;
+    padding: 3px var(--cup-space-sm);
+    border-radius: var(--cup-cal-event-radius);
+    overflow: hidden;
+    font-size: var(--cup-cal-event-font);
+    font-weight: var(--cup-font-weight-medium);
+    border: 1px solid transparent;
+    box-shadow: var(--cup-shadow-sm);
+    position: relative;
+    cursor: default;
+    transition: opacity var(--cup-transition-fast),
+                box-shadow var(--cup-transition-fast);
+    background: var(--cup-event-bg, color-mix(in srgb, var(--cup-color-primary) 70%, var(--cup-color-surface)));
+    color: var(--cup-color-on-surface);
+    user-select: none;
+  }
+
+  .cup-cal-event___label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    line-height: 1.3;
+  }
+
+  /* Resize handle — bottom edge */
+  .cup-cal-event___resize-handle {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    cursor: ns-resize;
+    background: transparent;
+  }
+
+  .cup-cal-event___resize-handle::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 3px;
+    border-radius: 2px;
+    background: color-mix(in srgb, currentColor 40%, transparent);
+  }
+
+  /* Horizontal axis pills: text centered, no top-anchor */
+  .cup-cal-event--h {
+    align-items: center;
+  }
+
+  /* Drag states — dragging pill is lifted to viewport (position:fixed) by JS,
+     so we boost shadow/scale to convey elevation. Resizing keeps in-flow. */
+  .cup-cal-event--dragging {
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--cup-color-fg) 25%, transparent);
+    cursor: grabbing;
+    z-index: 9999;
+    transition: none;
+  }
+  .cup-cal-event--dragging .cup-cal-event {
+    transform: scale(1.02);
+    transition: transform var(--cup-transition-fast);
+  }
+
+  .cup-cal-event--resizing {
+    opacity: 0.9;
+    z-index: 10;
+  }
+
+  .cup-cal-event--draggable {
+    cursor: inherit;
+  }
+
+  /* ── Tone variants (game + general use) ──────────────────────── */
+  .cup-cal-event--event {
+    --cup-event-bg: color-mix(in srgb, var(--cup-color-primary) 70%, var(--cup-color-surface));
+  }
+
+  .cup-cal-event--easy {
+    --cup-event-bg: color-mix(in srgb, var(--cup-color-success) 72%, var(--cup-color-surface));
+  }
+
+  .cup-cal-event--hard {
+    --cup-event-bg: color-mix(in srgb, #8b5cf6 72%, var(--cup-color-surface));
+  }
+
+  /* ── State variants ──────────────────────────────────────────── */
+  .cup-cal-event--ok {
+    --cup-event-bg: color-mix(in srgb, var(--cup-color-success) 76%, var(--cup-color-surface));
+  }
+
+  .cup-cal-event--conflict {
+    --cup-event-bg: color-mix(in srgb, var(--cup-color-error) 78%, var(--cup-color-surface)) !important;
+    color: var(--cup-color-on-error);
+    border-color: var(--cup-color-error);
+  }
+
+  .cup-cal-event--blocker {
+    --cup-event-bg: color-mix(in srgb, var(--cup-color-secondary) 16%, var(--cup-color-surface));
+    border-color: color-mix(in srgb, var(--cup-color-secondary) 45%, transparent);
+    border-style: dashed;
+    cursor: help;
+  }
+
+  .cup-cal-event--hidden {
+    opacity: 0.72;
+  }
+
+  .cup-cal-event--background {
+    opacity: 0.3;
+    pointer-events: none;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     RESOURCE TIMELINE  (cup-tg-h — horizontal time, resources as rows)
+     Shares cup-calendar-event pills + full drag/drop/resize with
+     resourceTimeGrid. Left sticky name column; time scrolls right.
+     ───────────────────────────────────────────────────────────────── */
+
+  .cup-calendar-host--tg-h {
+    display: block;
+    overflow: hidden;
+    height: 100%;
+  }
+
+  /* Outer section scrolls both axes */
+  .cup-tg-h {
+    height: 100%;
+    overflow: auto;
+    display: block;
+  }
+
+  /* Sticky header row (corner + time labels) */
+  .cup-tg-h___hdr {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    background: var(--cup-color-surface);
+    border-bottom: 1px solid var(--cup-color-border);
+    height: var(--cup-tg-h-hdr-h, 40px);
+    min-width: max-content;
+  }
+
+  /* Top-left corner — sticky in both directions */
+  .cup-tg-h___corner {
+    width: var(--cup-tg-name-w, 160px);
+    min-width: var(--cup-tg-name-w, 160px);
+    flex-shrink: 0;
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    background: var(--cup-color-surface);
+    border-right: 1px solid var(--cup-color-border);
+    height: 100%;
+  }
+
+  /* Time strip — hour labels absolutely positioned by left: */
+  .cup-tg-h___time {
+    position: relative;
+    height: 100%;
+    flex-shrink: 0;
+  }
+
+  .cup-tg-h___hour-label {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: var(--cup-font-size-xs, 11px);
+    color: var(--cup-color-secondary);
+    white-space: nowrap;
+    padding-left: 4px;
+    user-select: none;
+  }
+
+  /* One row per resource */
+  .cup-tg-h___row {
+    display: flex;
+    border-bottom: 1px solid var(--cup-color-border);
+    min-width: max-content;
+  }
+
+  /* Resource name — sticky left */
+  .cup-tg-h___label {
+    width: var(--cup-tg-name-w, 160px);
+    min-width: var(--cup-tg-name-w, 160px);
+    flex-shrink: 0;
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    background: var(--cup-color-surface);
+    border-right: 1px solid var(--cup-color-border);
+    display: flex;
+    align-items: center;
+  }
+
+  /* Horizontal event lane */
+  .cup-tg-h___lane {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* Slot click buttons (horizontal) */
+  .cup-tg-h___slot-btn {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    z-index: 0;
+    transition: background-color var(--cup-transition-fast);
+  }
+
+  .cup-tg-h___slot-btn:hover {
+    background: color-mix(in srgb, var(--cup-color-primary) 10%, transparent);
+    z-index: 1;
+  }
+
+  /* Vertical grid lines (shared with horizontal view) */
+  .cup-tg___vline {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--cup-color-border);
+    pointer-events: none;
+  }
+
+  .cup-tg___vline--half {
+    opacity: 0.45;
+  }
+
+  /* Vertical now-line + dot */
+  .cup-tg___now-vline {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--cup-cal-now-color);
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  .cup-tg___now-dot-top {
+    position: absolute;
+    top: -5px;
+    left: -4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--cup-cal-now-color);
+  }
+
+  /* Horizontal resize handle (right edge of event pill when axis="h") */
+  .cup-cal-event___resize-handle--h {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    left: auto;         /* reset inherited left:0 from base handle */
+    height: auto;
+    width: 8px;
+    cursor: ew-resize;
+    background: transparent;
+  }
+
+  .cup-cal-event___resize-handle--h::after {
+    content: '';
+    position: absolute;
+    right: 3px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 20px;
+    width: 3px;
+    border-radius: 2px;
+    background: color-mix(in srgb, currentColor 40%, transparent);
+  }
+
+  /* ── Navigation ── */
+  .cup-nav {
+    display: flex;
+    gap: var(--cup-space-xs);
+  }
+
+  .cup-nav a,
+  .cup-nav button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--cup-space-xs);
+    padding: var(--cup-space-sm) var(--cup-space-md);
+    font-size: var(--cup-font-size-sm);
+    color: var(--cup-color-secondary);
+    border-radius: var(--cup-radius-sm);
+    transition: background-color var(--cup-transition-fast),
+                color var(--cup-transition-fast);
+    text-decoration: none;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+
+  .cup-nav a:hover,
+  .cup-nav button:hover {
+    background-color: var(--cup-color-surface-alt);
+    color: var(--cup-color-on-surface);
+  }
+
+  .cup-nav [aria-current="page"],
+  .cup-nav [data-active] {
+    background-color: var(--cup-color-surface-alt);
+    color: var(--cup-color-primary);
+    font-weight: var(--cup-font-weight-medium);
+  }
+
+  /* ── AppShell ── */
+  .cup-shell {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    grid-template-columns: auto 1fr;
+    min-height: 100vh;
+  }
+
+  .cup-shell___header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: var(--cup-space-md);
+    padding: var(--cup-space-sm) var(--cup-space-lg);
+    background-color: var(--cup-color-surface-alt);
+    border-bottom: 1px solid var(--cup-color-border);
+  }
+
+  .cup-shell___sidebar {
+    padding: var(--cup-space-md);
+    background-color: var(--cup-color-surface);
+    border-right: 1px solid var(--cup-color-border);
+    width: 16rem;
+    overflow-y: auto;
+  }
+
+  .cup-shell___main {
+    padding: var(--cup-space-lg);
+    overflow-y: auto;
+  }
+
+  .cup-shell___footer {
+    grid-column: 1 / -1;
+    padding: var(--cup-space-md) var(--cup-space-lg);
+    border-top: 1px solid var(--cup-color-border);
+    font-size: var(--cup-font-size-sm);
+    color: var(--cup-color-secondary);
+  }
+
+  /* ── Accordion (details/summary) ── */
+  .cup-accordion {
+    border: 1px solid var(--cup-color-border);
+    border-radius: var(--cup-radius-md);
+    overflow: hidden;
+  }
+
+  .cup-accordion details {
+    border-bottom: 1px solid var(--cup-color-border);
+  }
+
+  .cup-accordion details:last-child {
+    border-bottom: none;
+  }
+
+  .cup-accordion summary {
+    padding: var(--cup-space-md) var(--cup-space-lg);
+    font-weight: var(--cup-font-weight-medium);
+    cursor: pointer;
+    transition: background-color var(--cup-transition-fast);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .cup-accordion summary:hover {
+    background-color: var(--cup-color-surface-alt);
+  }
+
+  .cup-accordion summary::after {
+    content: '▸';
+    transition: transform var(--cup-transition-fast);
+  }
+
+  .cup-accordion details[open] > summary::after {
+    transform: rotate(90deg);
+  }
+
+  .cup-accordion___content {
+    padding: var(--cup-space-md) var(--cup-space-lg);
+    content-visibility: auto;
+  }
+
+  /* ── Tabs ── */
+  .cup-tabs [role="tablist"] {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--cup-color-border);
+  }
+
+  .cup-tabs [role="tab"] {
+    padding: var(--cup-space-sm) var(--cup-space-md);
+    font-size: var(--cup-font-size-sm);
+    font-weight: var(--cup-font-weight-medium);
+    color: var(--cup-color-secondary);
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color var(--cup-transition-fast),
+                border-color var(--cup-transition-fast);
+    margin-bottom: -1px;
+  }
+
+  .cup-tabs [role="tab"]:hover {
+    color: var(--cup-color-on-surface);
+  }
+
+  .cup-tabs [role="tab"][aria-selected="true"] {
+    color: var(--cup-color-primary);
+    border-bottom-color: var(--cup-color-primary);
+  }
+
+  .cup-tabs [role="tabpanel"] {
+    padding: var(--cup-space-lg) 0;
+  }
+
+  .cup-tabs [role="tabpanel"][hidden] {
+    display: none;
+  }
+
+  /* ── DataTable ── */
+  .cup-table {
+    width: 100%;
+    border: 1px solid var(--cup-color-border);
+    border-radius: var(--cup-radius-md);
+    overflow: hidden;
+  }
+
+  .cup-table table {
+    width: 100%;
+  }
+
+  .cup-table th {
+    text-align: left;
+    padding: var(--cup-space-sm) var(--cup-space-md);
+    font-size: var(--cup-font-size-sm);
+    font-weight: var(--cup-font-weight-medium);
+    color: var(--cup-color-secondary);
+    background-color: var(--cup-color-surface-alt);
+    border-bottom: 1px solid var(--cup-color-border);
+    white-space: nowrap;
+  }
+
+  .cup-table td {
+    padding: var(--cup-space-sm) var(--cup-space-md);
+    font-size: var(--cup-font-size-sm);
+    border-bottom: 1px solid var(--cup-color-border);
+    vertical-align: middle;
+  }
+
+  .cup-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .cup-table tr:hover td {
+    background-color: var(--cup-color-surface-alt);
+  }
+
+  /* Sortable header */
+  .cup-table th[aria-sort] {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .cup-table th[aria-sort]::after {
+    content: ' ↕';
+    color: var(--cup-color-placeholder);
+    font-size: var(--cup-font-size-xs);
+  }
+
+  .cup-table th[aria-sort="ascending"]::after {
+    content: ' ↑';
+    color: var(--cup-color-primary);
+  }
+
+  .cup-table th[aria-sort="descending"]::after {
+    content: ' ↓';
+    color: var(--cup-color-primary);
+  }
+
+  /* ── FormSection ── */
+  .cup-form-section {
+    margin-bottom: var(--cup-space-xl);
+  }
+
+  .cup-form-section legend {
+    font-size: var(--cup-font-size-lg);
+    font-weight: var(--cup-font-weight-bold);
+    color: var(--cup-color-on-surface);
+    margin-bottom: var(--cup-space-md);
+    padding-bottom: var(--cup-space-sm);
+    border-bottom: 1px solid var(--cup-color-border);
+    width: 100%;
+  }
+
+  /* ── Stepper ── */
+  .cup-stepper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    width: 100%;
+  }
+
+  .cup-stepper___step {
+    display: flex;
+    align-items: center;
+    gap: var(--cup-space-sm);
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: var(--cup-space-xs) var(--cup-space-sm);
+    border-radius: var(--cup-radius-sm);
+    transition: background-color var(--cup-transition-fast);
+  }
+
+  .cup-stepper___step:hover:not(.cup-stepper___step--disabled) {
+    background-color: var(--cup-color-surface-alt);
+  }
+
+  .cup-stepper___step--disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  .cup-stepper___indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--cup-radius-full);
+    font-size: var(--cup-font-size-sm);
+    font-weight: var(--cup-font-weight-bold);
+    flex-shrink: 0;
+    border: 2px solid var(--cup-color-border);
+    color: var(--cup-color-secondary);
+    background: transparent;
+    transition: background-color var(--cup-transition-fast),
+                border-color var(--cup-transition-fast),
+                color var(--cup-transition-fast);
+  }
+
+  .cup-stepper___step--active .cup-stepper___indicator {
+    background-color: var(--cup-color-primary);
+    border-color: var(--cup-color-primary);
+    color: var(--cup-color-on-primary);
+  }
+
+  .cup-stepper___step--completed .cup-stepper___indicator {
+    background-color: var(--cup-color-success);
+    border-color: var(--cup-color-success);
+    color: #fff;
+  }
+
+  .cup-stepper___label {
+    font-size: var(--cup-font-size-sm);
+    font-weight: var(--cup-font-weight-medium);
+    color: var(--cup-color-secondary);
+    white-space: nowrap;
+    transition: color var(--cup-transition-fast);
+  }
+
+  .cup-stepper___step--active .cup-stepper___label {
+    color: var(--cup-color-primary);
+    font-weight: var(--cup-font-weight-bold);
+  }
+
+  .cup-stepper___step--completed .cup-stepper___label {
+    color: var(--cup-color-on-surface);
+  }
+
+  .cup-stepper___connector {
+    flex: 1;
+    height: 2px;
+    min-width: var(--cup-space-md);
+    background-color: var(--cup-color-border);
+    transition: background-color var(--cup-transition-fast);
+  }
+
+  .cup-stepper___connector--completed {
+    background-color: var(--cup-color-success);
+  }
+
+  /* ── Progress ── */
+  .cup-progress {
+    width: 100%;
+    height: 8px;
+    background-color: var(--cup-color-surface-alt);
+    border-radius: var(--cup-radius-full);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .cup-progress--sm { height: 4px; }
+  .cup-progress--lg { height: 12px; }
+
+  .cup-progress___fill {
+    height: 100%;
+    background-color: var(--cup-color-primary);
+    border-radius: var(--cup-radius-full);
+    transition: width var(--cup-transition-normal);
+  }
+
+  .cup-progress--success .cup-progress___fill { background-color: var(--cup-color-success); }
+  .cup-progress--error   .cup-progress___fill { background-color: var(--cup-color-error); }
+  .cup-progress--warning .cup-progress___fill { background-color: var(--cup-color-warning); }
+  .cup-progress--info    .cup-progress___fill { background-color: var(--cup-color-info); }
+
+  .cup-progress___header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--cup-space-xs);
+  }
+
+  .cup-progress___label {
+    font-size: var(--cup-font-size-sm);
+    font-weight: var(--cup-font-weight-medium);
+    color: var(--cup-color-on-surface);
+  }
+
+  .cup-progress___value {
+    font-size: var(--cup-font-size-xs);
+    color: var(--cup-color-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Indeterminate animation */
+  .cup-progress--indeterminate .cup-progress___fill {
+    width: 30% !important;
+    animation: cup-progress-indeterminate 1.5s var(--cup-easing-smooth) infinite;
+  }
+
+  @keyframes cup-progress-indeterminate {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
+  }
+
+  /* ── Canvas ── */
+  cup-canvas {
+    display: block;
+    position: relative;
+    border-radius: var(--cup-radius-md);
+    box-shadow: var(--cup-shadow-md);
+    overflow: hidden;
+    contain: layout style;
+  }
+
+  cup-canvas[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     cup-calendar — Timezone strip (shown in time-grid toolbar slot)
+  ════════════════════════════════════════════════════════════════ */
+
+  .cup-tg___tz-strip {
+    display: flex;
+    align-items: center;
+    gap: var(--cup-space-xs);
+    padding: var(--cup-space-xs) var(--cup-space-sm);
+  }
+
+  .cup-tg___tz-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 10px;
+    font-weight: var(--cup-font-weight-medium);
+    letter-spacing: 0.04em;
+    background: color-mix(in srgb, var(--cup-color-primary) 15%, transparent);
+    color: var(--cup-color-primary);
+  }
+
+  .cup-tg___tz-pill--home {
+    background: color-mix(in srgb, var(--cup-color-secondary) 15%, transparent);
+    color: var(--cup-color-secondary);
+  }
+
+  /* Secondary home-TZ label inside gutter hour blocks */
+  .cup-tg___hour-label .cup-tg___home-tz-label {
+    display: block;
+    font-size: 9px;
+    opacity: 0.6;
+    line-height: 1;
+    margin-top: 1px;
+    color: var(--cup-color-secondary);
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     cup-calendar — Month Grid  (.cup-mg)
+  ════════════════════════════════════════════════════════════════ */
+
+  .cup-calendar-host--mg {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+  }
+
+  .cup-mg {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* Day-of-week header row */
+  .cup-mg___day-headers {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--cup-color-surface);
+    border-bottom: 1px solid var(--cup-color-border);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  .cup-mg___weekday {
+    padding: var(--cup-space-xs) 0;
+    text-align: center;
+    font-size: var(--cup-font-size-xs);
+    font-weight: var(--cup-font-weight-medium);
+    color: var(--cup-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* Scrollable calendar body */
+  .cup-mg___body {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Week row */
+  .cup-mg___week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    flex: 1;
+    min-height: 80px;
+    border-bottom: 1px solid var(--cup-color-border);
+  }
+
+  .cup-mg___week:last-child {
+    border-bottom: none;
+  }
+
+  /* Day cell */
+  .cup-mg___cell {
+    border-right: 1px solid var(--cup-color-border);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    min-height: 80px;
+    background: var(--cup-color-background);
+    transition: background var(--cup-transition-fast);
+  }
+
+  .cup-mg___cell:last-child {
+    border-right: none;
+  }
+
+  .cup-mg___cell--today {
+    background: color-mix(in srgb, var(--cup-color-primary) 5%, var(--cup-color-background));
+  }
+
+  .cup-mg___cell--other {
+    background: color-mix(in srgb, var(--cup-color-secondary) 6%, var(--cup-color-background));
+  }
+
+  .cup-mg___cell--other .cup-mg___day-num {
+    opacity: 0.35;
+  }
+
+  /* Day number button (transparent, just the number) */
+  .cup-mg___day-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .cup-mg___day-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: var(--cup-font-size-sm);
+    font-weight: var(--cup-font-weight-medium);
+    color: var(--cup-color-on-surface);
+    transition: background var(--cup-transition-fast);
+  }
+
+  .cup-mg___day-btn:hover .cup-mg___day-num {
+    background: color-mix(in srgb, var(--cup-color-primary) 12%, transparent);
+    color: var(--cup-color-primary);
+  }
+
+  .cup-mg___day-num--today {
+    background: var(--cup-color-primary) !important;
+    color: var(--cup-color-on-primary) !important;
+  }
+
+  /* Event pills inside day cells */
+  .cup-mg___events {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 2px;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  .cup-mg___pill {
+    display: block;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 11px;
+    font-weight: var(--cup-font-weight-medium);
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    background: var(--cup-event-bg, var(--cup-color-primary));
+    color: #fff;
+    transition: filter var(--cup-transition-fast);
+  }
+
+  .cup-mg___pill:hover { filter: brightness(1.15); }
+
+  /* Tone modifiers — inherit from cup-cal-event color tokens */
+  .cup-mg___pill--easy    { background: var(--cup-event-bg, var(--cup-color-success, #22c55e)); }
+  .cup-mg___pill--hard    { background: var(--cup-event-bg, var(--cup-color-error,   #ef4444)); }
+  .cup-mg___pill--blocker { background: var(--cup-event-bg, var(--cup-color-secondary)); opacity: 0.8; }
+
+  .cup-mg___more {
+    font-size: 10px;
+    color: var(--cup-color-secondary);
+    padding: 0 4px;
+    cursor: default;
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     cup-calendar — Year Grid  (.cup-yg)
+  ════════════════════════════════════════════════════════════════ */
+
+  .cup-calendar-host--yg {
+    display: block;
+    overflow: auto;
+    height: 100%;
+  }
+
+  .cup-yg {
+    padding: var(--cup-space-md);
+  }
+
+  /* 4 columns on wide, 3 on medium, 2 on narrow, 1 on mobile */
+  .cup-yg___grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--cup-space-lg);
+  }
+
+  @media (max-width: 900px) {
+    .cup-yg___grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  @media (max-width: 620px) {
+    .cup-yg___grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 380px) {
+    .cup-yg___grid { grid-template-columns: 1fr; }
+  }
+
+  /* Mini month card */
+  .cup-yg___month {
+    background: var(--cup-color-surface);
+    border-radius: var(--cup-radius-md);
+    border: 1px solid var(--cup-color-border);
+    padding: var(--cup-space-sm);
+    overflow: hidden;
+  }
+
+  .cup-yg___month--current {
+    border-color: var(--cup-color-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--cup-color-primary) 25%, transparent);
+  }
+
+  .cup-yg___month-name {
+    font-size: var(--cup-font-size-sm);
+    font-weight: var(--cup-font-weight-semibold);
+    color: var(--cup-color-on-surface);
+    margin-bottom: var(--cup-space-xs);
+    padding: 0 2px;
+  }
+
+  .cup-yg___month--current .cup-yg___month-name {
+    color: var(--cup-color-primary);
+  }
+
+  /* Day-of-week mini header */
+  .cup-yg___weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 2px;
+  }
+
+  .cup-yg___weekdays span {
+    text-align: center;
+    font-size: 9px;
+    color: var(--cup-color-secondary);
+    font-weight: var(--cup-font-weight-medium);
+  }
+
+  /* Week row */
+  .cup-yg___week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  /* Individual day button */
+  .cup-yg___day {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 1px;
+    border-radius: 50%;
+    font-size: 10px;
+    color: var(--cup-color-on-surface);
+    cursor: pointer;
+    aspect-ratio: 1;
+    transition: background var(--cup-transition-fast), color var(--cup-transition-fast);
+    line-height: 1;
+  }
+
+  .cup-yg___day:hover {
+    background: color-mix(in srgb, var(--cup-color-primary) 15%, transparent);
+    color: var(--cup-color-primary);
+  }
+
+  .cup-yg___day--other {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .cup-yg___day--today {
+    background: var(--cup-color-primary) !important;
+    color: var(--cup-color-on-primary) !important;
+    font-weight: var(--cup-font-weight-bold);
+  }
+
+  /* Heat: event dot indicator via background intensity */
+  .cup-yg___day--ev1 {
+    background: color-mix(in srgb, var(--cup-color-primary) 20%, transparent);
+  }
+
+  .cup-yg___day--ev2 {
+    background: color-mix(in srgb, var(--cup-color-primary) 40%, transparent);
+  }
+
+  .cup-yg___day--ev3 {
+    background: color-mix(in srgb, var(--cup-color-primary) 65%, transparent);
+    color: var(--cup-color-on-primary);
+  }
+}

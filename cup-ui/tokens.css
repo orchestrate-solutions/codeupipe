@@ -1,0 +1,86 @@
+/* cup-ui/tokens.css — Design Tokens
+ * All visual decisions as CSS custom properties.
+ * Override at any scope to customize. */
+
+@layer cup-tokens {
+:root {
+  /* ── Color: Semantic, not decorative ── */
+  --cup-color-surface:      #1a1a2e;
+  --cup-color-on-surface:   #e0e0e0;
+  --cup-color-surface-alt:  #16213e;
+  --cup-color-primary:      #4fc3f7;
+  --cup-color-on-primary:   #000000;
+  --cup-color-secondary:    #b0bec5;
+  --cup-color-error:        #ef5350;
+  --cup-color-on-error:     #ffffff;
+  --cup-color-success:      #66bb6a;
+  --cup-color-warning:      #ffa726;
+  --cup-color-info:         #29b6f6;
+  --cup-color-border:       #333333;
+  --cup-color-focus:        #4fc3f7;
+  --cup-color-disabled:     #555555;
+  --cup-color-on-disabled:  #999999;
+  --cup-color-placeholder:  #888888;
+
+  /* ── Spacing: Consistent rhythm ── */
+  --cup-space-2xs: 0.125rem;  /*  2px */
+  --cup-space-xs:  0.25rem;   /*  4px */
+  --cup-space-sm:  0.5rem;    /*  8px */
+  --cup-space-md:  1rem;      /* 16px */
+  --cup-space-lg:  1.5rem;    /* 24px */
+  --cup-space-xl:  2rem;      /* 32px */
+  --cup-space-2xl: 3rem;      /* 48px */
+
+  /* ── Typography ── */
+  --cup-font-family:       system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --cup-font-family-mono:  ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  --cup-font-size-xs:   0.75rem;    /* 12px */
+  --cup-font-size-sm:   0.875rem;   /* 14px */
+  --cup-font-size-base: 1rem;       /* 16px */
+  --cup-font-size-lg:   1.25rem;    /* 20px */
+  --cup-font-size-xl:   1.5rem;     /* 24px */
+  --cup-font-size-2xl:  2rem;       /* 32px */
+  --cup-font-weight-normal: 400;
+  --cup-font-weight-medium: 500;
+  --cup-font-weight-bold:   700;
+  --cup-line-height:        1.5;
+  --cup-line-height-tight:  1.25;
+
+  /* ── Shape ── */
+  --cup-radius-sm:   4px;
+  --cup-radius-md:   8px;
+  --cup-radius-lg:   12px;
+  --cup-radius-full: 9999px;
+
+  /* ── Motion ── */
+  --cup-transition-fast:   150ms ease;
+  --cup-transition-normal: 250ms ease;
+  --cup-transition-slow:   400ms ease;
+  --cup-easing-spring:     cubic-bezier(.34, 1.56, .64, 1);
+  --cup-easing-bounce:     cubic-bezier(.34, .66, .66, 1);
+  --cup-easing-smooth:     cubic-bezier(.4, 0, .2, 1);
+
+  /* ── Breakpoints (used via @media) ── */
+  --cup-bp-sm:  640px;
+  --cup-bp-md:  768px;
+  --cup-bp-lg: 1024px;
+  --cup-bp-xl: 1280px;
+
+  /* ── Elevation ── */
+  --cup-shadow-color: 0 0% 0%;
+  --cup-shadow-sm:  0  1px  2px hsl(var(--cup-shadow-color) / 0.3);
+  --cup-shadow-md:  0  4px  8px hsl(var(--cup-shadow-color) / 0.3);
+  --cup-shadow-lg:  0  8px 24px hsl(var(--cup-shadow-color) / 0.3);
+  --cup-shadow-xl:  0 16px 48px hsl(var(--cup-shadow-color) / 0.4);
+
+  /* ── Touch Target ── */
+  --cup-touch-min: 44px;
+
+  /* ── Z-Index Scale ── */
+  --cup-z-dropdown: 100;
+  --cup-z-sticky:   200;
+  --cup-z-overlay:  300;
+  --cup-z-modal:    400;
+  --cup-z-toast:    500;
+}
+} /* end @layer cup-tokens */

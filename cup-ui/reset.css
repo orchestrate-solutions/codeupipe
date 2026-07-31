@@ -1,0 +1,98 @@
+/* cup-ui/reset.css — Minimal Reset
+ * Opinionated defaults for consistent cross-browser rendering.
+ * Does not fight the platform — just normalizes the gaps. */
+
+@layer cup-reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    color-scheme: dark light;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: var(--cup-font-family);
+    font-size: var(--cup-font-size-base);
+    line-height: var(--cup-line-height);
+    color: var(--cup-color-on-surface);
+    background-color: var(--cup-color-surface);
+  }
+
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  button {
+    cursor: pointer;
+    border: none;
+    background: none;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  ul,
+  ol {
+    list-style: none;
+  }
+
+  table {
+    border-collapse: collapse;
+    border-spacing: 0;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+
+  fieldset {
+    border: none;
+  }
+
+  /* Remove default summary marker */
+  summary {
+    cursor: pointer;
+  }
+
+  /* Hidden but accessible */
+  .cup-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}

@@ -1,0 +1,26 @@
+/* cup-ui/themes/dark.css — Dark Theme (Default)
+ * These values match the tokens.css defaults.
+ * Explicit file for clarity and for selective loading. */
+
+@layer cup-theme {
+  :root,
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --cup-color-surface:      #1a1a2e;
+    --cup-color-on-surface:   #e0e0e0;
+    --cup-color-surface-alt:  #16213e;
+    --cup-color-primary:      #4fc3f7;
+    --cup-color-on-primary:   #000000;
+    --cup-color-secondary:    #b0bec5;
+    --cup-color-error:        #ef5350;
+    --cup-color-on-error:     #ffffff;
+    --cup-color-success:      #66bb6a;
+    --cup-color-warning:      #ffa726;
+    --cup-color-info:         #29b6f6;
+    --cup-color-border:       #333333;
+    --cup-color-focus:        #4fc3f7;
+    --cup-color-disabled:     #555555;
+    --cup-color-on-disabled:  #999999;
+    --cup-color-placeholder:  #888888;
+  }
+}

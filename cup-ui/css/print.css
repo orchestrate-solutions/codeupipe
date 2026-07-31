@@ -1,0 +1,81 @@
+/* cup-ui/css/print.css — Print-optimized styles
+ * Ensures readable, ink-friendly output when pages are printed. */
+
+@layer cup-override {
+  @media print {
+    @page {
+      margin: 2cm;
+      size: A4;
+    }
+
+    /* ── Hide interactive-only elements ── */
+    .cup-shell___header,
+    .cup-shell___sidebar,
+    .cup-shell___footer,
+    .cup-shell___menu-btn,
+    cup-toggle,
+    cup-toast,
+    cup-powered-by,
+    .cup-skip-link,
+    button,
+    [role="button"] {
+      display: none !important;
+    }
+
+    /* ── Full-width content ── */
+    .cup-shell___main,
+    .cup-shell {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ── Readable typography ── */
+    body {
+      font-size: 12pt;
+      line-height: 1.5;
+      color: #000;
+      background: #fff;
+    }
+
+    /* ── Show link URLs ── */
+    a[href]::after {
+      content: " (" attr(href) ")";
+      font-size: 0.8em;
+      color: #555;
+    }
+
+    a[href^="#"]::after,
+    a[href^="javascript:"]::after {
+      content: "";
+    }
+
+    /* ── Prevent orphans/widows ── */
+    h1, h2, h3, h4 {
+      page-break-after: avoid;
+      orphans: 3;
+      widows: 3;
+    }
+
+    /* ── Prevent element splits ── */
+    pre, blockquote, table, figure {
+      page-break-inside: avoid;
+    }
+
+    /* ── Remove shadows and decorations ── */
+    * {
+      box-shadow: none !important;
+      text-shadow: none !important;
+    }
+
+    /* ── Code readability ── */
+    pre, code {
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      -webkit-hyphens: auto;
+      hyphens: auto;
+    }
+  }
+}

@@ -1,0 +1,438 @@
+/* cup-ui/css/prose.css — Prose Content Styles
+ * Typographic styles for markdown-generated HTML.
+ * Wrap any compiled markdown in <div class="cup-prose"> and
+ * every element gets cup-ui token-based styling automatically.
+ *
+ * Headings, paragraphs, lists, tables, blockquotes, code,
+ * horizontal rules, links, images — all handled.
+ *
+ * Does NOT require JavaScript. Pure CSS. SEO-friendly. */
+
+@layer cup-component {
+
+  /* ── Container ── */
+  .cup-prose {
+    font-family: var(--cup-font-family);
+    font-size: var(--cup-font-size-base);
+    line-height: var(--cup-line-height);
+    color: var(--cup-color-on-surface);
+    max-width: 72ch;
+    margin: 0 auto;
+  }
+
+  .cup-prose--wide {
+    max-width: 100%;
+  }
+
+  /* ── Vertical Rhythm ── */
+  .cup-prose > * + * {
+    margin-top: var(--cup-space-lg);
+  }
+
+  .cup-prose > h1 + *,
+  .cup-prose > h2 + *,
+  .cup-prose > h3 + *,
+  .cup-prose > h4 + * {
+    margin-top: var(--cup-space-md);
+  }
+
+  /* ── Headings ── */
+  .cup-prose h1 {
+    font-size: var(--cup-font-size-2xl);
+    font-weight: var(--cup-font-weight-bold);
+    line-height: var(--cup-line-height-tight);
+    letter-spacing: -0.025em;
+    color: var(--cup-color-on-surface);
+  }
+
+  .cup-prose h2 {
+    font-size: var(--cup-font-size-xl);
+    font-weight: var(--cup-font-weight-bold);
+    line-height: var(--cup-line-height-tight);
+    letter-spacing: -0.02em;
+    color: var(--cup-color-on-surface);
+    padding-top: var(--cup-space-md);
+    border-top: 1px solid var(--cup-color-border);
+  }
+
+  .cup-prose h2:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .cup-prose h3 {
+    font-size: var(--cup-font-size-lg);
+    font-weight: var(--cup-font-weight-medium);
+    line-height: var(--cup-line-height-tight);
+    color: var(--cup-color-on-surface);
+  }
+
+  .cup-prose h4 {
+    font-size: var(--cup-font-size-base);
+    font-weight: var(--cup-font-weight-medium);
+    color: var(--cup-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Paragraphs ── */
+  .cup-prose p {
+    color: var(--cup-color-secondary);
+    line-height: var(--cup-line-height);
+  }
+
+  .cup-prose p strong {
+    color: var(--cup-color-on-surface);
+    font-weight: var(--cup-font-weight-medium);
+  }
+
+  .cup-prose p em {
+    font-style: italic;
+  }
+
+  /* ── Links ── */
+  .cup-prose a {
+    color: var(--cup-color-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+    transition: color var(--cup-transition-fast);
+  }
+
+  .cup-prose a:hover {
+    color: var(--cup-color-on-surface);
+  }
+
+  /* ── Lists ── */
+  .cup-prose ul,
+  .cup-prose ol {
+    padding-left: var(--cup-space-lg);
+    color: var(--cup-color-secondary);
+  }
+
+  .cup-prose ul {
+    list-style-type: disc;
+  }
+
+  .cup-prose ol {
+    list-style-type: decimal;
+  }
+
+  .cup-prose li + li {
+    margin-top: var(--cup-space-xs);
+  }
+
+  .cup-prose li strong {
+    color: var(--cup-color-on-surface);
+  }
+
+  /* ── Blockquote / Callout ── */
+  .cup-prose blockquote {
+    border-left: 3px solid var(--cup-color-primary);
+    padding: var(--cup-space-md) var(--cup-space-lg);
+    background: var(--cup-color-surface-alt);
+    border-radius: 0 var(--cup-radius-sm) var(--cup-radius-sm) 0;
+    color: var(--cup-color-secondary);
+    font-style: italic;
+  }
+
+  .cup-prose blockquote p {
+    margin: 0;
+  }
+
+  .cup-prose blockquote strong {
+    color: var(--cup-color-on-surface);
+    font-style: normal;
+  }
+
+  /* ── Code ── */
+  .cup-prose code {
+    font-family: var(--cup-font-family-mono);
+    font-size: 0.875em;
+    background: var(--cup-color-surface-alt);
+    padding: 0.15em 0.4em;
+    border-radius: var(--cup-radius-sm);
+    color: var(--cup-color-primary);
+  }
+
+  .cup-prose pre {
+    background: var(--cup-color-surface-alt);
+    border: 1px solid var(--cup-color-border);
+    border-radius: var(--cup-radius-md);
+    padding: var(--cup-space-md) var(--cup-space-lg);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .cup-prose pre code {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    font-size: var(--cup-font-size-sm);
+    color: var(--cup-color-on-surface);
+  }
+
+  /* ── Table ── */
+  .cup-prose table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--cup-font-size-sm);
+  }
+
+  .cup-prose thead {
+    border-bottom: 2px solid var(--cup-color-border);
+  }
+
+  .cup-prose th {
+    text-align: left;
+    padding: var(--cup-space-sm) var(--cup-space-md);
+    font-weight: var(--cup-font-weight-medium);
+    color: var(--cup-color-on-surface);
+    white-space: nowrap;
+  }
+
+  .cup-prose td {
+    padding: var(--cup-space-sm) var(--cup-space-md);
+    border-bottom: 1px solid var(--cup-color-border);
+    color: var(--cup-color-secondary);
+  }
+
+  .cup-prose tbody tr:hover {
+    background: var(--cup-color-surface-alt);
+  }
+
+  /* ── Horizontal Rule ── */
+  .cup-prose hr {
+    border: none;
+    border-top: 1px solid var(--cup-color-border);
+    margin: var(--cup-space-2xl) 0;
+  }
+
+  /* ── Images ── */
+  .cup-prose img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--cup-radius-md);
+  }
+
+  .cup-prose figure {
+    text-align: center;
+  }
+
+  .cup-prose figcaption {
+    font-size: var(--cup-font-size-sm);
+    color: var(--cup-color-secondary);
+    margin-top: var(--cup-space-sm);
+  }
+
+  /* ── Details / FAQ ── */
+  .cup-prose details {
+    border: 1px solid var(--cup-color-border);
+    border-radius: var(--cup-radius-md);
+    overflow: hidden;
+  }
+
+  .cup-prose details + details {
+    margin-top: -1px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  .cup-prose details:has(+ details) {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .cup-prose details summary {
+    padding: var(--cup-space-md) var(--cup-space-lg);
+    font-weight: var(--cup-font-weight-medium);
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background-color var(--cup-transition-fast);
+    color: var(--cup-color-on-surface);
+  }
+
+  .cup-prose details summary:hover {
+    background-color: var(--cup-color-surface-alt);
+  }
+
+  .cup-prose details summary::after {
+    content: '+';
+    font-size: var(--cup-font-size-lg);
+    color: var(--cup-color-primary);
+    transition: transform var(--cup-transition-fast);
+    flex-shrink: 0;
+    margin-left: var(--cup-space-md);
+  }
+
+  .cup-prose details[open] > summary::after {
+    content: '−';
+  }
+
+  .cup-prose details .cup-details-body {
+    padding: var(--cup-space-md) var(--cup-space-lg);
+    border-top: 1px solid var(--cup-color-border);
+    color: var(--cup-color-secondary);
+  }
+
+  /* ── Menu / Pricing Cards ── */
+  .cup-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--cup-space-lg);
+  }
+
+  .cup-menu-card {
+    padding: var(--cup-space-lg);
+    border-radius: var(--cup-radius-md);
+    border: 1px solid var(--cup-color-border);
+    background: var(--cup-color-surface-alt);
+    display: flex;
+    flex-direction: column;
+    transition: border-color var(--cup-transition-fast),
+                transform var(--cup-transition-fast);
+  }
+
+  .cup-menu-card:hover {
+    border-color: var(--cup-color-primary);
+    transform: translateY(-2px);
+  }
+
+  .cup-menu-card--featured {
+    border-color: var(--cup-color-primary);
+  }
+
+  .cup-menu-card___badge {
+    display: inline-block;
+    padding: 0.1rem 0.6rem;
+    background: var(--cup-color-primary);
+    color: var(--cup-color-on-primary);
+    font-size: var(--cup-font-size-xs);
+    font-weight: var(--cup-font-weight-bold);
+    border-radius: var(--cup-radius-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--cup-space-sm);
+    align-self: flex-start;
+  }
+
+  .cup-menu-card___header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--cup-space-md);
+    flex-wrap: wrap;
+    margin-bottom: var(--cup-space-sm);
+  }
+
+  .cup-menu-card___name {
+    font-size: var(--cup-font-size-lg);
+    font-weight: var(--cup-font-weight-bold);
+    color: var(--cup-color-on-surface);
+    margin: 0;
+  }
+
+  .cup-menu-card___price {
+    font-size: var(--cup-font-size-sm);
+    color: var(--cup-color-secondary);
+    white-space: nowrap;
+  }
+
+  .cup-menu-card___price strong {
+    font-size: var(--cup-font-size-lg);
+    color: var(--cup-color-primary);
+    font-weight: var(--cup-font-weight-bold);
+  }
+
+  .cup-menu-card___desc {
+    font-size: var(--cup-font-size-sm);
+    color: var(--cup-color-secondary);
+    line-height: var(--cup-line-height);
+    margin-bottom: var(--cup-space-md);
+  }
+
+  .cup-menu-card___includes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cup-space-xs);
+    flex-grow: 1;
+    margin-bottom: var(--cup-space-md);
+    padding: 0;
+    list-style: none;
+  }
+
+  .cup-menu-card___includes li {
+    font-size: var(--cup-font-size-sm);
+    color: var(--cup-color-secondary);
+    padding-left: 1.2rem;
+    position: relative;
+  }
+
+  .cup-menu-card___includes li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--cup-color-primary);
+    font-weight: var(--cup-font-weight-bold);
+  }
+
+  .cup-menu-card___alt {
+    font-size: var(--cup-font-size-xs);
+    color: var(--cup-color-primary);
+    font-weight: var(--cup-font-weight-medium);
+  }
+
+  .cup-menu-card___compare {
+    font-size: var(--cup-font-size-xs);
+    color: var(--cup-color-placeholder);
+    padding-top: var(--cup-space-sm);
+    border-top: 1px solid var(--cup-color-border);
+    font-style: italic;
+    margin-top: auto;
+  }
+
+  /* ── Section Layout ── */
+  .cup-section {
+    padding: var(--cup-space-2xl) 0;
+  }
+
+  .cup-section--alt {
+    background: var(--cup-color-surface-alt);
+  }
+
+  .cup-section___heading {
+    font-size: var(--cup-font-size-xl);
+    font-weight: var(--cup-font-weight-bold);
+    margin-bottom: var(--cup-space-sm);
+    color: var(--cup-color-on-surface);
+  }
+
+  .cup-section___sub {
+    font-size: var(--cup-font-size-base);
+    color: var(--cup-color-secondary);
+    max-width: 580px;
+    margin-bottom: var(--cup-space-xl);
+    line-height: var(--cup-line-height);
+  }
+
+  .cup-container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 var(--cup-space-xl);
+  }
+
+  .cup-container--narrow {
+    max-width: 720px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .cup-menu-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+} /* end @layer cup-component */

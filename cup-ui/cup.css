@@ -1,0 +1,18 @@
+/* cup-ui/cup.css — Single Import
+ * Includes all layers in correct cascade order.
+ * Just add: <link rel="stylesheet" href="cup-ui/cup.css"> */
+
+@layer cup-reset, cup-tokens, cup-nano, cup-micro, cup-component, cup-motion, cup-theme, cup-override;
+
+@import './reset.css';
+@import './tokens.css';
+@import './a11y.css';
+@import './css/nano.css';
+@import './css/micro.css';
+@import './css/components.css';
+@import './css/prose.css';
+@import './css/motion.css';
+@import './css/responsive.css';
+@import './css/print.css';
+@import './themes/dark.css';
+@import './themes/light.css';

@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>codeupipe — Immutable pipelines for every runtime</title>
+  <meta name="description" content="Codeupipe (CUP) — Payload, Filter, Pipeline, Valve, Tap, Hook, State. Language-agnostic paradigm. Zero dependencies. Same shape in Python, TypeScript, Rust, Go, C#, Kotlin." />
+  <link rel="stylesheet" href="./cup-ui/cup.css" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="module" src="./cup-ui/cup.js"></script>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">orchestrate.solutions / cup</p>
+    <h1 class="hero-title">codeu<span class="hero-accent">pipe</span></h1>
+    <p class="hero-tagline">
+      A universal architectural paradigm for clean, statically inspectable,
+      trivially testable software — on the server, in the browser, on device,
+      in your data pipeline.
+    </p>
+    <p class="hero-sub">
+      One mental model: <code>Payload → Filter → Pipeline</code>. Seven primitives.
+      Six runtimes. Zero dependencies.
+    </p>
+
+    <div class="hero-badges">
+      <cup-badge variant="success" label="Live runtime in your browser"></cup-badge>
+      <cup-badge variant="info" label="PolyForm-NC"></cup-badge>
+      <cup-badge variant="default" label="v0.1.0"></cup-badge>
+    </div>
+
+    <nav class="hero-nav" aria-label="Section navigation">
+      <cup-chip label="Manifesto" data-jump="#manifesto"></cup-chip>
+      <cup-chip label="Overview" data-jump="#overview"></cup-chip>
+      <cup-chip label="7 Primitives" data-jump="#primitives"></cup-chip>
+      <cup-chip label="Live Demos" data-jump="#demos"></cup-chip>
+      <cup-chip label="Runtimes" data-jump="#runtimes"></cup-chip>
+      <cup-chip label="Agent Brief" data-jump-href="./v1/agents.md"></cup-chip>
+    </nav>
+
+    <div class="theme-row">
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle theme">
+        <span class="icon" aria-hidden="true">☾</span>
+        <span class="label">Dark</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+
+<!-- Agent Context -->
+<section id="agent-context">
+  <h2>Feeding This to an Agent?</h2>
+  <p>
+    Every artifact on this site is versioned under <code>/v1/</code> and follows the
+    <a href="https://agents.md" target="_blank" rel="noopener">agents.md</a> convention.
+    Point your agent at the entrypoint — it lists the specs so the agent fetches only what it needs.
+  </p>
+
+  <div class="agent-context-callout" role="note" aria-label="Agent context">
+    <div class="agent-context-head">
+      <span aria-hidden="true">🤖</span>
+      <strong>Stable v1 surface</strong>
+    </div>
+    <ul class="agent-context-links">
+      <li><a href="./v1/agents.md" target="_blank" rel="noopener"><code>/v1/agents.md</code> — entrypoint (agents.md convention)</a></li>
+      <li><a href="./v1/context.json" target="_blank" rel="noopener"><code>/v1/context.json</code> — machine-readable manifest</a></li>
+      <li><a href="./v1/docs/" target="_blank" rel="noopener"><code>/v1/docs/&lt;primitive&gt;.md</code> — per-primitive specs (fetch on demand)</a></li>
+    </ul>
+  </div>
+</section>
+
+<cup-divider></cup-divider>
+
+<!-- Manifesto -->
+<section id="manifesto">
+  <h2>The Manifesto</h2>
+  <p>
+    Complexity in software arises when concerns are tangled. Codeupipe protects
+    codebases from architectural rot by decoupling <em>computation</em>,
+    <em>routing</em>, <em>telemetry</em>, and <em>non-blocking events</em> —
+    so any engineer, or any agent, can reason about system behavior effortlessly.
+  </p>
+
+  <div class="values">
+    <article class="value">
+      <cup-badge variant="success" label="I"></cup-badge>
+      <div class="value-row">
+        <span class="value-left">Immutable Data Flow</span>
+        <span class="value-over">over</span>
+        <span class="value-right">in-place mutation</span>
+      </div>
+    </article>
+    <article class="value">
+      <cup-badge variant="success" label="II"></cup-badge>
+      <div class="value-row">
+        <span class="value-left">Declarative Composition</span>
+        <span class="value-over">over</span>
+        <span class="value-right">procedural routing</span>
+      </div>
+    </article>
+    <article class="value">
+      <cup-badge variant="success" label="III"></cup-badge>
+      <div class="value-row">
+        <span class="value-left">Detached Concurrency</span>
+        <span class="value-over">over</span>
+        <span class="value-right">blocking side-effects</span>
+      </div>
+    </article>
+    <article class="value">
+      <cup-badge variant="success" label="IV"></cup-badge>
+      <div class="value-row">
+        <span class="value-left">Inspectable Blueprints</span>
+        <span class="value-over">over</span>
+        <span class="value-right">runtime black boxes</span>
+      </div>
+    </article>
+  </div>
+
+  <blockquote>
+    That is, while there is value in the items on the right,
+    <strong>we value the items on the left more</strong>.
+  </blockquote>
+  <p class="section-doc"><button type="button" class="doc-open" data-doc="./docs/manifesto.md" data-doc-title="View the official Manifesto"><span aria-hidden="true">👁</span> View the official Manifesto</button></p>
+</section>
+
+<cup-divider></cup-divider>
+
+<!-- Overview -->
+<section id="overview">
+  <h2>System Overview</h2>
+  <p>
+    CUP separates concerns across <strong>two operational planes</strong>. The
+    Synchronous Conveyor is your core transaction — fast, unblocked, deterministic.
+    The Detached Boundary is where instrumentation, events, and out-of-band work live.
+  </p>
+
+  <div class="grid-2">
+    <article class="card">
+      <div class="card-head">
+        <h3>Synchronous Conveyor</h3>
+        <cup-badge variant="info" label="core"></cup-badge>
+      </div>
+      <p class="mut">The core transaction moves down the belt.</p>
+      <ul class="prim-list">
+        <li><strong>Payload</strong> — the immutable envelope</li>
+        <li><strong>Filter</strong> — one Payload in, one Payload out</li>
+        <li><strong>Pipeline</strong> — the ordered blueprint</li>
+        <li><strong>Valve</strong> — conditional gate on a step</li>
+      </ul>
+    </article>
+    <article class="card">
+      <div class="card-head">
+        <h3>Detached Boundary</h3>
+        <cup-badge variant="warning" label="observation"></cup-badge>
+      </div>
+      <p class="mut">Observation and side effects — never blocks the belt.</p>
+      <ul class="prim-list">
+        <li><strong>Tap</strong> — read-only observer</li>
+        <li><strong>Hook</strong> — before / after / on_error lifecycle</li>
+        <li><strong>State</strong> — execution metadata (never Payload)</li>
+      </ul>
+    </article>
+  </div>
+
+  <details class="overview-details">
+    <summary><strong>See the blueprint</strong> — Fortune-100 checkout flow — all seven CUP primitives in one blueprint. <span class="mut">(click to expand · drag to pan · scroll to zoom)</span></summary>
+    <div class="overview-diagram">
+      <div class="panzoom-toolbar" role="toolbar" aria-label="Diagram zoom">
+        <button type="button" data-zoom="out" aria-label="Zoom out">−</button>
+        <button type="button" data-zoom="reset" aria-label="Reset zoom">⤾</button>
+        <button type="button" data-zoom="in" aria-label="Zoom in">+</button>
+      </div>
+      <div class="panzoom-viewport">
+    <div class="mermaid" id="overview-mermaid">
+flowchart TB
+    classDef payload fill:#eef,stroke:#66a,color:#123
+    classDef filter fill:#efe,stroke:#3a6,color:#123
+    classDef valve fill:#fed,stroke:#c80,color:#123
+    classDef hook fill:#fee,stroke:#c66,color:#123
+    classDef tap fill:#fef,stroke:#a6a,color:#123
+    classDef state fill:#eef,stroke:#66a,color:#123
+    classDef sink fill:#f5f5f5,stroke:#888,color:#123
+
+    START([Checkout request]):::payload
+
+    subgraph state_ledger["STATE — Execution Metadata Ledger"]
+        ST["trace_id · step_timings<br/>retry_counts · error_metrics"]:::state
+    end
+
+    subgraph pipeline["PIPELINE — Synchronous Conveyor Belt"]
+        direction TB
+        F0["Filter<br/>AuthenticateUser"]:::filter
+        F0b["Filter<br/>RateLimitCheck"]:::filter
+        V0{"Valve<br/>under rate limit?"}:::valve
+        F1["Filter<br/>ValidateCart"]:::filter
+        V1{"Valve<br/>cart not empty?"}:::valve
+        F2["Filter<br/>ApplyDiscounts"]:::filter
+        F3["Filter<br/>CalculateTax"]:::filter
+        F4["Filter<br/>CalculateShipping"]:::filter
+        F5["Filter<br/>ComputeGrandTotal"]:::filter
+        F6["Filter<br/>ScoreFraud"]:::filter
+        V2{"Valve<br/>fraud_score &lt; 0.7?"}:::valve
+        F7["Filter<br/>CheckCompliance"]:::filter
+        V3{"Valve<br/>compliance clear?"}:::valve
+        F8["Filter<br/>ReserveInventory"]:::filter
+        V4{"Valve<br/>inventory held?"}:::valve
+        F9["Filter<br/>TokenizePayment"]:::filter
+        HB(["Hook: before<br/>idempotency + span"]):::hook
+        F10["Filter<br/>ChargePayment"]:::filter
+        HA(["Hook: after<br/>close span"]):::hook
+        HE(["Hook: on_error<br/>retry x3 · circuit breaker · DLQ"]):::hook
+        F11["Filter<br/>PersistOrder"]:::filter
+        F12["Filter<br/>RouteFulfillment"]:::filter
+        F13["Filter<br/>RenderReceipt"]:::filter
+        DONE([Order confirmed]):::payload
+
+        F0 --> F0b --> V0
+        V0 -- true --> F1 --> V1
+        V0 -- false --> RL[/"429 rate limit"/]:::sink
+        V1 -- true --> F2 --> F3 --> F4 --> F5 --> F6 --> V2
+        V1 -- false --> REJ[/"reject empty cart"/]:::sink
+        V2 -- true --> F7 --> V3
+        V2 -- false --> HOLD[/"hold: fraud review"/]:::sink
+        V3 -- true --> F8 --> V4
+        V3 -- false --> KYC[/"hold: KYC review"/]:::sink
+        V4 -- true --> F9 --> HB --> F10
+        V4 -- false --> BO[/"back-order path"/]:::sink
+        F10 --> HA --> F11 --> F12 --> F13 --> DONE
+        F10 -. error .-> HE
+    end
+
+    START --> F0
+    HB <-. read/write .-> ST
+    HA <-. read/write .-> ST
+    HE <-. read/write .-> ST
+
+    F6 -. snapshot .-> T1[["Tap<br/>fraud audit log"]]:::tap
+    F11 -. snapshot .-> T2[["Tap<br/>OrderPlaced event"]]:::tap
+    F11 -. snapshot .-> T3[["Tap<br/>confirmation email"]]:::tap
+    F11 -. snapshot .-> T4[["Tap<br/>analytics DWH"]]:::tap
+    F11 -. snapshot .-> T5[["Tap<br/>loyalty points"]]:::tap
+
+    T1 --> Q[(Async queue)]:::sink
+    T2 --> Q
+    T3 --> Q
+    T4 --> Q
+    T5 --> Q
+    Q --> KAFKA[Event broker]:::sink
+    Q --> DWH[Warehouse]:::sink
+    Q --> EMAIL[Email / SMS]:::sink
+    </div>
+      </div>
+    <p class="mut" style="text-align:center;margin-top:.6em;">Fortune-100 checkout flow — all seven CUP primitives in one blueprint.</p>
+  </div>
+
+  </details>
+
+  <p class="section-doc"><button type="button" class="doc-open" data-doc="./docs/system-overview.md" data-doc-title="View the official System Overview"><span aria-hidden="true">👁</span> View the official System Overview</button></p>
+</section>
+
+<cup-divider></cup-divider>
+
+<!-- Primitives -->
+<section id="primitives">
+  <h2>The Seven Primitives</h2>
+  <p>Every CUP concept fits in one of these seven boxes. Click any card for the full contract.</p>
+
+  <div class="prim-grid">
+    <details class="prim">
+      <summary>
+        <span><strong>Payload</strong> <span class="mut">the envelope</span></span>
+        <cup-badge variant="info" label="T0"></cup-badge>
+      </summary>
+      <p><em>Immutable data container. Keyed. Every write returns a new Payload.</em></p>
+      <p><strong>Contract:</strong> <code>get(key)</code> → value or null-equivalent (never raises). <code>insert(key, v)</code> → new Payload; original unchanged.</p>
+      <p><strong>Invariant:</strong> A Filter never mutates its input Payload.</p>
+          <p class="prim-doc"><button type="button" class="doc-open" data-doc="./docs/payload.md" data-doc-title="View the official spec"><span aria-hidden="true">👁</span> View the official spec</button></p>
+    </details>
+
+    <details class="prim">
+      <summary>
+        <span><strong>Filter</strong> <span class="mut">the station</span></span>
+        <cup-badge variant="info" label="T0"></cup-badge>
+      </summary>
+      <p><em>Atomic unit of work. One method: <code>call(payload) → payload</code>.</em></p>
+      <p><strong>Contract:</strong> Pure-ish. Same input Payload → same output. One class per file, PascalCase class / snake_case filename.</p>
+      <p><strong>Invariant:</strong> A Filter always returns a Payload — never <code>null</code>, never omits.</p>
+    
+      <p class="prim-doc"><button type="button" class="doc-open" data-doc="./docs/filter.md" data-doc-title="View the official spec"><span aria-hidden="true">👁</span> View the official spec</button></p>
+    </details>
+
+    <details class="prim">
+      <summary>
+        <span><strong>Pipeline</strong> <span class="mut">the conveyor belt</span></span>
+        <cup-badge variant="info" label="T0"></cup-badge>
+      </summary>
+      <p><em>An ordered list of Filters. The Pipeline is <strong>data</strong>, not code.</em></p>
+      <p><strong>Contract:</strong> <code>run(payload)</code> threads the Payload through each step. Nesting legal — a Pipeline is a step.</p>
+      <p><strong>Invariant:</strong> Steps execute in declared order.</p>
+    
+      <p class="prim-doc"><button type="button" class="doc-open" data-doc="./docs/pipeline.md" data-doc-title="View the official spec"><span aria-hidden="true">👁</span> View the official spec</button></p>
+    </details>
+
+    <details class="prim">
+      <summary>
+        <span><strong>Valve</strong> <span class="mut">the diverter</span></span>
+        <cup-badge variant="info" label="T0"></cup-badge>
+      </summary>
+      <p><em>Conditional gate. Wraps a Filter with a pure predicate.</em></p>
+      <p><strong>Contract:</strong> Predicate <code>payload → boolean</code>. True → run. False → pass-through.</p>
+      <p><strong>Invariant:</strong> Branching lives in the Pipeline, never inside a Filter.</p>
+    
+      <p class="prim-doc"><button type="button" class="doc-open" data-doc="./docs/valve.md" data-doc-title="View the official spec"><span aria-hidden="true">👁</span> View the official spec</button></p>
+    </details>
+
+    <details class="prim">
+      <summary>
+        <span><strong>Tap</strong> <span class="mut">the camera</span></span>
+        <cup-badge variant="info" label="T0"></cup-badge>
+      </summary>
+      <p><em>Read-only observer. Sees the Payload. Returns nothing.</em></p>
+      <p><strong>Contract:</strong> <code>on_payload(payload) → void</code>. Cannot mutate. Async handoff for heavy I/O.</p>
+      <p><strong>Invariant:</strong> Removing all Taps yields identical output.</p>
+    
+      <p class="prim-doc"><button type="button" class="doc-open" data-doc="./docs/tap.md" data-doc-title="View the official spec"><span aria-hidden="true">👁</span> View the official spec</button></p>
+    </details>
+
+    <details class="prim">
+      <summary>
+        <span><strong>Hook</strong> <span class="mut">the safety system</span></span>
+        <cup-badge variant="info" label="T0"></cup-badge>
+      </summary>
+      <p><em>Lifecycle callbacks: <code>before</code>, <code>after</code>, <code>on_error</code>.</em></p>
+      <p><strong>Contract:</strong> Fires at Filter boundaries. <code>on_error</code> may return <code>retry | skip | propagate</code>.</p>
+      <p><strong>Invariant:</strong> A Hook that raises is a bug in the Hook.</p>
+    
+      <p class="prim-doc"><button type="button" class="doc-open" data-doc="./docs/hook.md" data-doc-title="View the official spec"><span aria-hidden="true">👁</span> View the official spec</button></p>
+    </details>
+
+    <details class="prim">
+      <summary>
+        <span><strong>State</strong> <span class="mut">the clipboard</span></span>
+        <cup-badge variant="info" label="T0"></cup-badge>
+      </summary>
+      <p><em>Execution metadata: step count, timings, errors, retries.</em></p>
+      <p><strong>Contract:</strong> Available to Hooks and Taps. <strong>Not visible to Filters.</strong> Never carries domain data.</p>
+      <p><strong>Invariant:</strong> Filters do not read or write State. Ever.</p>
+    
+      <p class="prim-doc"><button type="button" class="doc-open" data-doc="./docs/state.md" data-doc-title="View the official spec"><span aria-hidden="true">👁</span> View the official spec</button></p>
+    </details>
+  </div>
+</section>
+
+<cup-divider></cup-divider>
+
+<!-- Demos -->
+<section id="demos">
+  <h2>Live Demos</h2>
+  <p>Three tiny demos, no bundler, running the real runtime.</p>
+
+  <!-- Demo 1 -->
+  <h3>1 · Payload immutability</h3>
+  <p>Type into either field. The original Payload never changes. Every keystroke produces a fresh Payload.</p>
+  <div class="demo">
+    <div class="demo-inputs">
+      <div class="field"><label for="p1-key">Field to insert</label><cup-input id="p1-key" value="note"></cup-input></div>
+      <div class="field"><label for="p1-value">Value</label><cup-input id="p1-value" placeholder="type here…"></cup-input></div>
+    </div>
+    <div class="grid-2">
+      <div>
+        <h4>Original</h4>
+        <pre><code id="p1-original">{}</code></pre>
+      </div>
+      <div>
+        <h4>Derived</h4>
+        <pre><code id="p1-derived">{}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Demo 2 -->
+  <h3>2 · Composed pipeline</h3>
+  <p>Trim → Uppercase → WordCount. Toggle any step; re-run. The blueprint is data — the composition changes, the Filters don't.</p>
+  <div class="demo">
+    <div class="field"><label for="p2-input">Input text</label><cup-input id="p2-input" value="   hello codeupipe world   "></cup-input></div>
+    <div class="toggles">
+      <cup-checkbox id="p2-trim" label="Trim" checked></cup-checkbox>
+      <cup-checkbox id="p2-upper" label="Uppercase" checked></cup-checkbox>
+      <cup-checkbox id="p2-count" label="WordCount" checked></cup-checkbox>
+    </div>
+    <cup-button id="p2-run" variant="primary">Run pipeline</cup-button>
+    <div class="grid-2">
+      <div>
+        <h4>Result Payload</h4>
+        <pre><code id="p2-result">— not run yet —</code></pre>
+      </div>
+      <div>
+        <h4>State</h4>
+        <pre><code id="p2-state">— not run yet —</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Demo 3 -->
+  <h3>3 · Streaming</h3>
+  <p>Same Filters, chunked input. Watch each chunk flow. No framework magic — it's an async generator.</p>
+  <div class="demo">
+    <cup-button id="p3-run" variant="primary">Stream 5 chunks</cup-button>
+    <pre><code id="p3-log">— idle —</code></pre>
+  </div>
+</section>
+
+
+<!-- Runtimes -->
+<section id="runtimes">
+  <h2>Six Runtimes, One Shape</h2>
+  <p>
+    CUP is a paradigm, not a library. The same seven primitives live in every runtime;
+    only the surface syntax changes.
+  </p>
+
+  <div class="rt-grid">
+    <a class="rt" href="https://github.com/orchestrate-solutions/codeupipe/tree/main/codeupipe">
+      <div class="rt-head"><h4>Python</h4><cup-badge variant="success" label="canonical"></cup-badge></div>
+      <code>codeupipe/</code>
+      <p class="mut">data · ML · backend</p>
+    </a>
+    <a class="rt" href="https://github.com/orchestrate-solutions/codeupipe/tree/main/runtimes/ts">
+      <div class="rt-head"><h4>TypeScript</h4><cup-badge variant="info" label="npm"></cup-badge></div>
+      <code>@codeupipe/core</code>
+      <p class="mut">web · node · edge</p>
+    </a>
+    <a class="rt" href="https://github.com/orchestrate-solutions/codeupipe/tree/main/runtimes/rs">
+      <div class="rt-head"><h4>Rust</h4><cup-badge variant="warning" label="wasm"></cup-badge></div>
+      <code>runtimes/rs/</code>
+      <p class="mut">desktop · embedded · perf</p>
+    </a>
+    <a class="rt" href="https://github.com/orchestrate-solutions/codeupipe/tree/main/runtimes/go">
+      <div class="rt-head"><h4>Go</h4><cup-badge variant="info" label="module"></cup-badge></div>
+      <code>runtimes/go/</code>
+      <p class="mut">cloud · concurrent</p>
+    </a>
+    <a class="rt" href="https://github.com/orchestrate-solutions/codeupipe/tree/main/runtimes/cs">
+      <div class="rt-head"><h4>C#</h4><cup-badge variant="info" label=".net"></cup-badge></div>
+      <code>runtimes/cs/</code>
+      <p class="mut">Unity · sync-first</p>
+    </a>
+    <a class="rt" href="https://github.com/orchestrate-solutions/codeupipe/tree/main/runtimes/kt">
+      <div class="rt-head"><h4>Kotlin</h4><cup-badge variant="info" label="jvm"></cup-badge></div>
+      <code>runtimes/kt/</code>
+      <p class="mut">Android · multiplatform</p>
+    </a>
+  </div>
+
+  <h3>Same pipeline in three languages</h3>
+  <div class="grid-3">
+    <article class="card">
+      <h4>Python</h4>
+<pre><code>class Trim(Filter):
+    def call(self, p):
+        return p.insert(
+            "text", p.get("text").strip()
+        )
+
+pipe = (Pipeline()
+    .add_filter(Trim())
+    .add_filter(Upper()))
+out = pipe.run(payload)</code></pre>
+    </article>
+    <article class="card">
+      <h4>TypeScript</h4>
+<pre><code>const Trim = {
+  call: (p) => p.insert(
+    "text", p.get("text").trim()
+  ),
+};
+
+const pipe = new Pipeline()
+  .addFilter(Trim)
+  .addFilter(Upper);
+const out = await pipe.run(payload);</code></pre>
+    </article>
+    <article class="card">
+      <h4>Rust</h4>
+<pre><code>struct Trim;
+impl Filter for Trim {
+  fn call(&amp;self, p: Payload)
+      -&gt; Payload {
+    let t = p.get_str("text").trim();
+    p.insert("text", t)
+  }
+}
+let pipe = Pipeline::new()
+    .add_filter(Trim)
+    .add_filter(Upper);
+let out = pipe.run(payload)?;</code></pre>
+    </article>
+  </div>
+</section>
+
+<cup-divider></cup-divider>
+
+<!-- Get started -->
+<section id="get-started">
+  <h2>Get started</h2>
+  <div class="grid-2">
+    <article class="card">
+      <h3>Install</h3>
+<pre><code>pip install codeupipe
+# or
+npm install @codeupipe/core</code></pre>
+    </article>
+    <article class="card">
+      <h3>Working with agents?</h3>
+      <p>Point your AI at <a href="./agent.md"><code>./agent.md</code></a> — the language-agnostic brief with every contract, invariant, and anti-pattern in one file.</p>
+      <p>
+        <cup-button variant="primary" onclick="location.href='./agent.md'">Read Agent Brief</cup-button>
+      </p>
+    </article>
+  </div>
+  <p class="links">
+    <a href="https://github.com/orchestrate-solutions/codeupipe">GitHub</a> ·
+    <a href="./agent.md">Agent brief</a> ·
+    <a href="https://orchestrate.solutions">orchestrate.solutions</a>
+  </p>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="mut">© 2026 Orchestrate LLC · codeupipe · PolyForm Noncommercial 1.0.0 · <a href="./LICENSE" target="_blank" rel="noopener">LICENSE</a> · <a href="../COMMERCIAL-LICENSE.md" target="_blank" rel="noopener">Commercial &amp; Waivers</a></p>
+  </div>
+</footer>
+
+<script type="module" src="./app.js"></script>
+  <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
+  <script src="https://unpkg.com/marked@12.0.2/marked.min.js"></script>
+  <script src="https://unpkg.com/dompurify@3.1.6/dist/purify.min.js"></script>
+  <script src="https://unpkg.com/mermaid@10.9.1/dist/mermaid.min.js"></script>
+  <div id="doc-modal" class="doc-modal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="doc-modal-title">
+    <div class="doc-modal-backdrop" data-doc-close></div>
+    <div class="doc-modal-panel" role="document">
+      <header class="doc-modal-head">
+        <h2 id="doc-modal-title" class="doc-modal-title">Document</h2>
+        <div class="doc-modal-actions">
+          <a class="doc-modal-download" id="doc-modal-download" href="#" download>Download original</a>
+          <button type="button" class="doc-modal-close" data-doc-close aria-label="Close">×</button>
+        </div>
+      </header>
+      <div id="doc-modal-body" class="doc-modal-body">
+        <p class="doc-modal-loading">Loading…</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

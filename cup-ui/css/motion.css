@@ -1,0 +1,338 @@
+/* cup-ui/css/motion.css — Component Motion Layer
+ * Rich animations for all cup components.
+ * Included by default in cup.css. Respects prefers-reduced-motion via a11y.css. */
+
+/* @property must be top-level (not inside @layer) for angle interpolation */
+@property --cup-trace-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@layer cup-motion {
+
+  /* ── Easing Tokens ── */
+  :root {
+    --cup-easing-spring: cubic-bezier(.34, 1.56, .64, 1);
+    --cup-easing-bounce: cubic-bezier(.34, .66, .66, 1);
+    --cup-easing-smooth: cubic-bezier(.4, 0, .2, 1);
+  }
+
+  /* ── Toggle: spring thumb + scale feedback ── */
+  .cup-toggle___track {
+    transition: background-color 250ms var(--cup-easing-smooth);
+  }
+
+  .cup-toggle___thumb {
+    transition: transform 300ms var(--cup-easing-spring);
+  }
+
+  .cup-toggle:active .cup-toggle___thumb {
+    transform: scaleX(1.15);
+  }
+
+  .cup-toggle[aria-checked="true"]:active .cup-toggle___thumb {
+    transform: translateX(1.125rem) scaleX(1.15);
+  }
+
+  /* ── Card: hover lift ── */
+  .cup-card {
+    transition: transform var(--cup-transition-fast),
+                box-shadow var(--cup-transition-fast);
+  }
+
+  .cup-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--cup-shadow-md);
+  }
+
+  /* ── Modal: scale-in entrance + backdrop fade ── */
+  @keyframes cup-modal-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  @keyframes cup-modal-backdrop-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .cup-modal[open] {
+    animation: cup-modal-in 250ms var(--cup-easing-smooth) both;
+  }
+
+  .cup-modal[open]::backdrop {
+    animation: cup-modal-backdrop-in 200ms ease both;
+  }
+
+  /* ── Toast: slide-up entrance ── */
+  @keyframes cup-toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(1rem) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes cup-toast-out {
+    from {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-0.5rem) scale(0.95);
+    }
+  }
+
+  .cup-toast {
+    animation: cup-toast-in 300ms var(--cup-easing-smooth) both;
+  }
+
+  .cup-toast[data-dismissing] {
+    animation: cup-toast-out 200ms ease both;
+  }
+
+  /* ── Badge: pulse on update ── */
+  @keyframes cup-badge-pop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+
+  .cup-badge[data-updated] {
+    animation: cup-badge-pop 300ms var(--cup-easing-bounce);
+  }
+
+  /* ── Chip: dismiss animation ── */
+  @keyframes cup-chip-out {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+  }
+
+  .cup-chip___remove {
+    transition: color var(--cup-transition-fast),
+                background-color var(--cup-transition-fast);
+  }
+
+  .cup-chip[data-dismissing] {
+    animation: cup-chip-out 150ms ease both;
+  }
+
+  /* ── Data Table: row hover transition ── */
+  .cup-table td {
+    transition: background-color var(--cup-transition-fast);
+  }
+
+  /* ── Accordion: content reveal ── */
+  .cup-accordion___content {
+    animation: cup-fade-in 200ms ease both;
+  }
+
+  /* ── Tabs: panel crossfade ── */
+  .cup-tabs [role="tabpanel"]:not([hidden]) {
+    animation: cup-fade-in 200ms ease both;
+  }
+
+  /* ── Button: active press ── */
+  .cup-button:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  /* ── Checkbox / Radio: check pop ── */
+  @keyframes cup-check-pop {
+    0%   { transform: scale(0.8); }
+    50%  { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+
+  .cup-checkbox input[type="checkbox"]:checked,
+  .cup-radio-group input[type="radio"]:checked {
+    animation: cup-check-pop 200ms var(--cup-easing-bounce);
+  }
+
+  /* ── Input: focus glow ── */
+  .cup-input:focus-visible {
+    transition: border-color var(--cup-transition-fast),
+                box-shadow 200ms var(--cup-easing-smooth);
+  }
+
+  /* ── Error message: slide-in ── */
+  .cup-error {
+    animation: cup-slide-up 200ms ease both;
+  }
+
+  /* ── Navigation: active indicator ── */
+  .cup-nav a,
+  .cup-nav button {
+    position: relative;
+  }
+
+  /* ── Slider track/thumb ── */
+  .cup-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--cup-color-border);
+    border-radius: var(--cup-radius-full);
+    outline: none;
+    transition: background var(--cup-transition-fast);
+  }
+
+  .cup-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: var(--cup-radius-full);
+    background: var(--cup-color-primary);
+    cursor: pointer;
+    border: 2px solid var(--cup-color-surface);
+    box-shadow: var(--cup-shadow-sm);
+    transition: transform var(--cup-transition-fast),
+                box-shadow var(--cup-transition-fast);
+  }
+
+  .cup-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: var(--cup-radius-full);
+    background: var(--cup-color-primary);
+    cursor: pointer;
+    border: 2px solid var(--cup-color-surface);
+    box-shadow: var(--cup-shadow-sm);
+    transition: transform var(--cup-transition-fast),
+                box-shadow var(--cup-transition-fast);
+  }
+
+  .cup-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: var(--cup-shadow-md);
+  }
+
+  .cup-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: var(--cup-shadow-md);
+  }
+
+  .cup-slider::-webkit-slider-thumb:active {
+    transform: scale(1.1);
+  }
+
+  .cup-slider::-moz-range-thumb:active {
+    transform: scale(1.1);
+  }
+
+  .cup-slider:focus-visible {
+    outline: 2px solid var(--cup-color-focus);
+    outline-offset: 2px;
+  }
+
+  .cup-slider:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .cup-slider:disabled::-webkit-slider-thumb {
+    cursor: not-allowed;
+  }
+
+  .cup-slider:disabled::-moz-range-thumb {
+    cursor: not-allowed;
+  }
+
+  /* ── Trace: spinning border highlight ──
+   * A bold segment sweeps around the element's perimeter.
+   * Customise via:
+   *   --cup-trace-color  (default: primary)
+   *   --cup-trace-bg     (default: surface-alt)
+   *   --cup-trace-width  (default: 2px)
+   *   --cup-trace-speed  (default: 2s)
+   */
+  @keyframes cup-trace {
+    to { --cup-trace-angle: 360deg; }
+  }
+
+  [data-effect="trace"] {
+    --cup-trace-color: var(--cup-color-primary);
+    --cup-trace-bg: var(--cup-color-surface-alt);
+    --cup-trace-width: 2px;
+    --cup-trace-speed: 2s;
+    border: var(--cup-trace-width) solid transparent;
+    background:
+      linear-gradient(var(--cup-trace-bg), var(--cup-trace-bg)) padding-box,
+      conic-gradient(
+        from var(--cup-trace-angle),
+        transparent 0%,
+        transparent 60%,
+        var(--cup-trace-color) 78%,
+        var(--cup-trace-color) 82%,
+        transparent 100%
+      ) border-box;
+    animation: cup-trace var(--cup-trace-speed) linear infinite;
+  }
+
+  /* Thicker variant for stronger attention */
+  [data-effect="trace"][data-trace-bold] {
+    --cup-trace-width: 3px;
+  }
+
+  /* ── Enchant: Minecraft-style diagonal shimmer ──
+   * A translucent diagonal band sweeps across the element surface
+   * like an enchanted weapon glow.
+   * Customise via:
+   *   --cup-enchant-color  (default: #7b5ea7 — enchant purple)
+   *   --cup-enchant-speed  (default: 3s)
+   *   --cup-enchant-opacity (default: 0.25)
+   */
+  @keyframes cup-enchant {
+    0%   { background-position: 200% 200%; }
+    100% { background-position: -200% -200%; }
+  }
+
+  [data-effect="enchant"] {
+    --cup-enchant-color: #7b5ea7;
+    --cup-enchant-speed: 3s;
+    --cup-enchant-opacity: 0.25;
+    position: relative;
+    overflow: hidden;
+  }
+
+  [data-effect="enchant"]::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(
+        -55deg,
+        transparent 0%,
+        transparent 38%,
+        color-mix(in srgb, var(--cup-enchant-color) calc(var(--cup-enchant-opacity) * 100%), transparent) 42%,
+        color-mix(in srgb, var(--cup-enchant-color) calc(var(--cup-enchant-opacity) * 200%), transparent) 50%,
+        color-mix(in srgb, var(--cup-enchant-color) calc(var(--cup-enchant-opacity) * 100%), transparent) 58%,
+        transparent 62%,
+        transparent 100%
+      );
+    background-size: 300% 300%;
+    animation: cup-enchant var(--cup-enchant-speed) linear infinite;
+    mix-blend-mode: screen;
+    border-radius: inherit;
+  }
+}

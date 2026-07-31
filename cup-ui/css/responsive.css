@@ -1,0 +1,143 @@
+/* cup-ui/css/responsive.css — Responsive Utilities
+ * Breakpoints, fluid typography, sidebar collapse, touch targets.
+ * Mobile-first: base styles are mobile, breakpoints add desktop. */
+
+@layer cup-override {
+
+  /* ── Fluid Typography ── */
+  :root {
+    --cup-font-size-base: clamp(0.875rem, 0.825rem + 0.25vw, 1rem);
+    --cup-font-size-lg:   clamp(1.125rem, 1rem + 0.5vw, 1.25rem);
+    --cup-font-size-xl:   clamp(1.25rem,  1.1rem + 0.75vw, 1.5rem);
+    --cup-font-size-2xl:  clamp(1.5rem,   1.25rem + 1.25vw, 2rem);
+  }
+
+  /* ── Touch Target Enforcement (WCAG 2.5.8) ── */
+  .cup-button,
+  .cup-toggle,
+  .cup-toggle___track,
+  .cup-nav a,
+  .cup-nav button,
+  .cup-modal___close,
+  .cup-toast___close,
+  .cup-tabs [role="tab"],
+  .cup-accordion summary,
+  .cup-chip___remove,
+  .cup-checkbox,
+  .cup-radio-group label {
+    min-height: var(--cup-touch-min);
+    min-width: var(--cup-touch-min);
+  }
+
+  /* Checkbox/radio: ensure the touch zone covers the label+input pair */
+  .cup-checkbox input[type="checkbox"],
+  .cup-radio-group input[type="radio"] {
+    min-height: 1.125rem;
+    min-width: 1.125rem;
+  }
+
+  /* ── AppShell Responsive ── */
+
+  /* Mobile: single-column, sidebar hidden */
+  @media (max-width: 767px) {
+    .cup-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .cup-shell___sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: min(80vw, 20rem);
+      z-index: var(--cup-z-overlay);
+      transform: translateX(-100%);
+      transition: transform var(--cup-transition-normal);
+      box-shadow: var(--cup-shadow-xl);
+    }
+
+    .cup-shell___sidebar[data-open] {
+      transform: translateX(0);
+    }
+
+    /* Backdrop overlay when sidebar is open */
+    .cup-shell___sidebar[data-open]::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: -1;
+    }
+
+    /* Show hamburger button on mobile */
+    .cup-shell___menu-btn {
+      display: inline-flex;
+    }
+
+    .cup-shell___header {
+      gap: var(--cup-space-sm);
+      padding: var(--cup-space-sm) var(--cup-space-md);
+    }
+
+    .cup-shell___main {
+      padding: var(--cup-space-md);
+    }
+
+    .cup-shell___footer {
+      padding: var(--cup-space-sm) var(--cup-space-md);
+    }
+
+    /* Toast container: full-width on mobile */
+    .cup-toast-container {
+      left: var(--cup-space-sm);
+      right: var(--cup-space-sm);
+      bottom: var(--cup-space-sm);
+    }
+
+    .cup-toast {
+      max-width: none;
+    }
+
+    /* Token editor: single column on mobile */
+    .pg-token-grid {
+      grid-template-columns: 1fr;
+    }
+
+    /* Demo grid: single column */
+    .pg-demo-grid {
+      grid-template-columns: 1fr;
+    }
+
+    /* Preset grid: 2-column on mobile */
+    .pg-preset-grid {
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+  }
+
+  /* Hide hamburger on desktop */
+  .cup-shell___menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--cup-touch-min);
+    min-width: var(--cup-touch-min);
+    border: none;
+    background: none;
+    color: var(--cup-color-on-surface);
+    font-size: var(--cup-font-size-lg);
+    cursor: pointer;
+    border-radius: var(--cup-radius-sm);
+  }
+
+  .cup-shell___menu-btn:hover {
+    background-color: var(--cup-color-surface-alt);
+  }
+
+  /* ── Table Responsive ── */
+  @media (max-width: 639px) {
+    .cup-table {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+}
