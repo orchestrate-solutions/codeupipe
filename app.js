@@ -1,10 +1,9 @@
 // orchestrate.solutions/cup — live demo wiring.
 //
 // This file eats its own cooking: bootstrapping the page IS a CUP pipeline.
-// Each concern (theme toggle, primitive cards, demo wiring, doc modal, mermaid
-// rendering) is a named Filter with a `call(payload)` contract. The boot
-// Pipeline runs them once at load. The demo transformations (Trim, Upper,
-// WordCount) are the same Filter interface used inside the visible demos.
+// Every concern is a Filter *class* implementing `call(payload) → payload`.
+// The boot Pipeline runs them once at load. The demo transformations
+// (Trim, Upper, WordCount) are Filter classes reused inside the visible demos.
 //
 // Payload carries { doc, root } so every Filter reads the DOM through the
 // same handle instead of touching globals ad-hoc.
@@ -111,47 +110,54 @@ function installMermaidPanZoom() {
 }
 
 // ===========================================================================
-// Demo pipeline Filters — user-facing data transformations shown in the demos.
-// Each is the canonical CUP shape: { call: (payload) => payload }.
+// Demo Filters — user-facing data transformations shown in the demos.
+// Canonical CUP shape: one class, one responsibility, `call(payload) → payload`.
 // ===========================================================================
 
-const Trim = { call: (p) => p.insert("text", (p.get("text") ?? "").trim()) };
-const Upper = { call: (p) => p.insert("text", (p.get("text") ?? "").toUpperCase()) };
-const WordCount = {
-  call: (p) => {
+class Trim {
+  call(p) { return p.insert("text", (p.get("text") ?? "").trim()); }
+}
+
+class Upper {
+  call(p) { return p.insert("text", (p.get("text") ?? "").toUpperCase()); }
+}
+
+class WordCount {
+  call(p) {
     const text = p.get("text") ?? "";
     const words = text.length ? text.split(/\s+/).filter(Boolean) : [];
     return p.insert("word_count", words.length);
-  },
-};
+  }
+}
 
 // ===========================================================================
 // Boot Filters — each attaches DOM behavior once and returns the payload
-// unchanged. Together they form the boot Pipeline. Filters are pure w.r.t.
-// the payload; their side effects are event-listener wiring on the DOM.
+// unchanged. Together they form the boot Pipeline. Side effect: event-listener
+// wiring on the DOM. Payload contract: reads { doc, root }, returns payload
+// untouched.
 // ===========================================================================
 
-const AwaitCustomElements = {
+class AwaitCustomElements {
   async call(p) {
     await customElements.whenDefined("cup-input");
     await customElements.whenDefined("cup-checkbox");
     await customElements.whenDefined("cup-button");
     await customElements.whenDefined("cup-chip");
     return p;
-  },
-};
+  }
+}
 
-const RenderMermaid = {
+class RenderMermaid {
   call(p) {
     renderInlineMermaid();
     document.querySelectorAll("details.overview-details").forEach((d) => {
       d.addEventListener("toggle", () => { if (d.open) renderInlineMermaid(); });
     });
     return p;
-  },
-};
+  }
+}
 
-const BindThemeToggle = {
+class BindThemeToggle {
   call(p) {
     const root = p.get("root");
     const toggle = $("theme-toggle");
@@ -174,10 +180,10 @@ const BindThemeToggle = {
       applyTheme(next);
     });
     return p;
-  },
-};
+  }
+}
 
-const BindPrimitiveCards = {
+class BindPrimitiveCards {
   call(p) {
     const primCards = Array.from(document.querySelectorAll("details.prim"));
     const rowMates = (det) => {
@@ -199,10 +205,10 @@ const BindPrimitiveCards = {
       });
     });
     return p;
-  },
-};
+  }
+}
 
-const BindChipJumps = {
+class BindChipJumps {
   call(p) {
     document.querySelectorAll("cup-chip[data-jump]").forEach((chip) => {
       chip.addEventListener("click", () => {
@@ -217,10 +223,10 @@ const BindChipJumps = {
       });
     });
     return p;
-  },
-};
+  }
+}
 
-const BindDemo1 = {
+class BindDemo1 {
   call(p) {
     const originalP1 = new Payload({});
     const render = () => {
@@ -236,17 +242,18 @@ const BindDemo1 = {
     });
     render();
     return p;
-  },
-};
+  }
+}
 
-const BindDemo2 = {
+class BindDemo2 {
   call(p) {
     $("p2-run")?.addEventListener("click", async () => {
-      // Fresh Pipeline per run — Valve-like inclusion driven by checkboxes.
+      // Fresh Pipeline per run. Checkbox state is a Valve-like inclusion gate
+      // evaluated at build-time (honest — the blueprint reflects the choice).
       const pipe = new Pipeline().observe({ lineage: true, timing: true });
-      if (checkboxChecked($("p2-trim"))) pipe.addFilter(Trim, "Trim");
-      if (checkboxChecked($("p2-upper"))) pipe.addFilter(Upper, "Upper");
-      if (checkboxChecked($("p2-count"))) pipe.addFilter(WordCount, "WordCount");
+      if (checkboxChecked($("p2-trim"))) pipe.addFilter(new Trim(), "Trim");
+      if (checkboxChecked($("p2-upper"))) pipe.addFilter(new Upper(), "Upper");
+      if (checkboxChecked($("p2-count"))) pipe.addFilter(new WordCount(), "WordCount");
 
       const input = new Payload({ text: inputVal($("p2-input")) });
       const result = await pipe.run(input);
@@ -263,8 +270,8 @@ const BindDemo2 = {
       });
     });
     return p;
-  },
-};
+  }
+}
 
 async function* chunkSource() {
   const chunks = ["  hello ", "codeupipe ", " streaming ", "world ", " done  "];
@@ -274,12 +281,12 @@ async function* chunkSource() {
   }
 }
 
-const BindDemo3 = {
+class BindDemo3 {
   call(p) {
     $("p3-run")?.addEventListener("click", async () => {
       const log = $("p3-log");
       log.textContent = "";
-      const pipe = new Pipeline().addFilter(Trim).addFilter(Upper);
+      const pipe = new Pipeline().addFilter(new Trim()).addFilter(new Upper());
       let i = 0;
       for await (const chunk of pipe.stream(chunkSource())) {
         i += 1;
@@ -288,10 +295,10 @@ const BindDemo3 = {
       log.textContent += `\n\u2713 streamed ${i} chunks through pipeline`;
     });
     return p;
-  },
-};
+  }
+}
 
-const WireDocModal = {
+class WireDocModal {
   call(p) {
     const modal = document.getElementById("doc-modal");
     if (!modal) return p;
@@ -403,8 +410,8 @@ const WireDocModal = {
       if (e.key === "Escape" && !modal.hidden) closeModal();
     });
     return p;
-  },
-};
+  }
+}
 
 // ===========================================================================
 // Boot Pipeline — the blueprint. Reading this top-down tells you exactly
@@ -412,14 +419,14 @@ const WireDocModal = {
 // ===========================================================================
 
 const bootPipeline = new Pipeline()
-  .addFilter(AwaitCustomElements, "AwaitCustomElements")
-  .addFilter(RenderMermaid, "RenderMermaid")
-  .addFilter(BindThemeToggle, "BindThemeToggle")
-  .addFilter(BindPrimitiveCards, "BindPrimitiveCards")
-  .addFilter(BindChipJumps, "BindChipJumps")
-  .addFilter(BindDemo1, "BindDemo1")
-  .addFilter(BindDemo2, "BindDemo2")
-  .addFilter(BindDemo3, "BindDemo3")
-  .addFilter(WireDocModal, "WireDocModal");
+  .addFilter(new AwaitCustomElements(), "AwaitCustomElements")
+  .addFilter(new RenderMermaid(), "RenderMermaid")
+  .addFilter(new BindThemeToggle(), "BindThemeToggle")
+  .addFilter(new BindPrimitiveCards(), "BindPrimitiveCards")
+  .addFilter(new BindChipJumps(), "BindChipJumps")
+  .addFilter(new BindDemo1(), "BindDemo1")
+  .addFilter(new BindDemo2(), "BindDemo2")
+  .addFilter(new BindDemo3(), "BindDemo3")
+  .addFilter(new WireDocModal(), "WireDocModal");
 
 await bootPipeline.run(new Payload({ doc: document, root: document.documentElement }));
