@@ -10,8 +10,7 @@ from codeupipe_lint.anonymous_steps.analyze_python import AnalyzePython
 from ._support import by_line, expectations, fixture, run_analyzer
 
 
-@pytest.mark.parametrize("name", ["positive.py", "negative.py", "entry_script.py", "probe.py",
-                                  "named_step_api.py", "mixed_api.py"])
+@pytest.mark.parametrize("name", ["positive.py", "negative.py", "entry_script.py", "probe.py"])
 def test_fixture_findings_match_expectations(name):
     path = fixture("python", name)
     findings, errors = run_analyzer(AnalyzePython(), "python", [path])

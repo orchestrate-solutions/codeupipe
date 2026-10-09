@@ -209,7 +209,6 @@ class Payload(Generic[T]):
         Supported formats:
           - "json"    — human-readable, universal (default)
           - "msgpack" — binary, ~2x faster (requires msgpack package)
-          - "shm"     — shared memory handle (same-machine only)
         """
         envelope = {"data": self._materialized()}
         if self._trace_id:
@@ -228,11 +227,6 @@ class Payload(Generic[T]):
                     "Install it with: pip install msgpack"
                 )
             return msgpack.packb(envelope, use_bin_type=True)
-        if fmt == "shm":
-            from .shared_payload import SharedPayload as _SP
-            sp = _SP.from_payload(self)
-            handle = sp.handle()
-            return json.dumps(handle).encode("utf-8")
         raise ValueError(f"Unsupported format: {fmt}")
 
     @classmethod
@@ -265,13 +259,6 @@ class Payload(Generic[T]):
                 trace_id=envelope.get("trace_id"),
                 _lineage=envelope.get("lineage"),
             )
-        if fmt == "shm":
-            from .shared_payload import SharedPayload as _SP
-            handle = json.loads(raw.decode("utf-8"))
-            sp = _SP.from_handle(handle)
-            p = sp.to_payload()
-            sp.close()
-            return p
         raise ValueError(f"Unsupported format: {fmt}")
 
     def __repr__(self) -> str:

@@ -5,7 +5,6 @@ The foundation — protocols, abstract base classes, and fundamental types.
 """
 
 from .payload import Payload, MutablePayload
-from .shared_payload import SharedPayload, ShmPool
 from .filter import AsyncFilter, Filter
 from .stream_filter import StreamFilter
 from .async_step_in_sync_run import AsyncStepInSyncRun
@@ -24,7 +23,7 @@ from .govern import (
 )
 
 __all__ = [
-    "Payload", "MutablePayload", "SharedPayload", "ShmPool",
+    "Payload", "MutablePayload",
     "AsyncFilter", "AsyncHook", "AsyncTap", "Filter", "StreamFilter", "Pipeline", "AsyncStepInSyncRun", "AnonymousStep", "CircuitOpenError", "Valve", "Predicate", "Tap",
     "State", "Hook",
     "PipelineEvent", "EventEmitter",

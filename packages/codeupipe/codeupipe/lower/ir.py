@@ -10,7 +10,7 @@ Design notes:
       use ``ast.unparse`` when they need text. This eliminates whole classes
       of formatting-drift bugs.
     * The IR is intentionally small. Any concept not captured here is
-      out-of-scope for the v1 MVP. Additions require a plan update.
+      out of scope.
     * Frozen dataclasses — the IR is data, not state. Rewriters produce new
       IR nodes rather than mutating in place.
 """
@@ -147,8 +147,7 @@ class StepIR:
 class HookIR:
     """A pipeline-wide lifecycle hook in canonical form.
 
-    v1 MVP does not fully lower Hooks; this shape exists so M4 work can
-    slot in without changing the IR contract.
+    The fast export refuses Hooks; the observable export lowers them.
     """
 
     name: str

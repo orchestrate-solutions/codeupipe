@@ -26,9 +26,8 @@ class UnsupportedFilterShape(Exception):
 
     Examples:
         * Dynamic payload keys: ``payload.get(some_variable)``
-        * Use of ``State``, ``MutablePayload``, or ``SharedPayload`` inside
-          a filter body.
-        * Streaming shapes reached during v1 MVP (deferred to M4).
+        * Use of ``State`` or ``MutablePayload`` inside a filter body.
+        * Streaming shapes.
 
     Attributes:
         filter_name: The Filter class (or function) whose body triggered this.

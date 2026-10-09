@@ -91,8 +91,7 @@ different ways in one scope is not flagged. CUP-A006 is deliberately
 conservative: only a module with a `__main__` guard, only steps added from
 that block or from a module-level function it calls (transitively); a
 script without a guard is not flagged (the runtime still refuses it).
-Modules that import only the named-step variant (`codeupipe.core.typed`)
-are out of scope. Not seen: `functools.partial`,
+Not seen: `functools.partial`,
 `type(...)`-built classes, steps built in another module (all refused at
 runtime).
 

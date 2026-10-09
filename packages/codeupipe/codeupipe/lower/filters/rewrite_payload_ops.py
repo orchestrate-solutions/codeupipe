@@ -89,7 +89,7 @@ class _PayloadToDictTransformer(ast.NodeTransformer):
         self.mutables: set = set()
 
     def visit_Name(self, node: ast.Name):
-        if node.id in {"State", "MutablePayload", "SharedPayload"}:
+        if node.id in {"State", "MutablePayload"}:
             raise self._error(node, "Name", "Stay within plain Payload + dict semantics for export.")
         if node.id == "payload":
             return ast.copy_location(ast.Name(id="data", ctx=node.ctx), node)

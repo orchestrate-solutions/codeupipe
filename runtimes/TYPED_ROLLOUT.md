@@ -14,7 +14,6 @@ Escape hatch: use `dict` / `Record<string, unknown>` / `HashMap` /
 | Runtime | Module | Tests | Fast-path hop |
 |---|---|---|---|
 | Rust | [`runtimes/rs/src/typed/`](rs/src/typed) | 10 | **4.2–4.6 ns/hop** (vs 190 ns dynamic — 42× faster) |
-| Python | [`codeupipe/core/typed/`](../codeupipe/core/typed) | 15 | (not benched — Python interpreter dominates) |
 | TypeScript | [`runtimes/ts/src/typed/`](ts/src/typed) | 12 | (not benched — v8 async dominates) |
 
 All three ship the same shape:

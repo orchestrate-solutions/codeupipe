@@ -11,9 +11,6 @@ library only.
 - `payload.py` — `Payload` (immutable data container; modifications return
   fresh copies) and `MutablePayload` (in-place variant for when flexibility
   is needed). Generic over a type parameter for type-safe workflows.
-- `shared_payload.py` — `SharedPayload`, `ShmPool`: mmap-backed, zero-copy
-  payload for same-machine hops via `multiprocessing.shared_memory`, for
-  high-throughput single-machine pipelines.
 - `filter.py` — `Filter` (sync `Protocol`: `call(payload) -> payload`) and
   `AsyncFilter` (async opt-in). The core processing-unit contract.
 - `stream_filter.py` — `StreamFilter`: chunk-at-a-time `Protocol` that yields
@@ -50,8 +47,6 @@ library only.
   (shape validation), `ContractViolation`, `PipelineTimeoutError`,
   `AuditEntry`/`AuditTrail`/`AuditHook` (immutable transformation log),
   `DeadLetterHandler`/`LogDeadLetterHandler` (route failed payloads).
-- `typed/` — parallel typed-payload API (`TypedFilter`, `TypedPipeline`,
-  etc.) — see its own README.
 
 ## How it fits in
 
