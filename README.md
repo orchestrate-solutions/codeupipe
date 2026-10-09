@@ -10,11 +10,11 @@ CUP is four pieces, in Python, in two packages.
 | **Core** | The seven primitives: Payload, Filter, Pipeline, Valve, Tap, Hook, State. Stdlib only. A Tap that fails is recorded and never halts the run | `codeupipe` | [conformance/API.md](conformance/API.md) |
 | **Compile** | Exports a pipeline as plain Python with no framework import. What cannot behave the same is refused, with the step named | `codeupipe` (`codeupipe.lower`) | [docs/static-export.md](docs/static-export.md) |
 | **Config** | One optional file, six keys, so Lint and Compile run with no arguments | `codeupipe` (`codeupipe.config`) | [docs/config.md](docs/config.md) |
-| **Lint** | Finds broken invariants before the code runs: anonymous steps, changes to a Payload behind its API, a Filter that reads State | `codeupipe-lint` | [packages/codeupipe-lint/README.md](packages/codeupipe-lint/README.md) |
+| **Lint** | Finds broken invariants before the code runs: anonymous steps, changes to a Payload behind its API, a Filter that reads State, a Tap or a Hook that writes | `codeupipe-lint` | [packages/codeupipe-lint/README.md](packages/codeupipe-lint/README.md) |
 
-This repo is a monorepo. It holds the two Python packages, the other six
-runtimes, and the conformance suite that judges all of them. `codeupipe` has
-no dependencies. `codeupipe-lint` depends only on `codeupipe`.
+This repo holds the two Python packages and the conformance suite that
+judges the dynamic run and the exports by the same cases. `codeupipe` has no
+dependencies. `codeupipe-lint` depends only on `codeupipe`.
 
 ## A first pipeline
 
@@ -63,7 +63,7 @@ python3 -m venv .venv && . .venv/bin/activate
 python -m pip install --upgrade pip           # an editable install needs pip 21.3 or later
 python -m pip install -e packages/codeupipe -e packages/codeupipe-lint -r requirements-dev.txt
 python -m pytest tests -q                        # core, lowering, lint, config, Python conformance
-python conformance/run.py                        # every runtime, one judge
+python conformance/run.py                        # the dynamic run and the exports, one judge
 ```
 
 ```bash
@@ -77,9 +77,8 @@ The last command writes `build/pricing/src/steps/`. Nothing in it imports
 
 ## How it is checked
 
-- **Conformance.** 27 shared JSON cases, a runner per runtime, one judge.
-  Python's three export targets are judged by the same cases as the dynamic
-  run. Current state: [conformance/MATRIX.md](conformance/MATRIX.md).
+- **Conformance.** 27 JSON cases, one judge. The three export targets are
+  judged by the same cases as the dynamic run. Current state: [conformance/MATRIX.md](conformance/MATRIX.md).
 - **Tests.** `tests/` mirrors the source: `core`, `lower`, `lint`, `config`,
   `conformance`, `scorecard`, `examples`. Checked on Python 3.9, 3.10, 3.12 and 3.14.
 - **Scorecard.** Random pipelines run in all four modes and compared
@@ -91,7 +90,6 @@ The last command writes `build/pricing/src/steps/`. Nothing in it imports
 |---|---|
 | `packages/codeupipe/` | The `codeupipe` package: Core (`core/`), Compile (`lower/`), Config (`config.py`) |
 | `packages/codeupipe-lint/` | The `codeupipe-lint` package: `anonymous_steps` and `invariants` |
-| `runtimes/` | The other six runtimes |
 | `conformance/` | Cases, runners, the judge, and the benchmark ([BENCH.md](conformance/BENCH.md)) |
 | `tests/` | The tests for both packages |
 | `examples/` | The pipeline above, with its test in `tests/examples/` |
@@ -100,11 +98,11 @@ The last command writes `build/pricing/src/steps/`. Nothing in it imports
 
 The root `pyproject.toml` is not a package. It holds the test settings.
 
-## Other runtimes
+## Other languages
 
-TypeScript, Rust, Go, Kotlin, C# and C++ pass all 27 conformance cases and
-have the anonymous-step lint. They do not have Compile or the invariant lint
-yet; Python is first.
+This release is Python. The contract ([conformance/API.md](conformance/API.md))
+and the conformance cases are language-neutral: a runtime in another
+language is written to the contract and added with its conformance runner.
 
 ## License
 

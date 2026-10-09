@@ -1,6 +1,6 @@
 """Python must pass the cross-runtime conformance suite on every target.
 
-The same cases every runtime is judged by (conformance/README.md), so a
+The same cases every target is judged by (conformance/README.md), so a
 Python change that breaks a shared contract fails here, not later in a
 matrix nobody runs.
 """

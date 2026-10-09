@@ -9,7 +9,7 @@ Targets
     static-inline  codeupipe.lower export, lowering="inline", loaded from disk
     static-observe codeupipe.lower export, observe=True: State and Hooks too
 
-The runner never judges; conformance/run.py compares every runtime's results
+The runner never judges; conformance/run.py compares every target's results
 against the same expectations. The fast static targets have no State or
 Hooks, so they omit those fields and the orchestrator skips those checks;
 static-observe reports both and is judged on them.

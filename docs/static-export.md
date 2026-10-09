@@ -18,8 +18,8 @@ There are two exports. Pick per pipeline:
 | Hooks | refused | yes, same order as dynamic |
 | layouts | `steps`, `inline` | `steps` only |
 | conformance | 11 pass, 16 partial (State/Hooks unobservable) | **27 / 27 pass** |
-| 10 filters, µs per run (dynamic: 7.67) | 1.50 steps, **0.61 inline** | 2.59 |
-| 10 filters + a Hook (dynamic: 8.84) | refused | 3.37 |
+| 10 filters, µs per run (dynamic: 4.92) | 0.84 steps, **0.58 inline** | 1.95 |
+| 10 filters + a Hook (dynamic: 5.96) | refused | 3.03 |
 
 ```python
 from codeupipe.lower import build_export_pipeline_v2
@@ -139,9 +139,9 @@ It reproduces the dynamic run's observable behaviour exactly, and the
 - Not carried: **lineage** (use `executed`), event listeners and contracts
   (refused, above).
 
-Cost: 10 filters run in 2.59 µs against 1.50 for the fast per-step layout
-and 7.67 for the dynamic run: about 3× faster than dynamic with the same
-State and Hooks. With a Hook attached, 3.37 µs against 8.84.
+Cost: 10 filters run in 1.95 µs against 0.84 for the fast per-step layout
+and 4.92 for the dynamic run: about 2.5× faster than dynamic with the same
+State and Hooks. With a Hook attached, 3.03 µs against 5.96.
 
 ## Testing exported code
 

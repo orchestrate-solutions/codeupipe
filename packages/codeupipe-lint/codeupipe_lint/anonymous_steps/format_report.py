@@ -9,7 +9,7 @@ class FormatReport:
     Input keys: ``findings``, ``suppressed``, ``errors``.
     Output keys: ``findings`` (sorted), ``report`` (stdout text),
     ``error_report`` (stderr text), ``exit_code``: 0 clean, 1 anonymous
-    steps found, 2 an analyzer could not run (the check is incomplete).
+    steps found, 2 a path could not be read (the check is incomplete).
     ``noun`` and ``plural`` name what a finding is; other linters pass their own.
     """
 
