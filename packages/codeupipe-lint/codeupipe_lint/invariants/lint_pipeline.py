@@ -5,8 +5,10 @@ Steps:
     2. ParsePython              files -> syntax trees (CUP-I000)
     3. AnalyzePayloadMutation   CUP-I001, CUP-I002
     4. AnalyzeStateReads        CUP-I003
-    5. ApplySuppressions        ``cup: allow-mutation``, ``cup: allow-state-read``
-    6. FormatReport             report lines + exit code
+    5. AnalyzeOutsideWrites     CUP-I004
+    6. ApplySuppressions        ``cup: allow-mutation``, ``cup: allow-state-read``,
+                                ``cup: allow-outside-write``
+    7. FormatReport             report lines + exit code
 """
 
 import re
@@ -17,11 +19,12 @@ from codeupipe_lint.anonymous_steps.apply_suppressions import ApplySuppressions
 from codeupipe_lint.anonymous_steps.collect_files import CollectFiles
 from codeupipe_lint.anonymous_steps.format_report import FormatReport
 
+from .analyze_outside_writes import AnalyzeOutsideWrites
 from .analyze_payload_mutation import AnalyzePayloadMutation
 from .analyze_state_reads import AnalyzeStateReads
 from .parse_python import ParsePython
 
-MARKER = re.compile(r"cup:\s*allow-(mutation|state-read)\b")
+MARKER = re.compile(r"cup:\s*allow-(mutation|state-read|outside-write)\b")
 
 
 def build_lint_pipeline() -> Pipeline:
@@ -30,6 +33,7 @@ def build_lint_pipeline() -> Pipeline:
     pipeline.add_filter(ParsePython())
     pipeline.add_filter(AnalyzePayloadMutation())
     pipeline.add_filter(AnalyzeStateReads())
+    pipeline.add_filter(AnalyzeOutsideWrites())
     pipeline.add_filter(ApplySuppressions(MARKER))
     pipeline.add_filter(FormatReport("invariant violation", "invariant violations"))
     return pipeline

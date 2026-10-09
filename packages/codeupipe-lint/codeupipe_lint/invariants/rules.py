@@ -2,18 +2,21 @@
 
 from codeupipe_lint.anonymous_steps.finding import Finding
 
-__all__ = ["RULES", "PARSE_ERROR", "PAYLOAD_INTERNALS", "SHARED_VALUE_MUTATION", "STATE_READ", "make_finding"]
+__all__ = ["RULES", "PARSE_ERROR", "PAYLOAD_INTERNALS", "SHARED_VALUE_MUTATION", "STATE_READ",
+           "WRITE_OUTSIDE_FILTER", "make_finding"]
 
 PARSE_ERROR = "CUP-I000"
 PAYLOAD_INTERNALS = "CUP-I001"
 SHARED_VALUE_MUTATION = "CUP-I002"
 STATE_READ = "CUP-I003"
+WRITE_OUTSIDE_FILTER = "CUP-I004"
 
 RULES = {
     PARSE_ERROR: "parse-error",
     PAYLOAD_INTERNALS: "payload-internals",
     SHARED_VALUE_MUTATION: "shared-value-mutation",
     STATE_READ: "state-read-in-step",
+    WRITE_OUTSIDE_FILTER: "write-outside-filter",
 }
 
 _FIX = {
@@ -25,6 +28,8 @@ _FIX = {
                             "and insert it."),
     STATE_READ: ("A Filter's result and a Valve's decision must depend only on the Payload. Put what the step "
                  "needs into the Payload, or observe State from a Tap or a Hook."),
+    WRITE_OUTSIDE_FILTER: ("Only a Filter writes to the Payload, and nothing at run time stops this write. "
+                           "Put the write in a Filter, or write to payload.copy()."),
 }
 
 

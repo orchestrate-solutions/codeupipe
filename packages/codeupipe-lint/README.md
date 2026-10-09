@@ -172,6 +172,7 @@ a path could not be read. From Python:
 | CUP-I001 | payload-internals | a write through a Payload's `_data` (`payload._data[k] = v`, `payload._data.update(..)`, `del payload._data[k]`) |
 | CUP-I002 | shared-value-mutation | an in-place change to a value that came from `payload.get(..)`: `payload.get("items").append(x)`, or the same through a local name, a nested key, or the loop variable of a `for` over it |
 | CUP-I003 | state-read-in-step | a Filter (`call`) or Valve predicate (`test`) reaching pipeline State: `self.pipeline.state.executed`, `PIPELINE.state.errors`, or an attribute `__init__` set to a State |
+| CUP-I004 | write-outside-filter | a Tap (`observe`), a predicate (`test`) or a Hook (`before`, `after`, `on_error`) that calls `insert`, `remove`, `merge` or `with_trace` on its payload |
 
 **Why CUP-I002.** A Payload owns its keys, not its values.
 `payload.get("items")` returns the live list, shared with every copy of the
@@ -184,11 +185,17 @@ refuse it. The fix is to copy, change the copy, and insert it.
 change the Payload in place by design. These rules are about changes behind
 the API.
 
+**Why CUP-I004.** Only a Filter writes to the Payload, so every change to
+the data is a step you can see in the pipeline. This rule is the guard: the
+runtime does not check, so a write from a Tap, a Hook or a predicate that
+gets past the linter does happen. A write to `payload.copy()` belongs to the
+Tap, Hook or predicate that made the copy, and is not flagged. Suppress with `cup: allow-outside-write`.
+
 **Why CUP-I003.** A Filter's result and a Valve's decision must depend only
 on the Payload. A step is never handed State, so the only way to read it is
 to hold a pipeline or a State, and that makes the step's behaviour depend on
 what ran before it, which the static export cannot reproduce. Taps and Hooks
-are observers, so `observe` and Hook methods are not checked.
+only watch, so `observe` and Hook methods are not checked.
 
 `self.state` is not flagged when it is the step's own attribute. `<x>.state`
 is flagged when what follows is one of State's own members, or when the name
@@ -208,5 +215,5 @@ Known limits:
   shared; changes to those are not flagged.
 - A name rebound in one branch is treated as rebound from then on.
 
-Suppress an intentional one with a `cup: allow-mutation` or
+Suppress an intentional one with a `cup: allow-mutation`, `cup: allow-outside-write` or
 `cup: allow-state-read` comment on the line or alone on the line above.

@@ -29,7 +29,7 @@ class ReadsANestedValueCalledState:
 
 
 class TapMayObserveState:
-    """A Tap is an observer; reading State from one is fine."""
+    """A Tap only watches; reading State from one is fine."""
 
     def __init__(self, pipeline):
         self.pipeline = pipeline

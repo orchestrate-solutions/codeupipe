@@ -59,8 +59,11 @@ Rules:
 - The caller's input map is never changed (copied on construct).
 - **`run` works on a copy of the Payload it is given**, so the caller's
   Payload is not changed either.
-- A Tap, a Hook and a predicate receive the live Payload. One that keeps
-  it for later keeps a `copy()`.
+- **Only a Filter writes.** A Tap, a Hook and a predicate read the
+  Payload. To change the data, add a Filter. The linter is the guard
+  (`CUP-I004`); the runtime does not check.
+- A Tap, a Hook or a predicate that wants its own changed version, or that
+  keeps the Payload for later, takes a `copy()`.
 - A typed read of the wrong type **fails loudly**; it never returns absent.
 
 ## Filter
@@ -75,20 +78,23 @@ Rust returns `Result<Payload, Error>`.
 identity"). The **predicate is an object** with `test(payload) -> bool`
 (`Test` in Go and C#), identified by its class like a step; any
 configuration (a threshold, a flag) lives on the instance. Functions,
-lambdas and closures are not predicates. When `test` is false, the payload
+lambdas and closures are not predicates. A predicate reads the Payload and
+does not write to it. When `test` is false, the payload
 passes through unchanged and the step is recorded in `state.skipped`, not
 `state.executed`. A Valve is added like any filter: `add_filter(valve)`.
 
-## Tap — read-only observer (Plane B)
+## Tap — reads the Payload (Plane B)
 
-`observe(payload)`, no return value. **A Tap failure never halts the
+`observe(payload)`, no return value. A Tap reads the Payload and does not
+write to it. **A Tap failure never halts the
 pipeline:** the error is recorded in `state.errors` under the Tap's identity, the
 Tap still counts as executed, and hooks are not notified. Taps fail the way
 the language fails without an error return (raise, or panic in Go and Rust).
 
-## Hook — lifecycle observer
+## Hook — sees the lifecycle
 
 `before(step, payload)`, `after(step, payload)`, `on_error(step, error, payload)`.
+A Hook reads the Payload and does not write to it.
 
 - `step` is the **step's identity** (see "Step identity"). Pipeline-level
   events pass **absent**

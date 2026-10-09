@@ -12,7 +12,7 @@ holds. Inside ``call`` and ``test`` this flags:
 
 Not flagged: ``self.state`` when it is the step's own attribute, a Payload
 key or nested value called "state", and anything in ``observe`` or a Hook
-method, since Taps and Hooks are observers.
+method, since Taps and Hooks only watch.
 """
 
 import ast
