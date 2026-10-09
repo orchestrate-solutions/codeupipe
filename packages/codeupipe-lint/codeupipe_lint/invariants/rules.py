@@ -3,13 +3,14 @@
 from codeupipe_lint.anonymous_steps.finding import Finding
 
 __all__ = ["RULES", "PARSE_ERROR", "PAYLOAD_INTERNALS", "SHARED_VALUE_MUTATION", "STATE_READ",
-           "WRITE_OUTSIDE_FILTER", "make_finding"]
+           "WRITE_OUTSIDE_FILTER", "ONE_PRIMITIVE_PER_FILE", "make_finding"]
 
 PARSE_ERROR = "CUP-I000"
 PAYLOAD_INTERNALS = "CUP-I001"
 SHARED_VALUE_MUTATION = "CUP-I002"
 STATE_READ = "CUP-I003"
 WRITE_OUTSIDE_FILTER = "CUP-I004"
+ONE_PRIMITIVE_PER_FILE = "CUP-I005"
 
 RULES = {
     PARSE_ERROR: "parse-error",
@@ -17,6 +18,7 @@ RULES = {
     SHARED_VALUE_MUTATION: "shared-value-mutation",
     STATE_READ: "state-read-in-step",
     WRITE_OUTSIDE_FILTER: "write-outside-filter",
+    ONE_PRIMITIVE_PER_FILE: "one-primitive-per-file",
 }
 
 _FIX = {
@@ -30,6 +32,8 @@ _FIX = {
                  "needs into the Payload, or observe State from a Tap or a Hook."),
     WRITE_OUTSIDE_FILTER: ("Only a Filter writes to the Payload, and nothing at run time stops this write. "
                            "Put the write in a Filter, or write to payload.copy()."),
+    ONE_PRIMITIVE_PER_FILE: ("Give each Filter, Tap, Hook, predicate and named Pipeline its own file, so it can "
+                             "be tested alone and used again. The pipeline file is where they come together."),
 }
 
 

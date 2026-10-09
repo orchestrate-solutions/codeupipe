@@ -33,8 +33,9 @@ library only.
 - `state.py` — `State`: pipeline execution metadata — executed/skipped
   filters, timing, errors, arbitrary metadata. Available as `pipeline.state`
   after a run.
-- `hook.py` — `Hook` / `AsyncHook`: lifecycle ABC with `before`/`after`/
-  `on_error` callbacks around filter and pipeline execution.
+- `hook.py` — `Hook`: lifecycle ABC with `before`/`after`/`on_error`
+  callbacks around filter and pipeline execution.
+- `async_hook.py` — `AsyncHook`: a Hook whose methods are coroutines.
 
 ## How it fits in
 

@@ -19,7 +19,7 @@ python -m pytest -q -p no:cacheprovider tests/scorecard
 A seeded, stdlib-only generator (`case_gen.py`) writes random cases **in the
 conformance case format**, so any failure is a case you can paste into
 `conformance/cases/`. The vocabulary is the conformance runner's own
-(`runner.build`, `cup_ops`), reused, not reimplemented: every filter op
+(`runner.build`, the `cup_ops` package), reused, not reimplemented: every filter op
 (`set copy add append remove merge has mutate fail`), every tap op
 (`record noop fail`), Valves (`equals`/`truthy`) around any filter op,
 nested pipelines two deep (empty ones too), `hooks: true` on ~40%, keys

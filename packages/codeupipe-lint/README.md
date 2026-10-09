@@ -106,6 +106,7 @@ a path could not be read. From Python:
 | CUP-I002 | shared-value-mutation | an in-place change to a value that came from `payload.get(..)`: `payload.get("items").append(x)`, or the same through a local name, a nested key, or the loop variable of a `for` over it |
 | CUP-I003 | state-read-in-step | a Filter (`call`) or Valve predicate (`test`) reaching pipeline State: `self.pipeline.state.executed`, `PIPELINE.state.errors`, or an attribute `__init__` set to a State |
 | CUP-I004 | write-outside-filter | a Tap (`observe`), a predicate (`test`) or a Hook (`before`, `after`, `on_error`) that calls `insert`, `remove`, `merge` or `with_trace` on its payload |
+| CUP-I005 | one-primitive-per-file | a second Filter, Tap, Hook, predicate or named Pipeline class at module level in one file |
 
 **Why CUP-I002.** A Payload owns its keys, not its values.
 `payload.get("items")` returns the live list, shared with every copy of the
@@ -123,6 +124,14 @@ the data is a step you can see in the pipeline. This rule is the guard: the
 runtime does not check, so a write from a Tap, a Hook or a predicate that
 gets past the linter does happen. A write to `payload.copy()` belongs to the
 Tap, Hook or predicate that made the copy, and is not flagged. Suppress with `cup: allow-outside-write`.
+
+**Why CUP-I005.** A primitive alone in its file can be found by its name,
+tested alone, and used again in another pipeline. The pipeline file is where
+the parts come together. The first primitive in a file is accepted; each one
+after it is reported. Plain classes and functions beside the primitive are
+not reported. Test files (`test_*.py`, `conftest.py`, anything under a
+`tests` directory) are not checked: a test often needs several small steps
+side by side. Suppress with `cup: allow-shared-file`.
 
 **Why CUP-I003.** A Filter's result and a Valve's decision must depend only
 on the Payload. A step is never handed State, so the only way to read it is
@@ -148,5 +157,6 @@ Known limits:
   shared; changes to those are not flagged.
 - A name rebound in one branch is treated as rebound from then on.
 
-Suppress an intentional one with a `cup: allow-mutation`, `cup: allow-outside-write` or
+Suppress an intentional one with a `cup: allow-mutation`, `cup: allow-outside-write`,
+`cup: allow-shared-file` or
 `cup: allow-state-read` comment on the line or alone on the line above.

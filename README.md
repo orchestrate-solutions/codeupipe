@@ -10,7 +10,7 @@ CUP is four pieces, in Python, in two packages.
 | **Core** | The seven primitives: Payload, Filter, Pipeline, Valve, Tap, Hook, State. Stdlib only. A Tap that fails is recorded and never halts the run | `codeupipe` | [conformance/API.md](conformance/API.md) |
 | **Compile** | Exports a pipeline as plain Python with no framework import. What cannot behave the same is refused, with the step named | `codeupipe` (`codeupipe.lower`) | [docs/static-export.md](docs/static-export.md) |
 | **Config** | One optional file, six keys, so Lint and Compile run with no arguments | `codeupipe` (`codeupipe.config`) | [docs/config.md](docs/config.md) |
-| **Lint** | Finds broken invariants before the code runs: anonymous steps, changes to a Payload behind its API, a Filter that reads State, a Tap or a Hook that writes | `codeupipe-lint` | [packages/codeupipe-lint/README.md](packages/codeupipe-lint/README.md) |
+| **Lint** | Finds broken invariants before the code runs: anonymous steps, changes to a Payload behind its API, a Filter that reads State, a Tap or a Hook that writes, two primitives in one file | `codeupipe-lint` | [packages/codeupipe-lint/README.md](packages/codeupipe-lint/README.md) |
 
 This repo holds the two Python packages and the conformance suite that
 judges the dynamic run and the exports by the same cases. `codeupipe` has no
@@ -32,7 +32,8 @@ examples/pricing/
 ```
 
 A part knows nothing about the other parts, so you can test it alone and use
-it again in another pipeline.
+it again in another pipeline. The linter holds you to this: one primitive in
+each file (`CUP-I005`).
 
 ```python
 # discount.py — a Filter: takes the Payload, writes to it, returns it

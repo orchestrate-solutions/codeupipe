@@ -14,7 +14,8 @@ from .valve import Valve
 from .predicate import Predicate
 from .tap import AsyncTap, Tap
 from .state import State
-from .hook import AsyncHook, Hook
+from .async_hook import AsyncHook
+from .hook import Hook
 
 __all__ = [
     "Payload",
