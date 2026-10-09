@@ -1,7 +1,7 @@
 # CUP API contract
 
-> One standard way. The primitives, their operations, their parameters in
-> order, their defaults, and how they fail.
+This document defines the primitives, their operations, their parameters,
+their defaults, and how they fail.
 
 Python implements it. A runtime in another language implements the same
 contract, with identifier casing in that language's style, and is judged by

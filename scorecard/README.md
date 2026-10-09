@@ -1,9 +1,8 @@
-# Lowering proof scorecard
+# Scorecard
 
-Reproducible pass/fail evidence that the static export of a Pipeline
-(`codeupipe.lower`) behaves like the dynamic `Pipeline.run`, stays isolated,
-and costs no more than hand-written Python. Every number here comes from a
-command below; nothing is asserted without one.
+The scorecard compares the static export of a Pipeline (`codeupipe.lower`)
+with the dynamic `Pipeline.run` on random pipelines. Each number in this
+document comes from a command in this document.
 
 Run everything from the repo root, in the environment the main README sets up:
 

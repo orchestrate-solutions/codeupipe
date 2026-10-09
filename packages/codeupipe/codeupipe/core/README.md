@@ -1,7 +1,7 @@
 # core
 
-The foundation of codeupipe: the seven primitives — `Payload`, `Filter`,
-`Pipeline`, `Valve`, `Tap`, `State`, `Hook` — and nothing else. The contract is
+This package holds the seven primitives: `Payload`, `Filter`, `Pipeline`,
+`Valve`, `Tap`, `State`, `Hook`. The contract is
 [conformance/API.md](../../../../conformance/API.md). The export (`codeupipe.lower`) and the linter
 (`codeupipe-lint`) are built on this package. No dependencies: standard
 library only.

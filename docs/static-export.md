@@ -1,8 +1,8 @@
 # Static export: what it guarantees
 
 `codeupipe.lower` turns a live `Pipeline` into plain Python with no framework
-import. This page is the contract for that export: what it lowers, what it
-refuses, and what you give up in exchange for the speed.
+import. This page says what the export lowers, what it refuses, and what
+the exported code does not have.
 
 **The rule: anything that exports behaves the same as the dynamic `run`.
 Anything that cannot is refused at export time, with the step named.** A

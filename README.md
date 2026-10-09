@@ -1,39 +1,41 @@
 # codeupipe
 
-> Write the pipeline once. Run it fully observable while you build it. Ship it
-> with the framework compiled away. Prove the two runs never disagree.
+codeupipe is a Python library for writing a program as a pipeline of small
+steps.
 
-CUP is four pieces, in Python, in two packages.
+- A **Payload** holds the data.
+- A **Filter** changes the Payload.
+- A **Valve** runs a Filter only when a condition is true.
+- A **Tap** reads the Payload.
+- A **Hook** is called before and after each step.
+- **State** records which steps ran.
+- A **Pipeline** runs the steps in order.
 
-| Piece | What it does | Package | Reference |
-|---|---|---|---|
-| **Core** | The seven primitives: Payload, Filter, Pipeline, Valve, Tap, Hook, State. Stdlib only. A Tap that fails is recorded and never halts the run | `codeupipe` | [conformance/API.md](conformance/API.md) |
-| **Compile** | Exports a pipeline as plain Python with no framework import. What cannot behave the same is refused, with the step named | `codeupipe` (`codeupipe.lower`) | [docs/static-export.md](docs/static-export.md) |
-| **Config** | One optional file, six keys, so Lint and Compile run with no arguments | `codeupipe` (`codeupipe.config`) | [docs/config.md](docs/config.md) |
-| **Lint** | Finds broken invariants before the code runs: anonymous steps, changes to a Payload behind its API, a Filter that reads State, a Tap or a Hook that writes, two primitives in one file | `codeupipe-lint` | [packages/codeupipe-lint/README.md](packages/codeupipe-lint/README.md) |
+This repository has two packages.
 
-This repo holds the two Python packages and the conformance suite that
-judges the dynamic run and the exports by the same cases. `codeupipe` has no
-dependencies. `codeupipe-lint` depends only on `codeupipe`.
+| Package | Contents | Reference |
+|---|---|---|
+| `codeupipe` | The seven primitives. An export command that writes a pipeline as plain Python with no import of codeupipe. A config file reader. No dependencies | [conformance/API.md](conformance/API.md), [docs/static-export.md](docs/static-export.md), [docs/config.md](docs/config.md) |
+| `codeupipe-lint` | Two linters for pipeline code. Depends on `codeupipe` only | [packages/codeupipe-lint/README.md](packages/codeupipe-lint/README.md) |
 
-## A first pipeline
+## Status
+
+Not released. The repository is in review. Python 3.9 or later.
+
+## Example
 
 [examples/pricing/](examples/pricing/) has one primitive in each file. The
-pipeline file is where they come together.
+pipeline file imports them and adds them.
 
 ```
 examples/pricing/
   discount.py      Filter
   mark_bulk.py     Filter
-  at_least.py      predicate, the question a Valve asks
+  at_least.py      predicate (the condition of a Valve)
   audit_tap.py     Tap
   print_steps.py   Hook
   pipeline.py      Pipeline
 ```
-
-A part knows nothing about the other parts, so you can test it alone and use
-it again in another pipeline. The linter holds you to this: one primitive in
-each file (`CUP-I005`).
 
 ```python
 # discount.py — a Filter: takes the Payload, writes to it, returns it
@@ -81,67 +83,60 @@ build_pricing().run(Payload({"price": 100.0, "qty": 12})).to_dict()
 # {'price': 90.0, 'qty': 12, 'bulk': True}
 ```
 
-A step is a class in a module, not a lambda or a function in a script: it is
-identified by its type (`examples.pricing.discount.Discount`), and State,
-Hooks and the export all use that identity. The linter says so before the
-runtime does.
+A step must be a class in a module. A lambda, or a class in the script that
+you run, is refused. The reason is step identity: a step is identified by its
+type, for example `examples.pricing.discount.Discount`. State, Hooks and the
+export use that identity.
 
 ```bash
-python -m examples.pricing           # run it with a Hook, and print its State
+python -m examples.pricing
 ```
 
-## Run it
+This command runs the pipeline with a Hook and prints its State.
 
-From the repo root.
+## Install for development
+
+Run these commands from the repository root.
 
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
-python -m pip install --upgrade pip           # an editable install needs pip 21.3 or later
+python -m pip install --upgrade pip
 python -m pip install -e packages/codeupipe -e packages/codeupipe-lint -r requirements-dev.txt
-python -m pytest tests -q                        # core, lowering, lint, config, Python conformance
-python conformance/run.py                        # the dynamic run and the exports, one judge
 ```
 
-```bash
-python -m codeupipe_lint.invariants                        # paths come from cup.config.json
-python -m codeupipe_lint.anonymous_steps                   # the same
-python -m codeupipe.lower examples.pricing.pipeline:build_pricing --out build/pricing
-```
+An editable install needs pip 21.3 or later.
 
-The last command writes `build/pricing/src/steps/`. Nothing in it imports
-`codeupipe`.
+## Commands
 
-## How it is checked
-
-- **Conformance.** 27 JSON cases, one judge. The three export targets are
-  judged by the same cases as the dynamic run. Current state: [conformance/MATRIX.md](conformance/MATRIX.md).
-- **Tests.** `tests/` mirrors the source: `core`, `lower`, `lint`, `config`,
-  `conformance`, `scorecard`, `examples`. Checked on Python 3.9, 3.10, 3.12 and 3.14.
-- **Scorecard.** Random pipelines run in all four modes and compared
-  ([scorecard/README.md](scorecard/README.md)).
-- **Speed.** `python conformance/bench.py --check` fails when a benchmark
-  number is more than 25% from its recorded baseline
-  ([conformance/README.md](conformance/README.md)).
+| Command | What it does |
+|---|---|
+| `python -m pytest tests -q` | Runs the tests |
+| `python conformance/run.py` | Runs the 27 conformance cases against the dynamic run and the three exports |
+| `python -m codeupipe_lint.anonymous_steps` | Runs the anonymous-step linter. Paths come from `cup.config.json` |
+| `python -m codeupipe_lint.invariants` | Runs the invariant linter. Paths come from `cup.config.json` |
+| `python -m codeupipe.lower examples.pricing.pipeline:build_pricing --out build/pricing` | Exports the example to `build/pricing/src/steps/` |
+| `python conformance/bench.py --check` | Compares benchmark numbers with the recorded baseline. Fails outside 25% |
+| `python -m scorecard.differential` | Compares the export with the dynamic run on random pipelines |
 
 ## Layout
 
-| Path | What |
+| Path | Contents |
 |---|---|
-| `packages/codeupipe/` | The `codeupipe` package: Core (`core/`), Compile (`lower/`), Config (`config.py`) |
-| `packages/codeupipe-lint/` | The `codeupipe-lint` package: `anonymous_steps` and `invariants` |
-| `conformance/` | Cases, runners, the judge, and the benchmark ([BENCH.md](conformance/BENCH.md)) |
-| `tests/` | The tests for both packages |
-| `examples/pricing/` | The pipeline above, one primitive in each file, with its test in `tests/examples/` |
-| `scorecard/` | Differential testing of the export |
-| `docs/` | Reference for Compile and Config |
+| `packages/codeupipe/` | The `codeupipe` package: `core/`, `lower/` (the export), `config.py` |
+| `packages/codeupipe-lint/` | The `codeupipe-lint` package: `anonymous_steps/`, `invariants/` |
+| `conformance/` | The contract ([API.md](conformance/API.md)), the cases, the runner, the benchmark |
+| `tests/` | The tests for the two packages |
+| `examples/pricing/` | The example, with its test in `tests/examples/` |
+| `scorecard/` | The comparison of the export with the dynamic run on random pipelines |
+| `docs/` | Reference for the export and the config file |
 
 The root `pyproject.toml` is not a package. It holds the test settings.
 
 ## Other languages
 
-This release is Python. The contract ([conformance/API.md](conformance/API.md))
-and the conformance cases are language-neutral: a runtime in another
-language is written to the contract and added with its conformance runner.
+This repository is Python only. The contract and the conformance cases do
+not depend on Python. A runtime in another language must implement the
+contract and add a conformance runner.
 
 ## License
 
