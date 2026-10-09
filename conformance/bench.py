@@ -1,7 +1,7 @@
-"""Benchmark every runtime on the same scenarios, the same way.
+"""Benchmark every target on the same scenarios, the same way.
 
-    python conformance/bench.py                  # every available target
-    python conformance/bench.py python:run go:run
+    python conformance/bench.py                  # every target
+    python conformance/bench.py python:run python:static-inline
 
 Scenarios (bench/scenarios.json) use the conformance vocabulary, so every
 runtime builds the same pipeline. Each runner times best of 5 x 20,000 runs
@@ -25,12 +25,6 @@ BENCH_TARGETS = {
     "python:static-steps": ("python:static-steps", "bench:static-steps"),
     "python:static-inline": ("python:static-inline", "bench:static-inline"),
     "python:static-observe": ("python:static-observe", "bench:static-observe"),
-    "go:run": ("go:run", "bench"),
-    "ts:run": ("ts:run", "bench"),
-    "rs:run": ("rs:run", "bench"),
-    "kt:run": ("kt:run", "bench"),
-    "cs:run": ("cs:run", "bench"),
-    "cpp:run": ("cpp:run", "bench"),
 }
 
 
@@ -38,16 +32,7 @@ def spec_for(target):
     base, mode = BENCH_TARGETS[target]
     spec = dict(conformance.TARGETS[base])
     cmd = list(spec["cmd"])
-    if cmd[0] == "sh":  # shell launchers end with the binary invocation
-        cmd[-1] = cmd[-1] + f" {mode}"
-    elif base.startswith("python:"):
-        cmd[-1] = mode
-    elif base.startswith("ts:"):
-        cmd[-1] = mode
-    else:
-        cmd.append("--" if base.startswith("rs:") else mode)
-        if base.startswith("rs:"):
-            cmd.append(mode)
+    cmd[-1] = mode
     spec["cmd"] = cmd
     return spec
 

@@ -1,10 +1,10 @@
-"""Run the conformance cases against every runtime and judge them one way.
+"""Run the conformance cases against every target and judge them one way.
 
-    python conformance/run.py                 # all available targets
-    python conformance/run.py python:run go:run
+    python conformance/run.py                 # all targets
+    python conformance/run.py python:run python:static-inline
 
-Each runner executes cases and reports what happened. Only this file decides
-pass or fail, so every runtime is held to exactly the same comparison.
+A runner executes cases and reports what happened. Only this file decides
+pass or fail, so every target is held to exactly the same comparison.
 
 Result per case and target:
     pass         every expectation matched
@@ -18,7 +18,6 @@ Result per case and target:
 import json
 import os
 import pathlib
-import shutil
 import subprocess
 import sys
 
@@ -38,95 +37,12 @@ def _python(target):
     }
 
 
-def _go():
-    return {
-        "cmd": ["go", "run", "."],
-        # never fetch: the runner builds against the vendored runtimes/go
-        "env": {"GOPROXY": "off", "GOFLAGS": "-mod=mod"},
-        "cwd": HERE / "runners/go",
-        "requires": "go",
-    }
-
-
-def _ts(mode):
-    bun = shutil.which("bun") or str(pathlib.Path.home() / ".bun/bin/bun")
-    return {
-        # Bun runs the vendored runtimes/ts source directly: no npm install.
-        # The preload is the step-identity build step (conformance/API.md).
-        "cmd": [bun, "run", "--preload", str(REPO / "runtimes/ts/identity/bun_preload.ts"),
-                str(HERE / "runners/ts/runner.ts"), mode],
-        "env": {},
-        "cwd": REPO,
-        "requires": bun,
-    }
-
-
-def _cpp():
-    build = HERE / "runners/cpp/build"
-    return {
-        # header-only runtime: compile the runner against runtimes/cpp/include
-        "cmd": ["sh", "-c",
-                f"mkdir -p '{build}' && c++ -std=c++20 -O2 -I '{REPO}/runtimes/cpp/include' "
-                f"'{HERE}/runners/cpp/runner.cpp' -o '{build}/runner' && '{build}/runner'"],
-        "env": {},
-        "cwd": REPO,
-        "requires": "c++",
-    }
-
-
-def _kt():
-    build = HERE / "runners/kt/build"
-    core = REPO / "runtimes/kt/codeupipe-core/src/main/kotlin/com/codeupipe/core"
-    jar = build / "runner.jar"
-    return {
-        # kotlinc directly (no Gradle download); rebuild only when a source changed
-        "cmd": ["sh", "-c",
-                f"mkdir -p '{build}' && if [ ! -f '{jar}' ] || [ -n \"$(find '{core}' '{HERE}/runners/kt' "
-                f"-name '*.kt' -newer '{jar}')\" ]; then kotlinc '{core}'/*.kt '{HERE}/runners/kt/Runner.kt' "
-                f"-include-runtime -nowarn -d '{jar}' >&2 || exit 1; fi; java -jar '{jar}'"],
-        "env": {},
-        "cwd": REPO,
-        "requires": "kotlinc",
-    }
-
-
-def _cs():
-    return {
-        # the runtime has no package dependencies, so the build restores nothing
-        # build output goes to stderr: `dotnet run` would print warnings into the JSON
-        "cmd": ["sh", "-c",
-                f"dotnet build '{HERE}/runners/cs' -c Release --nologo -v q 1>&2 && "
-                f"dotnet '{HERE}/runners/cs/build/bin/Release/net9.0/cs_runner.dll'"],
-        "env": {"DOTNET_CLI_TELEMETRY_OPTOUT": "1", "DOTNET_NOLOGO": "1"},
-        "cwd": REPO,
-        "requires": "dotnet",
-    }
-
-
-def _rs():
-    crate = HERE / "runners/rs"
-    return {
-        # cargo writes build progress to stderr; stdout carries only the JSON
-        "cmd": ["cargo", "run", "--release", "--quiet", "--manifest-path", str(crate / "Cargo.toml")],
-        "env": {},
-        "cwd": REPO,
-        "requires": "cargo",
-    }
-
-
 TARGETS = {
     "python:run": _python("run"),
     "python:run_async": _python("run_async"),
     "python:static-steps": _python("static-steps"),
     "python:static-inline": _python("static-inline"),
     "python:static-observe": _python("static-observe"),
-    "go:run": _go(),
-    "ts:run": _ts("run"),
-    "ts:run_async": _ts("run_async"),
-    "cpp:run": _cpp(),
-    "kt:run": _kt(),
-    "cs:run": _cs(),
-    "rs:run": _rs(),
 }
 
 
@@ -142,9 +58,6 @@ def load_cases():
 
 
 def run_target(name, spec, cases):
-    tool = spec.get("requires")
-    if tool and shutil.which(tool) is None and not pathlib.Path(tool).exists():
-        return None, f"{tool} not installed"
     env = dict(os.environ)
     env.update(spec["env"])
     proc = subprocess.run(
