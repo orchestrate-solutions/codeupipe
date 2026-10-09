@@ -7,10 +7,10 @@ from ._support import fixture
 
 def test_the_linter_is_a_pipeline_of_named_filters():
     identities = build_lint_pipeline().identities
-    assert identities[0] == "codeupipe_lint.anonymous_steps.collect_files.CollectFiles"
-    assert "codeupipe_lint.anonymous_steps.analyze_python.AnalyzePython" in identities
-    assert identities[-2:] == ["codeupipe_lint.anonymous_steps.apply_suppressions.ApplySuppressions",
-                               "codeupipe_lint.anonymous_steps.format_report.FormatReport"]
+    assert identities[0] == "codeupipe_lint.anonymous_steps.collect_files_filter.CollectFilesFilter"
+    assert "codeupipe_lint.anonymous_steps.analyze_python_filter.AnalyzePythonFilter" in identities
+    assert identities[-2:] == ["codeupipe_lint.anonymous_steps.apply_suppressions_filter.ApplySuppressionsFilter",
+                               "codeupipe_lint.anonymous_steps.format_report_filter.FormatReportFilter"]
 
 
 def test_lint_paths_reports_and_sets_the_exit_code():

@@ -5,36 +5,36 @@ static targets exercise constructor-config baking as well as lowering. One
 step in each file.
 """
 
-from .add import Add
-from .append import Append
-from .copy import Copy
-from .fail import Fail
+from .add_filter import AddFilter
+from .append_filter import AppendFilter
+from .copy_filter import CopyFilter
+from .fail_filter import FailFilter
 from .fail_tap import FailTap
-from .has import Has
-from .merge import Merge
-from .mutate import Mutate
-from .nested import Nested
+from .has_filter import HasFilter
+from .merge_filter import MergeFilter
+from .mutate_filter import MutateFilter
+from .nested_pipeline import NestedPipeline
 from .noop_hook import NoopHook
 from .noop_tap import NoopTap
 from .record_hook import RecordHook
 from .record_tap import RecordTap
-from .remove import Remove
-from .set import Set
+from .remove_filter import RemoveFilter
+from .set_filter import SetFilter
 
 __all__ = [
-    "Add",
-    "Append",
-    "Copy",
-    "Fail",
+    "AddFilter",
+    "AppendFilter",
+    "CopyFilter",
+    "FailFilter",
     "FailTap",
-    "Has",
-    "Merge",
-    "Mutate",
-    "Nested",
+    "HasFilter",
+    "MergeFilter",
+    "MutateFilter",
+    "NestedPipeline",
     "NoopHook",
     "NoopTap",
     "RecordHook",
     "RecordTap",
-    "Remove",
-    "Set",
+    "RemoveFilter",
+    "SetFilter",
 ]

@@ -68,7 +68,7 @@ Rules:
 `Valve(inner, predicate)`, identified by its inner filter (see "Step
 identity"). The **predicate is an object** with `test(payload) -> bool`,
 identified by its class like a step; any configuration (a threshold, a flag)
-lives on the instance: `AtLeast("qty", 10)`. Functions, lambdas and closures
+lives on the instance: `AtLeastPredicate("qty", 10)`. Functions, lambdas and closures
 are not predicates. A predicate reads the Payload and does not write to it.
 When `test` is false, the payload passes through unchanged and the step is
 recorded in `state.skipped`, not `state.executed`. A Valve is added like any

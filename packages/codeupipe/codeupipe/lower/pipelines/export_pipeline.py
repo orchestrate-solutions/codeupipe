@@ -8,15 +8,15 @@ from __future__ import annotations
 
 from codeupipe.core import Pipeline, Valve
 
-from ..filters.load_pipeline import LoadPipelineFilter
-from ..filters.parse_filter_source import ParseFilterSourceFilter
-from ..filters.rewrite_payload_ops import RewritePayloadOpsFilter
-from ..filters.lower_control_flow import LowerControlFlowFilter
-from ..filters.emit_plain_files import EmitPlainFilesFilter
-from ..filters.emit_orchestrator import EmitOrchestratorFilter
-from ..filters.emit_inline_module import EmitInlineModuleFilter
-from ..taps.write_files import WriteFilesTap
-from .lowering_mode import LoweringMode
+from ..filters.load_pipeline_filter import LoadPipelineFilter
+from ..filters.parse_filter_source_filter import ParseFilterSourceFilter
+from ..filters.rewrite_payload_ops_filter import RewritePayloadOpsFilter
+from ..filters.lower_control_flow_filter import LowerControlFlowFilter
+from ..filters.emit_plain_files_filter import EmitPlainFilesFilter
+from ..filters.emit_orchestrator_filter import EmitOrchestratorFilter
+from ..filters.emit_inline_module_filter import EmitInlineModuleFilter
+from ..taps.write_files_tap import WriteFilesTap
+from .lowering_mode_predicate import LoweringModePredicate
 
 
 __all__ = ["build_export_pipeline_v2"]
@@ -53,9 +53,9 @@ def build_export_pipeline_v2(*, write: bool = True) -> Pipeline:
     p.add_filter(ParseFilterSourceFilter())
     p.add_filter(RewritePayloadOpsFilter())
     p.add_filter(LowerControlFlowFilter())
-    p.add_filter(Valve(EmitPlainFilesFilter(), LoweringMode(inline=False)))
-    p.add_filter(Valve(EmitOrchestratorFilter(), LoweringMode(inline=False)))
-    p.add_filter(Valve(EmitInlineModuleFilter(), LoweringMode(inline=True)))
+    p.add_filter(Valve(EmitPlainFilesFilter(), LoweringModePredicate(inline=False)))
+    p.add_filter(Valve(EmitOrchestratorFilter(), LoweringModePredicate(inline=False)))
+    p.add_filter(Valve(EmitInlineModuleFilter(), LoweringModePredicate(inline=True)))
     if write:
         p.add_tap(WriteFilesTap())
     return p

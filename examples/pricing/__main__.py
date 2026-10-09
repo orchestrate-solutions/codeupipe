@@ -3,10 +3,10 @@
 from codeupipe import Payload
 
 from .pipeline import build_pricing
-from .print_steps import PrintSteps
+from .print_steps_hook import PrintStepsHook
 
 pipeline = build_pricing()
-pipeline.use_hook(PrintSteps())
+pipeline.use_hook(PrintStepsHook())
 
 print("steps:")
 result = pipeline.run(Payload({"price": 100.0, "qty": 12}))

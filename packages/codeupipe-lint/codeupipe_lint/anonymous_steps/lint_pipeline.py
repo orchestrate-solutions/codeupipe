@@ -1,31 +1,31 @@
 """The anonymous-step linter, built as a CUP pipeline (dogfooding). Python only.
 
 Steps:
-    1. CollectFiles       paths -> Python files
-    2. AnalyzePython      ast
+    1. CollectFilesFilter       paths -> Python files
+    2. AnalyzePythonFilter      ast
     3. DropDisabledFilter rules switched off for the project
-    4. ApplySuppressions  ``cup: allow-anonymous``
-    5. FormatReport       report lines + exit code
+    4. ApplySuppressionsFilter  ``cup: allow-anonymous``
+    5. FormatReportFilter       report lines + exit code
 """
 
 from typing import Iterable, Optional
 
 from codeupipe import Payload, Pipeline
 
-from .analyze_python import AnalyzePython
-from .apply_suppressions import ApplySuppressions
-from .collect_files import CollectFiles
+from .analyze_python_filter import AnalyzePythonFilter
+from .apply_suppressions_filter import ApplySuppressionsFilter
+from .collect_files_filter import CollectFilesFilter
 from .drop_disabled_filter import DropDisabledFilter
-from .format_report import FormatReport
+from .format_report_filter import FormatReportFilter
 
 
 def build_lint_pipeline() -> Pipeline:
     pipeline = Pipeline()
-    pipeline.add_filter(CollectFiles())
-    pipeline.add_filter(AnalyzePython())
+    pipeline.add_filter(CollectFilesFilter())
+    pipeline.add_filter(AnalyzePythonFilter())
     pipeline.add_filter(DropDisabledFilter())
-    pipeline.add_filter(ApplySuppressions())
-    pipeline.add_filter(FormatReport())
+    pipeline.add_filter(ApplySuppressionsFilter())
+    pipeline.add_filter(FormatReportFilter())
     return pipeline
 
 

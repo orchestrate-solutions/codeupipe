@@ -39,23 +39,23 @@ class Unsupported(Exception):
 def _filter(spec):
     op = spec["op"]
     if op == "set":
-        return ops.Set(spec["key"], spec["value"])
+        return ops.SetFilter(spec["key"], spec["value"])
     if op == "copy":
-        return ops.Copy(spec["from"], spec["to"])
+        return ops.CopyFilter(spec["from"], spec["to"])
     if op == "add":
-        return ops.Add(spec["key"], spec["by"])
+        return ops.AddFilter(spec["key"], spec["by"])
     if op == "append":
-        return ops.Append(spec["key"], spec["value"])
+        return ops.AppendFilter(spec["key"], spec["value"])
     if op == "remove":
-        return ops.Remove(spec["key"])
+        return ops.RemoveFilter(spec["key"])
     if op == "merge":
-        return ops.Merge(spec["value"])
+        return ops.MergeFilter(spec["value"])
     if op == "has":
-        return ops.Has(spec["key"], spec["to"])
+        return ops.HasFilter(spec["key"], spec["to"])
     if op == "mutate":
-        return ops.Mutate(spec["key"], spec["value"])
+        return ops.MutateFilter(spec["key"], spec["value"])
     if op == "fail":
-        return ops.Fail(spec["message"])
+        return ops.FailFilter(spec["message"])
     raise Unsupported(f"unknown filter op {op!r}")
 
 
@@ -121,7 +121,7 @@ def build(case, cls, predicates, names):
         elif kind == "pipeline":
             if not hasattr(p, "add_pipeline"):
                 raise Unsupported(f"{cls.__name__} has no add_pipeline")
-            obj = build({"steps": step["steps"]}, ops.Nested, predicates, names)
+            obj = build({"steps": step["steps"]}, ops.NestedPipeline, predicates, names)
             p.add_pipeline(obj)
         else:
             raise Unsupported(f"unknown step kind {kind!r}")

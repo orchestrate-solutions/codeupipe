@@ -3,7 +3,8 @@
 from codeupipe_lint.anonymous_steps.finding import Finding
 
 __all__ = ["RULES", "PARSE_ERROR", "PAYLOAD_INTERNALS", "SHARED_VALUE_MUTATION", "STATE_READ",
-           "WRITE_OUTSIDE_FILTER", "ONE_PRIMITIVE_PER_FILE", "make_finding"]
+           "WRITE_OUTSIDE_FILTER", "ONE_PRIMITIVE_PER_FILE", "PRIMITIVE_FILE_NAME",
+           "PRIMITIVE_ROLE_SUFFIX", "make_finding"]
 
 PARSE_ERROR = "CUP-I000"
 PAYLOAD_INTERNALS = "CUP-I001"
@@ -11,6 +12,8 @@ SHARED_VALUE_MUTATION = "CUP-I002"
 STATE_READ = "CUP-I003"
 WRITE_OUTSIDE_FILTER = "CUP-I004"
 ONE_PRIMITIVE_PER_FILE = "CUP-I005"
+PRIMITIVE_FILE_NAME = "CUP-I006"
+PRIMITIVE_ROLE_SUFFIX = "CUP-I007"
 
 RULES = {
     PARSE_ERROR: "parse-error",
@@ -19,6 +22,8 @@ RULES = {
     STATE_READ: "state-read-in-step",
     WRITE_OUTSIDE_FILTER: "write-outside-filter",
     ONE_PRIMITIVE_PER_FILE: "one-primitive-per-file",
+    PRIMITIVE_FILE_NAME: "primitive-file-name",
+    PRIMITIVE_ROLE_SUFFIX: "primitive-role-suffix",
 }
 
 _FIX = {
@@ -34,6 +39,10 @@ _FIX = {
                            "Put the write in a Filter, or write to payload.copy()."),
     ONE_PRIMITIVE_PER_FILE: ("Give each Filter, Tap, Hook, predicate and named Pipeline its own file, so it can "
                              "be tested alone and used again. The pipeline file is where they come together."),
+    PRIMITIVE_FILE_NAME: ("The file name of a primitive is its class name in snake_case, so one name gives "
+                          "the other."),
+    PRIMITIVE_ROLE_SUFFIX: ("A primitive's class name ends with its role (Filter, Tap, Hook, Predicate, "
+                            "Pipeline), so the name tells what the class is."),
 }
 
 

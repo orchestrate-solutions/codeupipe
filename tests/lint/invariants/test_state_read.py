@@ -1,9 +1,9 @@
 """CUP-I003: a Filter or a Valve predicate must not read pipeline State."""
 
 from codeupipe import Payload
-from codeupipe_lint.invariants.analyze_state_reads import AnalyzeStateReads
+from codeupipe_lint.invariants.analyze_state_reads_filter import AnalyzeStateReadsFilter
 from codeupipe_lint.invariants.lint_pipeline import lint_paths
-from codeupipe_lint.invariants.parse_python import ParsePython
+from codeupipe_lint.invariants.parse_python_filter import ParsePythonFilter
 from codeupipe_lint.invariants.__main__ import main
 
 from ._support import by_line, expectations, fixture
@@ -13,8 +13,8 @@ NEGATIVE = fixture("state_read_negative.py")
 
 
 def analyze(path):
-    parsed = ParsePython().call(Payload({"files": {"python": [path]}, "findings": [], "errors": []}))
-    out = AnalyzeStateReads().call(parsed)
+    parsed = ParsePythonFilter().call(Payload({"files": {"python": [path]}, "findings": [], "errors": []}))
+    out = AnalyzeStateReadsFilter().call(parsed)
     return out.get("findings")
 
 

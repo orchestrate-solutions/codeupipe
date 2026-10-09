@@ -3,9 +3,9 @@
 import shutil
 
 from codeupipe import Payload
-from codeupipe_lint.invariants.analyze_primitives_per_file import AnalyzePrimitivesPerFile
+from codeupipe_lint.invariants.analyze_primitives_per_file_filter import AnalyzePrimitivesPerFileFilter
 from codeupipe_lint.invariants.lint_pipeline import lint_paths
-from codeupipe_lint.invariants.parse_python import ParsePython
+from codeupipe_lint.invariants.parse_python_filter import ParsePythonFilter
 from codeupipe_lint.invariants.__main__ import main
 
 from ._support import by_line, expectations, fixture
@@ -13,6 +13,7 @@ from ._support import by_line, expectations, fixture
 POSITIVE = fixture("primitives_per_file_positive.py")
 NEGATIVE = fixture("primitives_per_file_negative.py")
 SUPPRESSED = fixture("primitives_per_file_suppressed.py")
+NAME_RULES = ["CUP-I006", "CUP-I007"]  # the fixtures are about one rule; their names are not the subject
 
 
 def _outside_tests(tmp_path, source, name="steps.py"):
@@ -24,8 +25,8 @@ def _outside_tests(tmp_path, source, name="steps.py"):
 
 
 def analyze(path):
-    parsed = ParsePython().call(Payload({"files": {"python": [path]}, "findings": [], "errors": []}))
-    return AnalyzePrimitivesPerFile().call(parsed).get("findings")
+    parsed = ParsePythonFilter().call(Payload({"files": {"python": [path]}, "findings": [], "errors": []}))
+    return AnalyzePrimitivesPerFileFilter().call(parsed).get("findings")
 
 
 def test_flags_every_primitive_after_the_first(tmp_path):
@@ -53,13 +54,13 @@ def test_test_files_are_not_checked(tmp_path):
 
 
 def test_suppression_comment_drops_the_finding(tmp_path):
-    out = lint_paths([_outside_tests(tmp_path, SUPPRESSED)])
+    out = lint_paths([_outside_tests(tmp_path, SUPPRESSED)], disable=NAME_RULES)
     assert out.get("findings") == []
     assert len(out.get("suppressed")) == 1
 
 
 def test_the_rule_runs_in_the_pipeline(tmp_path):
-    out = lint_paths([_outside_tests(tmp_path, POSITIVE)])
+    out = lint_paths([_outside_tests(tmp_path, POSITIVE)], disable=NAME_RULES)
     assert {f.rule for f in out.get("findings")} == {"CUP-I005"}
 
 

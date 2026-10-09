@@ -3,9 +3,9 @@
 import textwrap
 
 from codeupipe import Payload
-from codeupipe_lint.invariants.analyze_payload_mutation import AnalyzePayloadMutation
+from codeupipe_lint.invariants.analyze_payload_mutation_filter import AnalyzePayloadMutationFilter
 from codeupipe_lint.invariants.lint_pipeline import lint_paths
-from codeupipe_lint.invariants.parse_python import ParsePython
+from codeupipe_lint.invariants.parse_python_filter import ParsePythonFilter
 from codeupipe_lint.invariants.__main__ import main
 
 from ._support import by_line, expectations, fixture
@@ -15,8 +15,8 @@ NEGATIVE = fixture("payload_mutation_negative.py")
 
 
 def analyze(path):
-    parsed = ParsePython().call(Payload({"files": {"python": [path]}, "findings": [], "errors": []}))
-    out = AnalyzePayloadMutation().call(parsed)
+    parsed = ParsePythonFilter().call(Payload({"files": {"python": [path]}, "findings": [], "errors": []}))
+    out = AnalyzePayloadMutationFilter().call(parsed)
     return out.get("findings")
 
 
@@ -67,9 +67,9 @@ def test_pipeline_reports_sorted_lines_and_exit_code():
 
 
 def test_a_clean_file_reports_none(tmp_path):
-    clean = tmp_path / "clean.py"
+    clean = tmp_path / "fine_filter.py"
     clean.write_text(textwrap.dedent("""
-        class Fine:
+        class FineFilter:
             def call(self, payload):
                 return payload.insert("a", 1)
     """))

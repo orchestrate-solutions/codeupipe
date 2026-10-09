@@ -9,15 +9,16 @@ import sys
 
 from codeupipe import Payload
 
-from examples.pricing.at_least import AtLeast
-from examples.pricing.discount import Discount
-from examples.pricing.mark_bulk import MarkBulk
+from examples.pricing.at_least_predicate import AtLeastPredicate
+from examples.pricing.discount_filter import DiscountFilter
+from examples.pricing.mark_bulk_filter import MarkBulkFilter
 from examples.pricing.pipeline import build_pricing
-from examples.pricing.print_steps import PrintSteps
+from examples.pricing.print_steps_hook import PrintStepsHook
 
 EXAMPLE = pathlib.Path(__file__).resolve().parents[2] / "examples" / "pricing"
-PARTS = {"discount.py": "Discount", "mark_bulk.py": "MarkBulk", "at_least.py": "AtLeast",
-         "audit_tap.py": "AuditTap", "print_steps.py": "PrintSteps"}
+PARTS = {"discount_filter.py": "DiscountFilter", "mark_bulk_filter.py": "MarkBulkFilter",
+         "at_least_predicate.py": "AtLeastPredicate", "audit_tap.py": "AuditTap",
+         "print_steps_hook.py": "PrintStepsHook"}
 
 
 def test_each_primitive_is_alone_in_its_file():
@@ -30,23 +31,23 @@ def test_each_primitive_is_alone_in_its_file():
 def test_the_pipeline_file_only_puts_them_together():
     source = (EXAMPLE / "pipeline.py").read_text()
     assert "\nclass " not in source
-    for module in ("discount", "mark_bulk", "at_least", "audit_tap"):
+    for module in ("discount_filter", "mark_bulk_filter", "at_least_predicate", "audit_tap"):
         assert f"from .{module} import" in source
 
 
 def test_each_part_works_alone():
-    assert Discount(0.5).call(Payload({"price": 10.0})).to_dict() == {"price": 5.0}
-    assert MarkBulk().call(Payload({})).to_dict() == {"bulk": True}
-    assert AtLeast("qty", 10).test(Payload({"qty": 10})) is True
-    assert AtLeast("qty", 10).test(Payload({"qty": 9})) is False
+    assert DiscountFilter(0.5).call(Payload({"price": 10.0})).to_dict() == {"price": 5.0}
+    assert MarkBulkFilter().call(Payload({})).to_dict() == {"bulk": True}
+    assert AtLeastPredicate("qty", 10).test(Payload({"qty": 10})) is True
+    assert AtLeastPredicate("qty", 10).test(Payload({"qty": 9})) is False
 
 
 def test_dynamic_run():
     pipeline = build_pricing()
     out = pipeline.run(Payload({"price": 100.0, "qty": 12}))
     assert out.to_dict() == {"price": 90.0, "qty": 12, "bulk": True}
-    assert pipeline.identities == ["examples.pricing.discount.Discount",
-                                   "examples.pricing.mark_bulk.MarkBulk",
+    assert pipeline.identities == ["examples.pricing.discount_filter.DiscountFilter",
+                                   "examples.pricing.mark_bulk_filter.MarkBulkFilter",
                                    "examples.pricing.audit_tap.AuditTap"]
     assert [name for name, _ in pipeline.state.errors] == ["examples.pricing.audit_tap.AuditTap"]
 
@@ -55,15 +56,15 @@ def test_valve_skips_small_orders():
     pipeline = build_pricing()
     out = pipeline.run(Payload({"price": 100.0, "qty": 2}))
     assert out.to_dict() == {"price": 90.0, "qty": 2}
-    assert pipeline.state.skipped == ["examples.pricing.mark_bulk.MarkBulk"]
+    assert pipeline.state.skipped == ["examples.pricing.mark_bulk_filter.MarkBulkFilter"]
 
 
 def test_a_hook_sees_each_step(capsys):
     pipeline = build_pricing()
-    pipeline.use_hook(PrintSteps())
+    pipeline.use_hook(PrintStepsHook())
     pipeline.run(Payload({"price": 100.0, "qty": 12}))
     lines = capsys.readouterr().out.splitlines()
-    assert lines == ["  discount.Discount", "  mark_bulk.MarkBulk"]
+    assert lines == ["  discount_filter.DiscountFilter", "  mark_bulk_filter.MarkBulkFilter"]
 
 
 def test_the_example_runs_as_a_module():

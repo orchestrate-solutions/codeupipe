@@ -3,7 +3,7 @@
 An object with ``test(payload) -> bool``, identified by its class like a
 step, with any configuration on the instance::
 
-    class AtLeast:
+    class AtLeastPredicate:
         def __init__(self, n):
             self.n = n
 

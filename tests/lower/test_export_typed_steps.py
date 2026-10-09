@@ -56,7 +56,7 @@ def test_an_annotated_local_keeps_its_value_and_loses_its_type(tmp_path):
 def test_erasing_hints_never_leaves_an_empty_block():
     import ast
 
-    from codeupipe.lower.filters.parse_filter_source import _erase_annotations
+    from codeupipe.lower.filters.parse_filter_source_filter import _erase_annotations
 
     source = (
         "def call(self, payload: 'P', *rest: int, flag: bool = False, **more: str) -> 'P':\n"

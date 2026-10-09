@@ -1,9 +1,9 @@
 """CUP-I004: only a Filter writes to the Payload."""
 
 from codeupipe import Payload
-from codeupipe_lint.invariants.analyze_outside_writes import AnalyzeOutsideWrites
+from codeupipe_lint.invariants.analyze_outside_writes_filter import AnalyzeOutsideWritesFilter
 from codeupipe_lint.invariants.lint_pipeline import lint_paths
-from codeupipe_lint.invariants.parse_python import ParsePython
+from codeupipe_lint.invariants.parse_python_filter import ParsePythonFilter
 from codeupipe_lint.invariants.__main__ import main
 
 from ._support import by_line, expectations, fixture
@@ -13,8 +13,8 @@ NEGATIVE = fixture("outside_write_negative.py")
 
 
 def analyze(path):
-    parsed = ParsePython().call(Payload({"files": {"python": [path]}, "findings": [], "errors": []}))
-    return AnalyzeOutsideWrites().call(parsed).get("findings")
+    parsed = ParsePythonFilter().call(Payload({"files": {"python": [path]}, "findings": [], "errors": []}))
+    return AnalyzeOutsideWritesFilter().call(parsed).get("findings")
 
 
 def test_flags_exactly_the_marked_lines():

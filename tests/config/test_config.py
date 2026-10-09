@@ -21,11 +21,11 @@ def write(directory, config, name="cup.config.json"):
 def project(tmp_path, monkeypatch):
     """A directory with one clean file and one that breaks an invariant."""
     (tmp_path / "src").mkdir()
-    (tmp_path / "src" / "clean.py").write_text(
-        "class Fine:\n    def call(self, payload):\n        return payload.insert('a', 1)\n")
+    (tmp_path / "src" / "clean_filter.py").write_text(
+        "class CleanFilter:\n    def call(self, payload):\n        return payload.insert('a', 1)\n")
     (tmp_path / "src" / "generated").mkdir()
-    (tmp_path / "src" / "generated" / "bad.py").write_text(
-        "class Bad:\n    def call(self, payload):\n        payload._data['a'] = 1\n        return payload\n")
+    (tmp_path / "src" / "generated" / "bad_filter.py").write_text(
+        "class BadFilter:\n    def call(self, payload):\n        payload._data['a'] = 1\n        return payload\n")
     monkeypatch.chdir(tmp_path)
     return tmp_path
 
@@ -105,21 +105,21 @@ def test_lint_finds_what_the_config_does_not_exclude(project, capsys):
 def test_paths_on_the_command_line_win_over_the_config(project, capsys):
     write(project, {"lint": {"paths": ["src/generated"]}})
 
-    assert invariants_main(["src/clean.py"]) == 0
+    assert invariants_main(["src/clean_filter.py"]) == 0
 
 
 def test_a_path_named_on_the_command_line_is_checked_even_if_the_config_excludes_it(project, capsys):
     write(project, {"lint": {"paths": ["src"], "exclude": ["*/generated/*"]}})
 
-    assert invariants_main(["src/generated/bad.py"]) == 1
+    assert invariants_main(["src/generated/bad_filter.py"]) == 1
     assert "CUP-I001" in capsys.readouterr().out
-    assert anonymous_main(["src/generated/bad.py"]) == 0     # checked, and it has no anonymous step
+    assert anonymous_main(["src/generated/bad_filter.py"]) == 0     # checked, and it has no anonymous step
 
 
 def test_with_paths_on_the_command_line_a_broken_config_does_not_matter(project):
     write(project, {"lint": {"path": ["src"]}})
 
-    assert invariants_main(["src/clean.py"]) == 0
+    assert invariants_main(["src/clean_filter.py"]) == 0
 
 
 def test_an_exclude_on_the_command_line_wins_over_the_config(project):
@@ -142,7 +142,7 @@ def test_a_bad_config_stops_lint_with_exit_2(project, capsys):
 
 
 def test_lint_reads_a_named_config(project):
-    write(project, {"lint": {"paths": ["src/clean.py"]}}, "ci.json")
+    write(project, {"lint": {"paths": ["src/clean_filter.py"]}}, "ci.json")
 
     assert invariants_main(["--config", "ci.json"]) == 0
 

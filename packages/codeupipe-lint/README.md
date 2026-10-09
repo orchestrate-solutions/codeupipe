@@ -9,7 +9,7 @@ Each rule can be switched off. There are three ways.
 
 | For | How |
 |---|---|
-| One line | A comment on the line: `# cup: allow-anonymous`, `# cup: allow-mutation`, `# cup: allow-state-read`, `# cup: allow-outside-write`, `# cup: allow-shared-file` |
+| One line | A comment on the line: `# cup: allow-anonymous`, `# cup: allow-mutation`, `# cup: allow-state-read`, `# cup: allow-outside-write`, `# cup: allow-shared-file`, `# cup: allow-name` |
 | Some files | `--exclude GLOB`, or `lint.exclude` in `cup.config.json` |
 | The whole project | `--disable RULE`, or `lint.disable` in `cup.config.json` |
 
@@ -93,7 +93,8 @@ The linter is a CUP pipeline (dogfooding), built with `codeupipe` from
 module-level filters, one class per file:
 
 ```
-CollectFiles -> AnalyzePython -> ApplySuppressions -> FormatReport
+CollectFilesFilter -> AnalyzePythonFilter -> DropDisabledFilter
+  -> ApplySuppressionsFilter -> FormatReportFilter
 ```
 
 Tests mirror the source under `tests/lint/anonymous_steps/`; fixtures, each
@@ -124,6 +125,8 @@ a path could not be read. From Python:
 | CUP-I003 | state-read-in-step | a Filter (`call`) or Valve predicate (`test`) reaching pipeline State: `self.pipeline.state.executed`, `PIPELINE.state.errors`, or an attribute `__init__` set to a State |
 | CUP-I004 | write-outside-filter | a Tap (`observe`), a predicate (`test`) or a Hook (`before`, `after`, `on_error`) that calls `insert`, `remove`, `merge` or `with_trace` on its payload |
 | CUP-I005 | one-primitive-per-file | a second Filter, Tap, Hook, predicate or named Pipeline class at module level in one file |
+| CUP-I006 | primitive-file-name | the file of a primitive is not its class name in snake_case (`DiscountFilter` is in `discount_filter.py`) |
+| CUP-I007 | primitive-role-suffix | the class name of a primitive does not end with its role: `Filter`, `Tap`, `Hook`, `Predicate` or `Pipeline` |
 
 **Why CUP-I002.** A Payload owns its keys, not its values.
 `payload.get("items")` returns the live list, shared with every copy of the
@@ -149,6 +152,13 @@ after it is reported. Plain classes and functions beside the primitive are
 not reported. Test files (`test_*.py`, `conftest.py`, anything under a
 `tests` directory) are not checked: a test often needs several small steps
 side by side. Suppress with `cup: allow-shared-file`.
+
+**Why CUP-I006 and CUP-I007.** A name that ends with its role tells what
+the class is: `DiscountFilter`, `AuditTap`, `PrintStepsHook`,
+`AtLeastPredicate`, `PricingPipeline`. The file name is the same words in
+the standard style for a Python module, so one name gives the other. A
+subclass of `Valve` can end with `Valve`. Test files are not checked.
+Suppress with `cup: allow-name`.
 
 **Why CUP-I003.** A Filter's result and a Valve's decision must depend only
 on the Payload. A step is never handed State, so the only way to read it is

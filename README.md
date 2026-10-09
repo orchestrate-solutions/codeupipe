@@ -29,17 +29,20 @@ pipeline file imports them and adds them.
 
 ```
 examples/pricing/
-  discount.py      Filter
-  mark_bulk.py     Filter
-  at_least.py      predicate (the condition of a Valve)
-  audit_tap.py     Tap
-  print_steps.py   Hook
-  pipeline.py      Pipeline
+  discount_filter.py      Filter
+  mark_bulk_filter.py     Filter
+  at_least_predicate.py   predicate (the condition of a Valve)
+  audit_tap.py            Tap
+  print_steps_hook.py     Hook
+  pipeline.py             Pipeline
 ```
 
+A class name ends with its role. The file name is the class name in
+snake_case.
+
 ```python
-# discount.py — a Filter: takes the Payload, writes to it, returns it
-class Discount:
+# discount_filter.py
+class DiscountFilter:
     def __init__(self, rate):
         self.rate = rate
 
@@ -48,8 +51,8 @@ class Discount:
 ```
 
 ```python
-# at_least.py — a predicate: an object with test(payload)
-class AtLeast:
+# at_least_predicate.py
+class AtLeastPredicate:
     def __init__(self, key, minimum):
         self.key = key
         self.minimum = minimum
@@ -59,20 +62,22 @@ class AtLeast:
 ```
 
 ```python
-# pipeline.py — where the parts come together
+# pipeline.py
 from codeupipe import Pipeline, Valve
 
-from .at_least import AtLeast
+from .at_least_predicate import AtLeastPredicate
 from .audit_tap import AuditTap
-from .discount import Discount
-from .mark_bulk import MarkBulk
+from .discount_filter import DiscountFilter
+from .mark_bulk_filter import MarkBulkFilter
 
 
 def build_pricing():
     pipeline = Pipeline()
-    pipeline.add_filter(Discount(0.1))
-    pipeline.add_filter(Valve(MarkBulk(), AtLeast("qty", 10)))  # runs only when the predicate holds
-    pipeline.add_tap(AuditTap())                                # its failure never halts the run
+    pipeline.add_filter(DiscountFilter(0.1))
+    # MarkBulkFilter runs only when the predicate is true.
+    pipeline.add_filter(Valve(MarkBulkFilter(), AtLeastPredicate("qty", 10)))
+    # A Tap failure is recorded and does not stop the run.
+    pipeline.add_tap(AuditTap())
     return pipeline
 ```
 
@@ -85,8 +90,8 @@ build_pricing().run(Payload({"price": 100.0, "qty": 12})).to_dict()
 
 A step must be a class in a module. A lambda, or a class in the script that
 you run, is refused. The reason is step identity: a step is identified by its
-type, for example `examples.pricing.discount.Discount`. State, Hooks and the
-export use that identity.
+type, for example `examples.pricing.discount_filter.DiscountFilter`. State,
+Hooks and the export use that identity.
 
 ```bash
 python -m examples.pricing
