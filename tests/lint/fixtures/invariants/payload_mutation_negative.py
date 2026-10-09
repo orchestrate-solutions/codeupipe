@@ -60,7 +60,7 @@ class ChangesATopLevelCopy:
     def call(self, payload):
         data = payload.to_dict()
         data["a"] = 1
-        return payload.replace_data(data)
+        return payload.insert("a", data["a"])
 
 
 class MutatesItsOwnState:

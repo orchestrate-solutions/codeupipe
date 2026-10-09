@@ -145,35 +145,7 @@ def _inline_module(pipeline):
 
 
 class TestInlineRemovesRedundantCopies:
-    """Generated code is dict-style (``doc = dict(payload.to_dict())``
-    ... ``return payload.replace_data(doc)``) and wraps every Valve predicate
-    as ``pred(payload.to_dict())``. Inlined naively that is three dict copies
-    per step; the P3 round trip measured +57% over hand-written because of it."""
-
-    def test_dict_style_step_mutates_data_directly(self, tmp_path):
-        p = _pipeline(("dict_style", s.DictStyle()))
-        module = _inline_module(p)
-
-        assert module.count("dict(data)") == 1  # the one entry copy
-        assert "dict(dict(" not in module
-        package = _write_and_import(_export_inline(p), tmp_path)
-        _assert_parity(p, package, [{}, {"profile": {"a": 1}}])
-
-    def test_a_step_that_reads_the_old_payload_keeps_its_copy(self, tmp_path):
-        p = _pipeline(("reads_old", s.DictStyleReadsOldPayload()))
-        package = _write_and_import(_export_inline(p), tmp_path)
-
-        assert package.run({"x": 5}) == {"x": 1, "old_x": 5}
-        _assert_parity(p, package, [{"x": 5}, {}])
-
-    def test_a_leaked_doc_keeps_its_copy(self, tmp_path):
-        p = _pipeline(("leaks", s.DictStyleLeaksDoc()), ("set_a", s.SetA()))
-        package = _write_and_import(_export_inline(p), tmp_path)
-
-        package.run({"x": 1})
-
-        docs = next(v for k, v in vars(package.pipeline).items() if k.endswith("DOCS"))
-        assert docs[-1] == {"x": 1}
+    """A predicate that calls a one-line helper is inlined with no dict copy."""
 
     def test_a_one_line_helper_predicate_is_inlined_without_a_copy(self, tmp_path):
         p = Pipeline()

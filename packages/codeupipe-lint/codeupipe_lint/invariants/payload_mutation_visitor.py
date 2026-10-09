@@ -21,7 +21,7 @@ import ast
 from .rules import PAYLOAD_INTERNALS, SHARED_VALUE_MUTATION, make_finding
 
 STEP_METHODS = {"call", "observe", "test"}
-PAYLOAD_RETURNING = {"insert", "insert_as", "remove", "merge", "replace_data", "with_trace"}
+PAYLOAD_RETURNING = {"insert", "remove", "merge", "with_trace"}
 MUTATORS = {"append", "extend", "insert", "remove", "pop", "clear", "sort", "reverse", "update", "setdefault",
             "popitem", "add", "discard", "difference_update", "intersection_update",
             "symmetric_difference_update", "appendleft", "extendleft", "popleft"}

@@ -74,7 +74,7 @@ def _drop_unused_framework_imports(imports: tuple, *trees: ast.AST) -> tuple:
 # counterpart and would otherwise pass through as ``data.<attr>`` on a dict,
 # failing only when the exported code runs.
 _LOWERED_MEMBERS = frozenset({
-    "get", "insert", "remove", "merge", "has", "to_dict", "with_mutation", "replace_data", "set",
+    "get", "insert", "remove", "merge", "has", "to_dict", "with_mutation", "set",
 })
 
 _OBSERVABILITY_MEMBERS = frozenset({"trace_id", "lineage", "with_trace"})
@@ -218,18 +218,10 @@ class _PayloadToDictTransformer(ast.NodeTransformer):
                         raise self._error(node, "Call",
                                           "payload.remove needs a literal or a name as its key to export.")
                     return ast.copy_location(_without(key), node)
-                if attr == "replace_data":
-                    # The shape generated dict-style steps use.
-                    # A Payload whose entire contents are `x` is, in plain
-                    # Python, just `x`. Trace ID and lineage have no
-                    # plain-Python counterpart to carry.
-                    if len(node.args) != 1 or node.keywords:
-                        raise self._error(node, "Call", "payload.replace_data must take exactly one positional argument.")
-                    return node.args[0]
                 if attr == "set":
                     raise self._error(node, "Attribute", "Rewrite payload.set to an assignment statement before export.")
                 if attr != "insert":
-                    raise self._error(node, "Attribute", "Exportable Payload operations: get, insert, remove, merge, has, to_dict, with_mutation, replace_data.")
+                    raise self._error(node, "Attribute", "Exportable Payload operations: get, insert, remove, merge, has, to_dict, with_mutation.")
 
         return node
 

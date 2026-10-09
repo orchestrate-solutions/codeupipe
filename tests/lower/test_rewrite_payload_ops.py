@@ -216,35 +216,6 @@ class TestValvePredicateRewrite:
         assert "data.get" in pred_src
 
 
-class TestReplaceDataRewrite:
-    """Generated dict-style steps end in ``payload.replace_data(doc)``; the
-    export must accept that shape."""
-
-    def test_replace_data_becomes_the_dict_itself(self):
-        fn = _fn(
-            """
-            def call(self, payload):
-                doc = dict(payload.to_dict())
-                doc["seen"] = True
-                return payload.replace_data(doc)
-            """
-        )
-        src = _unparse(_rewrite(_wrap(fn)).steps[0])
-        assert "return doc" in src
-        assert "replace_data" not in src
-        assert "payload" not in src
-
-    def test_replace_data_with_extra_arguments_is_refused(self):
-        fn = _fn(
-            """
-            def call(self, payload):
-                return payload.replace_data({}, strict=True)
-            """
-        )
-        with pytest.raises(UnsupportedFilterShape):
-            _rewrite(_wrap(fn))
-
-
 class TestContractVocabulary:
     """The API contract's Payload vocabulary lowers to plain dict operations
     (conformance/API.md): has, remove, merge, the Payload constructor, and

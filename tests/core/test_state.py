@@ -19,9 +19,7 @@ class TestState:
         assert state.executed == []
         assert state.skipped == []
         assert state.errors == []
-        assert state.metadata == {}
-        assert state.has_errors is False
-        assert state.last_error is None
+        assert state.timings == {}
 
     @pytest.mark.unit
     @pytest.mark.core
@@ -48,37 +46,8 @@ class TestState:
         err = ValueError("something broke")
         state.record_error("bad_filter", err)
 
-        assert state.has_errors is True
-        assert state.last_error is err
         assert len(state.errors) == 1
         assert state.errors[0] == ("bad_filter", err)
-
-    @pytest.mark.unit
-    @pytest.mark.core
-    def test_metadata(self):
-        """Test arbitrary metadata storage."""
-        state = State()
-        state.set("duration_ms", 42)
-        assert state.get("duration_ms") == 42
-        assert state.get("missing") is None
-        assert state.get("missing", "default") == "default"
-
-    @pytest.mark.unit
-    @pytest.mark.core
-    def test_reset(self):
-        """Test resetting state."""
-        state = State()
-        state.mark_executed("a")
-        state.mark_skipped("b")
-        state.record_error("c", RuntimeError("err"))
-        state.set("key", "val")
-
-        state.reset()
-
-        assert state.executed == []
-        assert state.skipped == []
-        assert state.errors == []
-        assert state.metadata == {}
 
     @pytest.mark.unit
     @pytest.mark.core

@@ -1,106 +1,45 @@
 """
-State: Pipeline Execution Metadata
+State: what happened in the last run.
 
-State tracks what happened during pipeline execution — which filters ran,
-which were skipped, timing data, and errors encountered.
-Access it after pipeline.run() via pipeline.state.
+Which steps executed, which a Valve skipped, the errors, and the timings
+when timing is on. Read it after a run through ``pipeline.state``.
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Set
+from typing import Dict, List, Tuple
 
 __all__ = ["State"]
 
 
 class State:
-    """
-    Pipeline execution state — tracks filter execution, timing, and errors.
+    """The record of one run. A run starts with a new State.
 
-    Provides visibility into what happened during a pipeline run:
-    - Which filters executed and in what order
-    - Which filters were skipped (by valves)
-    - Errors encountered during execution
-    - Arbitrary metadata for custom tracking
+    - ``executed``: step identities, in order
+    - ``skipped``: steps a Valve did not run
+    - ``errors``: (identity, error) pairs
+    - ``timings``: identity -> seconds, when timing is on
     """
 
     def __init__(self):
         self.executed: List[str] = []
         self.skipped: List[str] = []
         self.errors: List[Tuple[str, Exception]] = []
-        self.metadata: Dict[str, Any] = {}
         self.timings: Dict[str, float] = {}
 
     def mark_executed(self, name: str) -> None:
-        """Record that a filter executed."""
+        """Record that a step executed."""
         self.executed.append(name)
 
     def mark_skipped(self, name: str) -> None:
-        """Record that a filter was skipped."""
+        """Record that a step was skipped."""
         self.skipped.append(name)
 
     def record_timing(self, name: str, duration: float) -> None:
-        """Record step execution duration in seconds."""
+        """Record a step's duration in seconds."""
         self.timings[name] = duration
 
     def record_error(self, name: str, error: Exception) -> None:
-        """Record an error from a filter."""
+        """Record an error against a step."""
         self.errors.append((name, error))
-
-    def set(self, key: str, value: Any) -> None:
-        """Store arbitrary metadata."""
-        self.metadata[key] = value
-
-    def get(self, key: str, default: Any = None) -> Any:
-        """Retrieve metadata."""
-        return self.metadata.get(key, default)
-
-    @property
-    def has_errors(self) -> bool:
-        """Whether any errors were recorded."""
-        return len(self.errors) > 0
-
-    @property
-    def last_error(self) -> Optional[Exception]:
-        """The most recent error, or None."""
-        return self.errors[-1][1] if self.errors else None
-
-    def reset(self) -> None:
-        """Reset state for a fresh run."""
-        self.executed.clear()
-        self.skipped.clear()
-        self.errors.clear()
-        self.metadata.clear()
-        self.timings.clear()
-
-    def diff(self, other: 'State') -> Dict[str, Any]:
-        """Compare this state with another — what changed between runs."""
-        result: Dict[str, Any] = {}
-
-        added = [s for s in other.executed if s not in self.executed]
-        removed = [s for s in self.executed if s not in other.executed]
-        if added:
-            result["added_steps"] = added
-        if removed:
-            result["removed_steps"] = removed
-
-        timing_changes: Dict[str, Dict[str, Optional[float]]] = {}
-        all_steps: Set[str] = set(self.timings) | set(other.timings)
-        for step in sorted(all_steps):
-            old_t = self.timings.get(step)
-            new_t = other.timings.get(step)
-            if old_t != new_t:
-                timing_changes[step] = {"old": old_t, "new": new_t}
-        if timing_changes:
-            result["timing_changes"] = timing_changes
-
-        old_errors: Set[str] = {name for name, _ in self.errors}
-        new_errors: Set[str] = {name for name, _ in other.errors}
-        if old_errors != new_errors:
-            result["error_changes"] = {
-                "added": sorted(new_errors - old_errors),
-                "removed": sorted(old_errors - new_errors),
-            }
-
-        return result
 
     def __repr__(self) -> str:
         return (

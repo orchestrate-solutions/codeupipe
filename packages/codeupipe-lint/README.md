@@ -171,7 +171,7 @@ a path could not be read. From Python:
 | CUP-I000 | parse-error | the file could not be parsed |
 | CUP-I001 | payload-internals | a write through a Payload's `_data` (`payload._data[k] = v`, `payload._data.update(..)`, `del payload._data[k]`) |
 | CUP-I002 | shared-value-mutation | an in-place change to a value that came from `payload.get(..)`: `payload.get("items").append(x)`, or the same through a local name, a nested key, or the loop variable of a `for` over it |
-| CUP-I003 | state-read-in-step | a Filter (`call`) or Valve predicate (`test`) reaching pipeline State: `self.pipeline.state.executed`, `PIPELINE.state.get("flag")`, or an attribute `__init__` set to a State |
+| CUP-I003 | state-read-in-step | a Filter (`call`) or Valve predicate (`test`) reaching pipeline State: `self.pipeline.state.executed`, `PIPELINE.state.errors`, or an attribute `__init__` set to a State |
 
 **Why CUP-I002.** A Payload is immutable only at the top level.
 `payload.get("items")` returns the live list, shared with every earlier
@@ -193,11 +193,11 @@ are observers, so `observe` and Hook methods are not checked.
 `self.state` is not flagged when it is the step's own attribute. `<x>.state`
 is flagged when what follows is one of State's own members, or when the name
 it hangs off says it is a pipeline. A pipeline held under a name that does
-not contain "pipeline", read only through `.state.get(..)`, is a known miss.
+not contain "pipeline", read only through a member that is not State's own, is a known miss.
 
 CUP-I001 and CUP-I002 are checked in methods named `call`, `observe` or `test` of any class; the payload
 is the method's first parameter after `self`, and any name assigned from
-`payload.insert(..)`, `.remove(..)`, `.merge(..)`, `.replace_data(..)`.
+`payload.insert(..)`, `.remove(..)`, `.merge(..)`.
 
 Known limits:
 

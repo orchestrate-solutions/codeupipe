@@ -17,8 +17,10 @@ class KeepKeys:
         self.label = label
 
     def call(self, payload):
-        kept = {k: v for k, v in payload.to_dict().items() if k in self.keys}
-        return payload.replace_data({**kept, "label": self.label})
+        for key in payload.to_dict():
+            if key not in self.keys:
+                payload = payload.remove(key)
+        return payload.insert("label", self.label)
 
 
 class Tagger:

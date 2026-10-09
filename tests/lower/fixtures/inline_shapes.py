@@ -57,37 +57,6 @@ class AIsSet:
 
 # --- dict-style steps: the shape generated code uses ------------------------
 
-class DictStyle:
-    def call(self, payload):
-        doc = dict(payload.to_dict())
-        profile = dict(doc.get("profile", {}))
-        profile["active"] = True
-        doc["profile"] = profile
-        return payload.replace_data(doc)
-
-
-class DictStyleReadsOldPayload:
-    """After ``doc`` is modified, ``payload`` still holds the *old* value, so
-    ``doc`` cannot simply become ``data``."""
-
-    def call(self, payload):
-        doc = dict(payload.to_dict())
-        doc["x"] = 1
-        doc["old_x"] = payload.get("x")
-        return payload.replace_data(doc)
-
-
-DOCS = []
-
-
-class DictStyleLeaksDoc:
-    """``doc`` escapes into a list. Later in-place writes must not reach it."""
-
-    def call(self, payload):
-        doc = dict(payload.to_dict())
-        DOCS.append(doc)
-        return payload.replace_data(doc)
-
 
 def flag_on(d):
     return d.get("on") is True

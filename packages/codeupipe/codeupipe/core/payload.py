@@ -169,24 +169,6 @@ class Payload(Generic[T]):
         """Return a fresh Payload with the addition."""
         return self._child({key: value}, ())
 
-    def insert_as(self, key: str, value: Any) -> 'Payload[T]':
-        """
-        Create a new Payload with type evolution — allows clean transformation
-        between TypedDict shapes without explicit casting.
-        """
-        return self._child({key: value}, ())
-
-    def replace_data(self, data: Dict[str, Any]) -> 'Payload[T]':
-        """Return a new Payload with `data` as its entire contents.
-
-        Unlike `insert`, which adds one key, this swaps the whole dict — the
-        shape a dict-style filter naturally produces (`doc = dict(...);
-        ...mutate doc...; return doc`). Trace ID and lineage carry over,
-        which `type(payload)(data)` does not: that reconstructs a bare
-        Payload with neither, silently dropping both.
-        """
-        return Payload[T]._from_parts(dict(data), trace_id=self._trace_id, _lineage=self._lineage)
-
     def with_mutation(self) -> 'MutablePayload[T]':
         """Convert to a mutable sibling for performance-critical sections."""
         return MutablePayload[T]._from_parts(dict(self._materialized()), trace_id=self._trace_id,
@@ -245,19 +227,6 @@ class MutablePayload(Generic[T]):
     def remove(self, key: str) -> None:
         """Remove ``key`` in place (a no-op if it is absent)."""
         self._data.pop(key, None)
-
-    def has(self, key: str) -> bool:
-        return key in self._data
-
-    @property
-    def trace_id(self) -> Optional[str]:
-        """Trace ID for distributed tracing / lineage tracking."""
-        return self._trace_id
-
-    @property
-    def lineage(self) -> List[str]:
-        """Ordered list of step names this payload has passed through."""
-        return list(self._lineage)
 
     def to_immutable(self) -> Payload[T]:
         """Return to safety with a fresh immutable copy."""

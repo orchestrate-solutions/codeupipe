@@ -20,20 +20,20 @@ class ReadsAModuleLevelPipeline:
         return payload.insert("errors", len(PIPELINE.state.errors))  # expect: CUP-I003
 
 
-class ReadsMetadata:
+class ReadsTimings:
     def __init__(self, pipeline):
         self.pipeline = pipeline
 
     def call(self, payload):
-        return payload.insert("flag", self.pipeline.state.get("flag"))  # expect: CUP-I003
+        return payload.insert("flag", self.pipeline.state.timings.get("flag"))  # expect: CUP-I003
 
 
-class WritesMetadata:
+class WritesState:
     def __init__(self, pipeline):
         self.pipeline = pipeline
 
     def call(self, payload):
-        self.pipeline.state.set("seen", True)  # expect: CUP-I003
+        self.pipeline.state.mark_executed("seen")  # expect: CUP-I003
         return payload
 
 
@@ -76,7 +76,7 @@ class PredicateReadsState:
         self.pipeline = pipeline
 
     def test(self, payload):
-        return not self.pipeline.state.has_errors()  # expect: CUP-I003
+        return not self.pipeline.state.errors  # expect: CUP-I003
 
 
 class AsyncFilterReadsState:

@@ -7,10 +7,9 @@ exits non-zero if any target has a ❌.
 **Every runtime passes every case, and nothing is unsupported.** All seven
 runtimes implement the [API contract](API.md): one `Pipeline` with a
 synchronous `run` (plus opt-in async where the runtime has async steps),
-named steps, name-based Hooks, `Valve(name, inner, predicate)`, recorded Tap
-failures, nested pipelines, and the shared Payload vocabulary. Every
-runtime identifies steps by their filter rather than a
-hand-written name (API.md, "Step identity"); each runner maps the reported
+Hooks, `Valve(inner, predicate)`, recorded Tap failures, nested pipelines,
+and the shared Payload vocabulary. Every runtime identifies steps by their
+filter (API.md, "Step identity"); each runner maps the reported
 identities back to the cases' step names, so a wrong or inconsistent
 identity fails here.
 

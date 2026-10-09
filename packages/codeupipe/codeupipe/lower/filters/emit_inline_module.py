@@ -141,9 +141,6 @@ def _predicate_condition(fn: ast.FunctionDef, prefix: str, functions: List[str],
 def _inline_filter(fn: ast.FunctionDef, prefix: str) -> List[str]:
     fn = _rename_locals(fn, prefix)
     statements = _body_without_docstring(fn)
-    aliased = _alias_private_copy(statements)
-    if aliased is not None:
-        return [ast.unparse(stmt) for stmt in aliased]
     *head, last = statements
     lines = [ast.unparse(stmt) for stmt in head]
     value = last.value
@@ -179,9 +176,6 @@ def _insert_pairs(value: ast.AST) -> Optional[List[Tuple[ast.AST, ast.AST]]]:
 # redundant copies
 # --------------------------------------------------------------------------
 
-_SAFE_DICT_METHODS = {"get", "pop", "setdefault", "update", "copy", "clear", "popitem"}
-
-
 class _CollapseDoubleDict(ast.NodeTransformer):
     def visit_Call(self, node: ast.Call):
         node = self.generic_visit(node)
@@ -196,58 +190,8 @@ def _is_dict_call(node: ast.AST) -> bool:
 
 
 def _collapse_double_dict(fn: ast.AST) -> ast.AST:
-    """``dict(dict(x))`` is ``dict(x)``: generated dict-style steps carry the
-    double copy (``dict(payload.to_dict())``)."""
+    """``dict(dict(x))`` is ``dict(x)``."""
     return ast.fix_missing_locations(_CollapseDoubleDict().visit(fn))
-
-
-def _alias_private_copy(statements: List[ast.stmt]) -> Optional[List[ast.stmt]]:
-    """``doc = dict(data); ...mutate doc...; return doc`` -> mutate ``data``.
-
-    ``data`` is already a private copy made at the top of ``run()``, so a
-    second private copy is redundant *if* nothing could tell them apart:
-    ``doc`` is bound once, never escapes (only subscripted, compared, or
-    used with a safe dict method), and the step never reads ``data`` again
-    after copying it (it would see the old values). Otherwise returns None
-    and the step keeps its copy.
-    """
-    if len(statements) < 2:
-        return None
-    first, last = statements[0], statements[-1]
-    if not (isinstance(first, ast.Assign) and len(first.targets) == 1 and isinstance(first.targets[0], ast.Name)
-            and _is_dict_call(first.value) and isinstance(first.value.args[0], ast.Name)
-            and first.value.args[0].id == "data"):
-        return None
-    alias = first.targets[0].id
-    if not (isinstance(last, ast.Return) and isinstance(last.value, ast.Name) and last.value.id == alias):
-        return None
-    middle = statements[1:-1]
-    module = ast.Module(body=middle, type_ignores=[])
-    parents = {child: parent for parent in ast.walk(module) for child in ast.iter_child_nodes(parent)}
-    for node in ast.walk(module):
-        if not isinstance(node, ast.Name):
-            continue
-        if node.id == "data":
-            return None
-        if node.id != alias:
-            continue
-        if not isinstance(node.ctx, ast.Load):
-            return None
-        parent = parents.get(node)
-        if isinstance(parent, ast.Subscript) and parent.value is node:
-            continue
-        if isinstance(parent, ast.Compare) and node in parent.comparators:
-            continue
-        if (isinstance(parent, ast.Attribute) and parent.attr in _SAFE_DICT_METHODS
-                and isinstance(parents.get(parent), ast.Call) and parents[parent].func is parent):
-            continue
-        return None
-    rewritten = copy.deepcopy(middle)
-    for stmt in rewritten:
-        for node in ast.walk(stmt):
-            if isinstance(node, ast.Name) and node.id == alias:
-                node.id = "data"
-    return rewritten
 
 
 def _inline_helper_call(expr: ast.AST, helpers: Dict[str, ast.FunctionDef]) -> ast.AST:

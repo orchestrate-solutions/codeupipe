@@ -47,8 +47,7 @@ Rules that never differ:
 
 - `insert`, `remove`, `merge`, `with_trace` **never change the receiver.**
   Where the language can enforce use of the result it must: C++
-  `[[nodiscard]]`, Rust `#[must_use]`, C# `[Pure]`. Elsewhere `cup lint`'s
-  no-discarded-insert rule covers it.
+  `[[nodiscard]]`, Rust `#[must_use]`, C# `[Pure]`.
 - A typed read of the wrong type **fails loudly**; it never returns absent.
 - The caller's input map is never mutated (copied on construct).
 
@@ -77,7 +76,7 @@ passes through unchanged and the step is recorded in `state.skipped`, not
 ## Tap — read-only observer (Plane B)
 
 `observe(payload)`, no return value. **A Tap failure never halts the
-pipeline:** the error is recorded in `state.errors` under the Tap's name, the
+pipeline:** the error is recorded in `state.errors` under the Tap's identity, the
 Tap still counts as executed, and hooks are not notified. Taps fail the way
 the language fails without an error return (raise, or panic in Go and Rust).
 
@@ -85,8 +84,8 @@ the language fails without an error return (raise, or panic in Go and Rust).
 
 `before(step, payload)`, `after(step, payload)`, `on_error(step, error, payload)`.
 
-- `step` is the **step's name**, or its **identity** in a runtime that has
-  migrated (see "Step identity"). Pipeline-level events pass **absent**
+- `step` is the **step's identity** (see "Step identity"). Pipeline-level
+  events pass **absent**
   (`None`/`null`); in Go and C++, whose strings are not nullable, the empty
   string.
 - `error` is the error itself (never just its message).
@@ -98,9 +97,9 @@ the language fails without an error return (raise, or panic in Go and Rust).
 
 ## State — what happened in the last run
 
-`executed` (names, in order), `skipped` (names), `errors` (name + error),
-`timings` (name → seconds, when timing is on). A migrated runtime reports
-identities in place of names. A run resets State. **A failed
+`executed` (identities, in order), `skipped` (identities), `errors`
+(identity + error), `timings` (identity → seconds, when timing is on). A run
+starts with a new State. **A failed
 run keeps the steps that completed before the failure.**
 
 ## Pipeline — one type per runtime
@@ -108,31 +107,30 @@ run keeps the steps that completed before the failure.**
 | Operation | Python | TypeScript | Go | Rust | Kotlin | C# | C++ |
 |---|---|---|---|---|---|---|---|
 | construct | `Pipeline()` | `new Pipeline()` | `NewPipeline()` | `Pipeline::new()` | `Pipeline()` | `new Pipeline()` | `Pipeline()` |
-| add a filter / Valve | `add_filter(f, name)` | `addFilter(f, name)` | `AddFilter(f, name)` | `add_filter(f, name)` | `addFilter(f, name)` | `AddFilter(f, name)` | `add_filter(f, name)` |
-| add a tap | `add_tap(t, name)` | `addTap(t, name)` | `AddTap(t, name)` | `add_tap(t, name)` | `addTap(t, name)` | `AddTap(t, name)` | `add_tap(t, name)` |
-| nest a pipeline | `add_pipeline(p, name)` | `addPipeline(p, name)` | `AddPipeline(p, name)` | `add_pipeline(p, name)` | `addPipeline(p, name)` | `AddPipeline(p, name)` | `add_pipeline(p, name)` |
+| add a filter / Valve | `add_filter(f)` | `addFilter(f)` | `AddFilter(f)` | `add_filter(f)` | `addFilter(f)` | `AddFilter(f)` | `add_filter(f)` |
+| add a tap | `add_tap(t)` | `addTap(t)` | `AddTap(t)` | `add_tap(t)` | `addTap(t)` | `AddTap(t)` | `add_tap(t)` |
+| nest a pipeline | `add_pipeline(p)` | `addPipeline(p)` | `AddPipeline(p)` | `add_pipeline(p)` | `addPipeline(p)` | `AddPipeline(p)` | `add_pipeline(p)` |
 | add a hook | `use_hook(h)` | `useHook(h)` | `UseHook(h)` | `use_hook(h)` | `useHook(h)` | `UseHook(h)` | `use_hook(h)` |
 | run (sync) | `run(p)` | `run(p)` | `Run(p)` | `run(p)` | `run(p)` | `Run(p)` | `run(p)` |
 | run (async, opt-in) | `run_async(p)` | `runAsync(p)` | — | — | — | — | — |
 | last run | `state` | `state` | `State()` | `state()` | `state` | `State` | `state()` |
 
-- **Step names are required** and are what State and Hooks report, until
-  a runtime migrates to step identity: then `add_filter(f)`, `add_tap(t)`,
-  `add_pipeline(p)` take no name. **Migrated: Python.**
+- **Steps have no names.** State and Hooks report each step's identity
+  (see "Step identity").
 - **`run` is synchronous** and never starts an event loop. If it meets an
   async step it raises (Python's `AsyncStepInSyncRun`) rather than silently
   paying for a loop. `run_async` exists only where the runtime has async
   steps; a `run_async` that merely wrapped `run` would be async in name only.
-- A nested pipeline is one step: its name (or identity) appears once in the
-  parent's State.
+- A nested pipeline is one step: its identity appears once in the parent's
+  State.
+- **Timing and lineage are off by default.** Python turns them on with
+  `observe(timing=True, lineage=False)`, Go with `Observe(timing, lineage)`.
 
 ## Step identity: the filter, not a name
 
-**Decision.** Step names are removed. A step's identity is a pointer to the
-code that runs it, derived automatically: `add_filter(f)`, not
-`add_filter(f, name)`. State, Hooks, the event log and exported code all
-report this identity. The rules above that mention names change when a
-runtime migrates; until then they stand for it.
+A step's identity is a pointer to the code that runs it, derived
+automatically: `add_filter(f)`, not `add_filter(f, name)`. State, Hooks and
+exported code all report this identity.
 
 Why: in a codebase maintained by agents and reviewed by humans, an
 identity taken from the code cannot drift from it. A hand-written name is

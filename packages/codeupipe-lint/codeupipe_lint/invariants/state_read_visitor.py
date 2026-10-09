@@ -4,9 +4,9 @@ A step is never handed State, so it can only read it through something it
 holds. Inside ``call`` and ``test`` this flags:
 
 * ``<x>.state.<member>`` where the member is one of State's own
-  (``executed``, ``skipped``, ``errors``, ``timings``, ``has_errors()``, ...);
+  (``executed``, ``skipped``, ``errors``, ``timings``, ...);
 * ``<pipeline>.state`` in any form, when the name it hangs off says it is a
-  pipeline (``self.pipeline.state``, ``PIPELINE.state.get("flag")``);
+  pipeline (``self.pipeline.state``, ``PIPELINE.state.executed``);
 * any use of an attribute the class's ``__init__`` set to a State: from a
   parameter annotated ``State``, from ``<x>.state``, or from ``State()``.
 
@@ -20,9 +20,8 @@ import ast
 from .rules import STATE_READ, make_finding
 
 STEP_METHODS = {"call", "test"}
-STATE_MEMBERS = {"executed", "skipped", "errors", "timings", "metadata", "mark_executed",
-                 "mark_skipped", "record_timing", "record_error", "has_errors",
-                 "last_error", "reset", "diff"}
+STATE_MEMBERS = {"executed", "skipped", "errors", "timings", "mark_executed", "mark_skipped",
+                 "record_timing", "record_error"}
 
 
 def _is_state_type(node) -> bool:
