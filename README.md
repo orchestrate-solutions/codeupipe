@@ -18,40 +18,75 @@ dependencies. `codeupipe-lint` depends only on `codeupipe`.
 
 ## A first pipeline
 
-[examples/pricing.py](examples/pricing.py), in short:
+[examples/pricing/](examples/pricing/) has one primitive in each file. The
+pipeline file is where they come together.
+
+```
+examples/pricing/
+  discount.py      Filter
+  mark_bulk.py     Filter
+  at_least.py      predicate, the question a Valve asks
+  audit_tap.py     Tap
+  print_steps.py   Hook
+  pipeline.py      Pipeline
+```
+
+A part knows nothing about the other parts, so you can test it alone and use
+it again in another pipeline.
 
 ```python
-from codeupipe import Payload, Pipeline, Valve
-
-class Discount:                      # a Filter: takes the Payload, writes to it, returns it
+# discount.py — a Filter: takes the Payload, writes to it, returns it
+class Discount:
     def __init__(self, rate):
         self.rate = rate
+
     def call(self, payload):
         return payload.insert("price", round(payload.get("price", 0) * (1 - self.rate), 2))
+```
 
-class AtLeast:                       # a predicate: an object with test(payload)
+```python
+# at_least.py — a predicate: an object with test(payload)
+class AtLeast:
     def __init__(self, key, minimum):
-        self.key, self.minimum = key, minimum
+        self.key = key
+        self.minimum = minimum
+
     def test(self, payload):
         return payload.get(self.key, 0) >= self.minimum
+```
+
+```python
+# pipeline.py — where the parts come together
+from codeupipe import Pipeline, Valve
+
+from .at_least import AtLeast
+from .audit_tap import AuditTap
+from .discount import Discount
+from .mark_bulk import MarkBulk
+
 
 def build_pricing():
     pipeline = Pipeline()
     pipeline.add_filter(Discount(0.1))
-    pipeline.add_filter(Valve(MarkBulk(), AtLeast("qty", 10)))   # runs only when the predicate holds
-    pipeline.add_tap(AuditTap())                                 # observes; its failure never halts the run
+    pipeline.add_filter(Valve(MarkBulk(), AtLeast("qty", 10)))  # runs only when the predicate holds
+    pipeline.add_tap(AuditTap())                                # its failure never halts the run
     return pipeline
+```
+
+```python
+from codeupipe import Payload
 
 build_pricing().run(Payload({"price": 100.0, "qty": 12})).to_dict()
 # {'price': 90.0, 'qty': 12, 'bulk': True}
 ```
 
-Steps are classes in a module, not lambdas or functions in a script: a step
-is identified by its type (`examples.pricing.Discount`), and State, Hooks and
-the export all use that name. The linter says so before the runtime does.
+A step is a class in a module, not a lambda or a function in a script: it is
+identified by its type (`examples.pricing.discount.Discount`), and State,
+Hooks and the export all use that identity. The linter says so before the
+runtime does.
 
 ```bash
-python -m examples                   # run it, and print its State
+python -m examples.pricing           # run it with a Hook, and print its State
 ```
 
 ## Run it
@@ -69,7 +104,7 @@ python conformance/run.py                        # the dynamic run and the expor
 ```bash
 python -m codeupipe_lint.invariants                        # paths come from cup.config.json
 python -m codeupipe_lint.anonymous_steps                   # the same
-python -m codeupipe.lower examples.pricing:build_pricing --out build/pricing
+python -m codeupipe.lower examples.pricing.pipeline:build_pricing --out build/pricing
 ```
 
 The last command writes `build/pricing/src/steps/`. Nothing in it imports
@@ -92,7 +127,7 @@ The last command writes `build/pricing/src/steps/`. Nothing in it imports
 | `packages/codeupipe-lint/` | The `codeupipe-lint` package: `anonymous_steps` and `invariants` |
 | `conformance/` | Cases, runners, the judge, and the benchmark ([BENCH.md](conformance/BENCH.md)) |
 | `tests/` | The tests for both packages |
-| `examples/` | The pipeline above, with its test in `tests/examples/` |
+| `examples/pricing/` | The pipeline above, one primitive in each file, with its test in `tests/examples/` |
 | `scorecard/` | Differential testing of the export |
 | `docs/` | Reference for Compile and Config |
 
