@@ -6,7 +6,7 @@ inner-filters all work correctly alongside their async equivalents.
 import asyncio
 
 import pytest
-from codeupipe import Payload, Pipeline, Valve, Hook
+from codeupipe import Payload, Pipeline, Hook
 
 # ---------------------------------------------------------------------------
 
@@ -213,11 +213,9 @@ class SyncDiscount2:
 class TestSyncValveInner:
     def test_sync_inner_filter_executes_when_predicate_true(self):
 
-        valve = Valve(inner=SyncDiscount(), predicate=_IsVip())
-
         async def go():
             pipeline = Pipeline()
-            pipeline.add_filter(valve)
+            pipeline.add_valve(_IsVip(), SyncDiscount())
             return await pipeline.run_async(Payload({"vip": True, "total": 200}))
 
         result = run(go())
@@ -225,11 +223,9 @@ class TestSyncValveInner:
 
     def test_sync_inner_filter_skipped_when_predicate_false(self):
 
-        valve = Valve(inner=SyncDiscount2(), predicate=_IsVip())
-
         async def go():
             pipeline = Pipeline()
-            pipeline.add_filter(valve)
+            pipeline.add_valve(_IsVip(), SyncDiscount2())
             await pipeline.run_async(Payload({"vip": False, "total": 200}))
             return pipeline.state
 

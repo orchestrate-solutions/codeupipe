@@ -11,7 +11,7 @@ import sys
 
 import pytest
 
-from codeupipe import Hook, Payload, Pipeline, Valve
+from codeupipe import Hook, Payload, Pipeline
 from codeupipe.lower import build_export_pipeline_v2
 
 
@@ -111,7 +111,7 @@ class TestStateMatchesDynamic:
     def test_filters_valves_and_taps(self, tmp_path):
         p = Pipeline()
         p.add_filter(_Add())
-        p.add_filter(Valve(_Add(), _FlagSet()))
+        p.add_valve(_FlagSet(), _Add())
         p.add_tap(_FailingTap())
         p.add_tap(_Tap())
         dyn, sta = _both(p, tmp_path, {"flag": True})
@@ -120,7 +120,7 @@ class TestStateMatchesDynamic:
 
     def test_skipped_valve(self, tmp_path):
         p = Pipeline()
-        p.add_filter(Valve(_Add(), _FlagSet()))
+        p.add_valve(_FlagSet(), _Add())
         dyn, sta = _both(p, tmp_path, {})
         assert sta == dyn
         assert sta[1]["skipped"] == [ADD]
@@ -137,7 +137,7 @@ class TestStateMatchesDynamic:
     def test_nested_pipeline_is_one_step(self, tmp_path):
         inner = SubPipeline()
         inner.add_filter(_Add())
-        inner.add_filter(Valve(_Add(), _FlagSet()))
+        inner.add_valve(_FlagSet(), _Add())
         inner.add_tap(_FailingTap())
         outer = Pipeline()
         outer.add_filter(_Add())
@@ -154,7 +154,7 @@ class TestHooksMatchDynamic:
         p = Pipeline()
         p.add_filter(_Add())
         p.add_tap(_Tap())
-        p.add_filter(Valve(_Add(), _FlagSet()))
+        p.add_valve(_FlagSet(), _Add())
         dyn, sta = _both(p, tmp_path, {}, hooked=True)
         assert sta == dyn
         assert [e[:2] for e in sta[2]] == [("before", None), ("before", ADD), ("after", ADD),

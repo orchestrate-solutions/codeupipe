@@ -7,7 +7,8 @@ No step names. A step is identified by its filter's fully qualified symbol,
 
 import pytest
 
-from codeupipe import Hook, Payload, Pipeline, Valve
+from codeupipe import Hook, Payload, Pipeline
+from codeupipe.core.valve import Valve
 from codeupipe.core import AnonymousStep
 
 MODULE = __name__
@@ -106,13 +107,13 @@ class TestIdentityIsTheFiltersSymbol:
 
     def test_a_valve_is_identified_by_its_inner_filter(self):
         p = Pipeline()
-        p.add_filter(Valve(Add(), IsOn()))
+        p.add_valve(IsOn(), Add())
         p.run(Payload({}))
         assert p.state.skipped == [f"{MODULE}.Add"]
 
     def test_a_valve_and_a_plain_use_of_the_same_filter_are_numbered(self):
         p = _pipeline(Add())
-        p.add_filter(Valve(Add(), IsOn()))
+        p.add_valve(IsOn(), Add())
         p.run(Payload({"on": True}))
         assert p.state.executed == [f"{MODULE}.Add", f"{MODULE}.Add#2"]
 
@@ -133,7 +134,7 @@ class TestPredicateObjects:
 
     def test_a_configurable_predicate(self):
         p = Pipeline()
-        p.add_filter(Valve(Add(), AtLeast(5)))
+        p.add_valve(AtLeast(5), Add())
         assert p.run(Payload({"n": 5})).get("n") == 6
         assert p.run(Payload({"n": 1})).get("n") == 1
 

@@ -9,7 +9,8 @@ from ._support import REPO
 
 CHECKED = ["packages/codeupipe/codeupipe", "conformance/runners/python", "scorecard", "tests/core", "tests/lower",
            "tests/scorecard", "tests/conformance"]
-INTENTIONAL = {"tests/core/test_step_identity.py", "tests/lower/test_export_refusals.py"}
+INTENTIONAL = {"tests/core/test_step_identity.py", "tests/lower/test_export_refusals.py",
+               "tests/core/test_add_valve.py"}
 
 
 def test_repo_python_has_no_anonymous_steps():

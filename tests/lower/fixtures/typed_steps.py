@@ -3,7 +3,7 @@ them, as a compiler erases types."""
 
 from typing import List, Optional, TypedDict
 
-from codeupipe.core import Payload, Pipeline, Valve
+from codeupipe.core import Payload, Pipeline
 
 
 class Order(TypedDict):
@@ -47,6 +47,6 @@ class Audit:
 def build() -> Pipeline:
     pipeline = Pipeline()
     pipeline.add_filter(AddTotal())
-    pipeline.add_filter(Valve(FlagBulk(), IsBulk(10)))
+    pipeline.add_valve(IsBulk(10), FlagBulk())
     pipeline.add_tap(Audit())
     return pipeline

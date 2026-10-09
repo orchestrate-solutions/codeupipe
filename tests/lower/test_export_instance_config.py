@@ -83,11 +83,10 @@ class TestPredicateConfigIsBakedIn:
 
     @pytest.mark.parametrize("lowering", ["steps", "inline"])
     def test_a_configured_predicate_exports_like_the_dynamic_run(self, tmp_path, lowering):
-        from codeupipe import Valve
 
         pipeline = Pipeline()
         # the filter's self.key ("flag") and the predicate's self.key ("n") differ
-        pipeline.add_filter(Valve(c.SetFlag("flag"), c.AtLeast("n", 5)))
+        pipeline.add_valve(c.AtLeast("n", 5), c.SetFlag("flag"))
         out = build_export_pipeline_v2(write=False).run(
             Payload({"pipeline": pipeline, "pattern": "flat", "lowering": lowering}))
         package = _write_and_import(out.get("files"), tmp_path)

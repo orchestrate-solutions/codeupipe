@@ -85,13 +85,6 @@ def test_a_primitive_in_an_init_file_is_reported(tmp_path):
     assert rules(_file(tmp_path, "pkg/__init__.py", FILTER, "TotalFilter")) == ["CUP-I006"]
 
 
-def test_a_valve_subclass_may_end_with_valve(tmp_path):
-    source = "from codeupipe import Valve\n\n\nclass BulkValve(Valve):\n    def call(self, payload):\n        return payload\n"
-    path = tmp_path / "bulk_valve.py"
-    path.write_text(source)
-    assert analyze(str(path)) == []
-
-
 def test_test_files_are_not_checked(tmp_path):
     assert analyze(_file(tmp_path, "test_steps.py", FILTER, "Total")) == []
     assert analyze(_file(tmp_path, "tests/steps.py", FILTER, "Total")) == []

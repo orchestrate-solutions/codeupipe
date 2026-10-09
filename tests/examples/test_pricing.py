@@ -12,7 +12,7 @@ from codeupipe import Payload
 from examples.pricing.at_least_predicate import AtLeastPredicate
 from examples.pricing.discount_filter import DiscountFilter
 from examples.pricing.mark_bulk_filter import MarkBulkFilter
-from examples.pricing.pipeline import build_pricing
+from examples.pricing.pricing_pipeline import PricingPipeline
 from examples.pricing.print_steps_hook import PrintStepsHook
 
 EXAMPLE = pathlib.Path(__file__).resolve().parents[2] / "examples" / "pricing"
@@ -29,8 +29,9 @@ def test_each_primitive_is_alone_in_its_file():
 
 
 def test_the_pipeline_file_only_puts_them_together():
-    source = (EXAMPLE / "pipeline.py").read_text()
-    assert "\nclass " not in source
+    source = (EXAMPLE / "pricing_pipeline.py").read_text()
+    assert source.count("\nclass ") == 1 and "\nclass PricingPipeline(Pipeline):" in source
+    assert "def call" not in source and "def test" not in source and "def observe" not in source
     for module in ("discount_filter", "mark_bulk_filter", "at_least_predicate", "audit_tap"):
         assert f"from .{module} import" in source
 
@@ -43,7 +44,7 @@ def test_each_part_works_alone():
 
 
 def test_dynamic_run():
-    pipeline = build_pricing()
+    pipeline = PricingPipeline()
     out = pipeline.run(Payload({"price": 100.0, "qty": 12}))
     assert out.to_dict() == {"price": 90.0, "qty": 12, "bulk": True}
     assert pipeline.identities == ["examples.pricing.discount_filter.DiscountFilter",
@@ -53,14 +54,14 @@ def test_dynamic_run():
 
 
 def test_valve_skips_small_orders():
-    pipeline = build_pricing()
+    pipeline = PricingPipeline()
     out = pipeline.run(Payload({"price": 100.0, "qty": 2}))
     assert out.to_dict() == {"price": 90.0, "qty": 2}
     assert pipeline.state.skipped == ["examples.pricing.mark_bulk_filter.MarkBulkFilter"]
 
 
 def test_a_hook_sees_each_step(capsys):
-    pipeline = build_pricing()
+    pipeline = PricingPipeline()
     pipeline.use_hook(PrintStepsHook())
     pipeline.run(Payload({"price": 100.0, "qty": 12}))
     lines = capsys.readouterr().out.splitlines()
@@ -76,7 +77,7 @@ def test_the_example_runs_as_a_module():
 
 def test_export_matches_and_has_no_framework_import(tmp_path):
     done = subprocess.run(
-        [sys.executable, "-m", "codeupipe.lower", "examples.pricing.pipeline:build_pricing", "--out", str(tmp_path)],
+        [sys.executable, "-m", "codeupipe.lower", "examples.pricing.pricing_pipeline:PricingPipeline", "--out", str(tmp_path)],
         capture_output=True, text=True, cwd=EXAMPLE.parents[1],
     )
     assert done.returncode == 0, done.stderr

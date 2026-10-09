@@ -15,6 +15,7 @@ from .hook import Hook
 from .state import State
 from .step_identity import add_site, identify
 from .async_step_in_sync_run import AsyncStepInSyncRun
+from .valve import Valve
 
 __all__ = ["Pipeline"]
 
@@ -72,9 +73,25 @@ class Pipeline(Generic[TInput, TOutput]):
         return identity
 
     def add_filter(self, filter: Union[Filter[TInput, TOutput], AsyncFilter[TInput, TOutput]]) -> None:
-        """Add a Filter or a Valve. A filter whose ``call`` is a coroutine needs ``run_async()``."""
+        """Add a Filter. A filter whose ``call`` is a coroutine needs ``run_async()``."""
+        if isinstance(filter, Valve):
+            raise TypeError("A Valve is added with add_valve(predicate, filter), not with add_filter.")
         step_type = "async_filter" if self._is_async_method(filter, "call") else "filter"
         self._steps.append((self._identity(filter, "filter"), filter, step_type))
+
+    def add_valve(self, predicate: Any, filter: Union[Filter[TInput, TOutput], AsyncFilter[TInput, TOutput]]) -> None:
+        """Add a Valve: ``filter`` runs only when ``predicate.test(payload)`` is true.
+
+        The condition comes first, then the Filter that it controls. When the
+        test is false the Payload passes through unchanged and the step is
+        recorded as skipped. The step is identified by its Filter.
+        """
+        if not callable(getattr(predicate, "test", None)) and callable(getattr(predicate, "call", None)) \
+                and callable(getattr(filter, "test", None)):
+            raise TypeError("The arguments are in the wrong order: add_valve(predicate, filter). "
+                            "The condition comes first, then the Filter.")
+        valve = Valve(filter, predicate)
+        self._steps.append((self._identity(valve, "filter"), valve, "async_filter"))
 
     def add_tap(self, tap: Union[Tap, AsyncTap]) -> None:
         """Add a Tap. A tap whose ``observe`` is a coroutine needs ``run_async()``."""

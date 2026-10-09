@@ -6,7 +6,7 @@ Milestone: M1 (wire).
 
 from __future__ import annotations
 
-from codeupipe.core import Pipeline, Valve
+from codeupipe.core import Pipeline
 
 from ..filters.load_pipeline_filter import LoadPipelineFilter
 from ..filters.parse_filter_source_filter import ParseFilterSourceFilter
@@ -53,9 +53,9 @@ def build_export_pipeline_v2(*, write: bool = True) -> Pipeline:
     p.add_filter(ParseFilterSourceFilter())
     p.add_filter(RewritePayloadOpsFilter())
     p.add_filter(LowerControlFlowFilter())
-    p.add_filter(Valve(EmitPlainFilesFilter(), LoweringModePredicate(inline=False)))
-    p.add_filter(Valve(EmitOrchestratorFilter(), LoweringModePredicate(inline=False)))
-    p.add_filter(Valve(EmitInlineModuleFilter(), LoweringModePredicate(inline=True)))
+    p.add_valve(LoweringModePredicate(inline=False), EmitPlainFilesFilter())
+    p.add_valve(LoweringModePredicate(inline=False), EmitOrchestratorFilter())
+    p.add_valve(LoweringModePredicate(inline=True), EmitInlineModuleFilter())
     if write:
         p.add_tap(WriteFilesTap())
     return p

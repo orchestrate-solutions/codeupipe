@@ -63,16 +63,24 @@ Rules:
 
 `call(payload) -> payload`. A failure raises.
 
-## Valve — a Filter gated by a predicate
+## Valve — a Filter that runs when a condition is true
 
-`Valve(inner, predicate)`, identified by its inner filter (see "Step
-identity"). The **predicate is an object** with `test(payload) -> bool`,
-identified by its class like a step; any configuration (a threshold, a flag)
-lives on the instance: `AtLeastPredicate("qty", 10)`. Functions, lambdas and closures
-are not predicates. A predicate reads the Payload and does not write to it.
-When `test` is false, the payload passes through unchanged and the step is
-recorded in `state.skipped`, not `state.executed`. A Valve is added like any
-filter: `add_filter(valve)`.
+A Valve has two parts: a **predicate**, which is the condition, and a
+**Filter**. It is added with one call, the condition first:
+
+    pipeline.add_valve(predicate, filter)
+
+- The **predicate is an object** with `test(payload) -> bool`. It is
+  identified by its class like a step, and any setting (a threshold, a flag)
+  is on the instance: `AtLeastPredicate("qty", 10)`. Functions, lambdas and
+  closures are not predicates.
+- A predicate reads the Payload and does not write to it.
+- When `test` is true, the Filter runs. When `test` is false, the Payload
+  passes through unchanged and the step is recorded in `state.skipped`, not
+  `state.executed`.
+- The step is identified by its Filter (see "Step identity").
+- `add_valve` is the one way to add a Valve. There is no Valve class for a
+  user to make, and `add_filter` does not accept one.
 
 ## Tap — reads the Payload (Plane B)
 
@@ -107,7 +115,8 @@ before the failure.**
 | Operation | Python |
 |---|---|
 | construct | `Pipeline()` |
-| add a filter / Valve | `add_filter(f)` |
+| add a filter | `add_filter(f)` |
+| add a valve | `add_valve(predicate, filter)` |
 | add a tap | `add_tap(t)` |
 | nest a pipeline | `add_pipeline(p)` |
 | add a hook | `use_hook(h)` |
@@ -146,8 +155,7 @@ it.
   edits.
 - **Extra detail, not identity**: the source location of the `add_*` call
   (`file:line`), for agents and reviewers.
-- **Valves**: the inner filter's identity; the Valve and its predicate's
-  symbol are extra detail.
+- **Valves**: the Filter's identity; the predicate's symbol is extra detail.
 - **Pipelines used as a step are named types**: `class UserOnboarding(Pipeline)`,
   identified by that type's symbol exactly as a filter is. A plain, unnamed
   `Pipeline` can run at the top level but cannot be nested.

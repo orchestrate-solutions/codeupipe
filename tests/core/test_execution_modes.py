@@ -10,7 +10,7 @@ import asyncio
 
 import pytest
 
-from codeupipe import Payload, Pipeline, Valve, Hook
+from codeupipe import Payload, Pipeline, Hook
 
 
 class _ValuePositive:

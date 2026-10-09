@@ -28,7 +28,7 @@ sys.path.insert(0, str(HERE))
 
 import conformance_sink as sink  # noqa: E402
 import cup_ops as ops  # noqa: E402
-from codeupipe import Payload, Pipeline, Valve  # noqa: E402
+from codeupipe import Payload, Pipeline  # noqa: E402
   # noqa: E402
 
 
@@ -116,8 +116,8 @@ def build(case, cls, predicates, names):
             obj = _tap(step)
             p.add_tap(obj)
         elif kind == "valve":
-            obj = Valve(_filter(step["filter"]), getattr(predicates, f"when_{name}"))
-            p.add_filter(obj)
+            p.add_valve(getattr(predicates, f"when_{name}"), _filter(step["filter"]))
+            obj = p._steps[-1][1]  # the Valve that the pipeline made: the step that labels() names
         elif kind == "pipeline":
             if not hasattr(p, "add_pipeline"):
                 raise Unsupported(f"{cls.__name__} has no add_pipeline")

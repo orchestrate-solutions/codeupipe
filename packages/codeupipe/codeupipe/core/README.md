@@ -12,8 +12,9 @@ library only.
   `merge` change it in place and return it; `copy()` gives a separate one.
 - `filter.py` — `Filter` (sync `Protocol`: `call(payload) -> payload`) and
   `AsyncFilter` (async opt-in). The core processing-unit contract.
-- `pipeline.py` — `Pipeline`: the one orchestrator. `add_filter`, `add_tap`,
-  `add_pipeline`, `use_hook`, `run`, `run_async`, `state`. `run()` is
+- `pipeline.py` — `Pipeline`: the one orchestrator. `add_filter`,
+  `add_valve`, `add_tap`, `add_pipeline`, `use_hook`, `run`, `run_async`,
+  `state`. `run()` is
   synchronous and never starts an event loop; `run_async()` is the opt-in
   entry point for async steps. Steps have no
   names: each is identified by its filter (`step_identity.py`), `#n` from
@@ -25,9 +26,9 @@ library only.
   classes defined in a function, `__main__` filters, unnamed nested pipelines.
 - `async_step_in_sync_run.py` — `AsyncStepInSyncRun`: raised when the sync
   `Pipeline.run()` meets async work (it never starts an event loop).
-- `valve.py` — `Valve`: wraps a `Filter` with a predicate; the inner filter
-  only runs when the predicate is true, otherwise the payload passes through
-  unchanged. Conforms to `Filter`, so it composes into pipelines directly.
+- `valve.py` — `Valve`: the step that `Pipeline.add_valve(predicate, filter)`
+  makes. The Filter runs only when the predicate is true; when it is false
+  the payload passes through unchanged. Not a public name.
 - `tap.py` — `Tap` / `AsyncTap`: read-only observation `Protocol`s
   (`observe(payload) -> None`); must not modify the payload.
 - `state.py` — `State`: pipeline execution metadata — executed/skipped

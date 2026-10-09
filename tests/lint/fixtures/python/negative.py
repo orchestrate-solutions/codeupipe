@@ -1,6 +1,6 @@
 """Named steps the Python analyzer must NOT flag."""
 
-from codeupipe import Pipeline, Valve
+from codeupipe import Pipeline
 
 
 class Add:
@@ -35,12 +35,12 @@ def build(steps, predicate):
     p.add_filter(Add())
     p.add_filter(Add)
     p.add_tap(Audit())
-    p.add_filter(Valve(Add(), IsOn()))
+    p.add_valve(IsOn(), Add())
     p.add_pipeline(UserOnboarding())
     p.add_filter(make_add())
     for step in steps:
         p.add_filter(step)  # a parameter: unknown, not flagged
-    p.add_filter(Valve(Add(), predicate))
+    p.add_valve(predicate, Add())
 
     # Not steps: lambdas elsewhere are fine.
     key = sorted([3, 1], key=lambda x: -x)

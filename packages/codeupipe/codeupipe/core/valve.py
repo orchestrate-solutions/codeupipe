@@ -1,9 +1,9 @@
 """
 Valve: Conditional Flow Control
 
-A Valve wraps a Filter with a predicate — the inner filter only executes
-when the predicate evaluates to True. Otherwise the payload passes through unchanged.
-Valves conform to the Filter protocol, so they compose seamlessly into Pipelines.
+A Valve holds a Filter and a predicate. The Filter runs only when the
+predicate is true; otherwise the payload passes through unchanged.
+``Pipeline.add_valve(predicate, filter)`` makes one. It is not a public name.
 
 Two entry points (deliberate)
 -----------------------------

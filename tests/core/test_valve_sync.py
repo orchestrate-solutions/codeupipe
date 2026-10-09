@@ -17,7 +17,8 @@ import asyncio
 
 import pytest
 
-from codeupipe import Payload, Valve
+from codeupipe import Payload
+from codeupipe.core.valve import Valve
 from codeupipe import Pipeline
 
 
@@ -124,12 +125,12 @@ class _Predicate9:
 class TestThroughSyncPipeline:
     def test_valve_runs_in_sync_pipeline(self):
         pipeline = Pipeline()
-        pipeline.add_filter(Valve(Append(), _Predicate7()))
+        pipeline.add_valve(_Predicate7(), Append())
         assert pipeline.run(Payload({"s": "a"})).get("s") == "a!"
 
     def test_skipped_valve_is_marked_skipped(self):
         pipeline = Pipeline()
-        pipeline.add_filter(Valve(Append(), _Predicate8()))
+        pipeline.add_valve(_Predicate8(), Append())
         pipeline.run(Payload({"s": "a"}))
         assert f"{__name__}.Append" in pipeline.state.skipped
 
@@ -138,7 +139,7 @@ class TestThroughSyncPipeline:
         sanity check that the asyncio path is not back."""
         import timeit
         plain = Pipeline(); plain.add_filter(Append())
-        valved = Pipeline(); valved.add_filter(Valve(Append(), _Predicate9()))
+        valved = Pipeline(); valved.add_valve(_Predicate9(), Append())
         n = 300
         t_plain = timeit.timeit(lambda: plain.run(Payload({"s": "a"})), number=n)
         t_valve = timeit.timeit(lambda: valved.run(Payload({"s": "a"})), number=n)

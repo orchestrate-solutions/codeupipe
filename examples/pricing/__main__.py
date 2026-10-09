@@ -2,10 +2,10 @@
 
 from codeupipe import Payload
 
-from .pipeline import build_pricing
+from .pricing_pipeline import PricingPipeline
 from .print_steps_hook import PrintStepsHook
 
-pipeline = build_pricing()
+pipeline = PricingPipeline()
 pipeline.use_hook(PrintStepsHook())
 
 print("steps:")

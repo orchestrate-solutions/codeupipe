@@ -11,6 +11,17 @@ steps.
 - **State** records which steps ran.
 - A **Pipeline** runs the steps in order.
 
+If you know Unix, these are close to things you know.
+
+| codeupipe | Unix |
+|---|---|
+| Pipeline | A pipeline. A codeupipe pipeline sends one Payload through its steps, one step after another |
+| Filter | A filter, such as `sort` or `tr` |
+| Valve and predicate | `test condition && command`, or the address of a `sed` command |
+| Tap | `tee` |
+| Hook | A git hook: code that runs before and after a step |
+| State | `$?` and `PIPESTATUS` |
+
 This repository has two packages.
 
 | Package | Contents | Reference |
@@ -24,7 +35,7 @@ Not released. The repository is in review. Python 3.9 or later.
 
 ## Example
 
-[examples/pricing/](examples/pricing/) has one primitive in each file. The
+[examples/pricing/](examples/pricing/) has one class in each file. The
 pipeline file imports them and adds them.
 
 ```
@@ -34,7 +45,7 @@ examples/pricing/
   at_least_predicate.py   predicate (the condition of a Valve)
   audit_tap.py            Tap
   print_steps_hook.py     Hook
-  pipeline.py             Pipeline
+  pricing_pipeline.py     Pipeline
 ```
 
 A class name ends with its role. The file name is the class name in
@@ -62,8 +73,8 @@ class AtLeastPredicate:
 ```
 
 ```python
-# pipeline.py
-from codeupipe import Pipeline, Valve
+# pricing_pipeline.py
+from codeupipe import Pipeline
 
 from .at_least_predicate import AtLeastPredicate
 from .audit_tap import AuditTap
@@ -71,22 +82,26 @@ from .discount_filter import DiscountFilter
 from .mark_bulk_filter import MarkBulkFilter
 
 
-def build_pricing():
-    pipeline = Pipeline()
-    pipeline.add_filter(DiscountFilter(0.1))
-    # MarkBulkFilter runs only when the predicate is true.
-    pipeline.add_filter(Valve(MarkBulkFilter(), AtLeastPredicate("qty", 10)))
-    # A Tap failure is recorded and does not stop the run.
-    pipeline.add_tap(AuditTap())
-    return pipeline
+class PricingPipeline(Pipeline):
+    def __init__(self):
+        super().__init__()
+        self.add_filter(DiscountFilter(0.1))
+        # MarkBulkFilter runs only when the predicate is true.
+        self.add_valve(AtLeastPredicate("qty", 10), MarkBulkFilter())
+        # A Tap failure is recorded and does not stop the run.
+        self.add_tap(AuditTap())
 ```
 
 ```python
 from codeupipe import Payload
 
-build_pricing().run(Payload({"price": 100.0, "qty": 12})).to_dict()
+PricingPipeline().run(Payload({"price": 100.0, "qty": 12})).to_dict()
 # {'price': 90.0, 'qty': 12, 'bulk': True}
 ```
+
+A Valve is made in the pipeline file, from two parts: `add_valve(predicate,
+filter)`. The predicate is the condition. The Filter runs only when
+`predicate.test(payload)` is true. There is no Valve file.
 
 A step must be a class in a module. A lambda, or a class in the script that
 you run, is refused. The reason is step identity: a step is identified by its
@@ -119,7 +134,7 @@ An editable install needs pip 21.3 or later.
 | `python conformance/run.py` | Runs the 27 conformance cases against the dynamic run and the three exports |
 | `python -m codeupipe_lint.anonymous_steps` | Runs the anonymous-step linter. Paths come from `cup.config.json` |
 | `python -m codeupipe_lint.invariants` | Runs the invariant linter. Paths come from `cup.config.json` |
-| `python -m codeupipe.lower examples.pricing.pipeline:build_pricing --out build/pricing` | Exports the example to `build/pricing/src/steps/` |
+| `python -m codeupipe.lower examples.pricing.pricing_pipeline:PricingPipeline --out build/pricing` | Exports the example to `build/pricing/src/steps/` |
 | `python conformance/bench.py --check` | Compares benchmark numbers with the recorded baseline. Fails outside 25% |
 | `python -m scorecard.differential` | Compares the export with the dynamic run on random pipelines |
 

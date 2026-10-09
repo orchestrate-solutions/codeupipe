@@ -39,7 +39,7 @@ def test_valve_predicate_and_inner_are_named_in_the_message():
     findings, _ = run_analyzer(AnalyzePythonFilter(), "python", [path])
     messages = " ".join(f.message for f in findings)
     assert "Valve predicate" in messages
-    assert "Valve inner filter" in messages
+    assert "Valve filter" in messages
     assert "Nested pipeline" in messages
 
 

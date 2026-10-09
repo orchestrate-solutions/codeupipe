@@ -2,7 +2,8 @@
 Core: the seven primitives.
 
 Payload, Filter, Pipeline, Valve, Tap, Hook and State, as conformance/API.md
-defines them. Standard library only.
+defines them. Standard library only. A Valve is added with
+``Pipeline.add_valve(predicate, filter)``; its class is not a public name.
 """
 
 from .payload import Payload
@@ -10,7 +11,6 @@ from .filter import AsyncFilter, Filter
 from .async_step_in_sync_run import AsyncStepInSyncRun
 from .anonymous_step import AnonymousStep
 from .pipeline import Pipeline
-from .valve import Valve
 from .predicate import Predicate
 from .tap import AsyncTap, Tap
 from .state import State
@@ -21,7 +21,7 @@ __all__ = [
     "Payload",
     "Filter", "AsyncFilter",
     "Pipeline",
-    "Valve", "Predicate",
+    "Predicate",
     "Tap", "AsyncTap",
     "Hook", "AsyncHook",
     "State",

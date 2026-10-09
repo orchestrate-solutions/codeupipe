@@ -25,7 +25,7 @@ __all__ = ["AnalyzePrimitiveNamesFilter", "snake_case"]
 
 # kind (primitive_kind) -> the endings a class name of that kind may have
 _ROLE_SUFFIXES = {
-    "Filter": ("Filter", "Valve"),
+    "Filter": ("Filter", "Valve"),  # the library's own Valve class has the shape of a Filter
     "Tap": ("Tap",),
     "Hook": ("Hook",),
     "predicate": ("Predicate",),

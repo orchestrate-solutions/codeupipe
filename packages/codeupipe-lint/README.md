@@ -61,9 +61,7 @@ returns the result Payload (`findings`, `suppressed`, `errors`, `report`, `exit_
 | CUP-A008 | function-predicate | a named function as a Valve predicate. Predicates are objects with `test(payload)` (conformance/API.md, "Valve") |
 
 A step is any argument of `add_filter`, `add_tap` or `add_pipeline` (on any
-receiver), and both arguments of a Valve (inner filter and predicate). A
-Valve passed as a step is not itself a finding; its arguments are checked
-where it is constructed. Anonymous values are followed through simple local
+receiver), and the two arguments of `add_valve(predicate, filter)`. Anonymous values are followed through simple local
 bindings (`x = lambda ..`) and through same-file factories (a function whose
 return is anonymous, or a plain `Pipeline`).
 
@@ -145,7 +143,10 @@ runtime does not check, so a write from a Tap, a Hook or a predicate that
 gets past the linter does happen. A write to `payload.copy()` belongs to the
 Tap, Hook or predicate that made the copy, and is not flagged. Suppress with `cup: allow-outside-write`.
 
-**Why CUP-I005.** A primitive alone in its file can be found by its name,
+**Why CUP-I005.** The rule covers the classes that a user writes: a Filter,
+a predicate, a Tap, a Hook and a named Pipeline. A predicate is the condition
+of a Valve; it is not a primitive, but it is a class with its own file. A
+class alone in its file can be found by its name,
 tested alone, and used again in another pipeline. The pipeline file is where
 the parts come together. The first primitive in a file is accepted; each one
 after it is reported. Plain classes and functions beside the primitive are

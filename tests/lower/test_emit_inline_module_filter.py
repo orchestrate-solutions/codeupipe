@@ -12,7 +12,7 @@ import asyncio
 
 import pytest
 
-from codeupipe import Payload, Pipeline, Valve
+from codeupipe import Payload, Pipeline
 from codeupipe.lower import build_export_pipeline_v2
 
 from .fixtures import export_module_globals as g
@@ -48,7 +48,7 @@ def _assert_parity(pipeline, package, inputs):
 class TestInlineLayout:
     def test_emits_one_module_with_a_single_run_function(self):
         p = _pipeline(("uses_constant", g.UsesConstant()), ("uses_helper", g.UsesHelper()))
-        p.add_filter(Valve(s.SetA(), s.AIsSet()))
+        p.add_valve(s.AIsSet(), s.SetA())
 
         files = _export_inline(p)
         paths = sorted(f["path"].rsplit("/", 1)[-1] for f in files)
@@ -91,7 +91,7 @@ class TestInlineParity:
 
     def test_valve_gates_an_inlined_step(self, tmp_path):
         p = _pipeline(("set_a", s.SetA()))
-        p.add_filter(Valve(s.ChainReadsItsOwnWrite(), s.AIsSet()))
+        p.add_valve(s.AIsSet(), s.ChainReadsItsOwnWrite())
         package = _write_and_import(_export_inline(p), tmp_path)
 
         _assert_parity(p, package, [{}, {"a": 5}])
@@ -149,7 +149,7 @@ class TestInlineRemovesRedundantCopies:
 
     def test_a_one_line_helper_predicate_is_inlined_without_a_copy(self, tmp_path):
         p = Pipeline()
-        p.add_filter(Valve(s.SetA(), s.ViaHelper()))
+        p.add_valve(s.ViaHelper(), s.SetA())
         module = _inline_module(p)
 
         condition = next(line for line in module.splitlines() if line.strip().startswith("if "))

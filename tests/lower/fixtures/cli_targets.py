@@ -1,13 +1,13 @@
 """Fixture: things `python -m codeupipe.lower module:name` can be pointed at."""
 
-from codeupipe.core import Pipeline, Valve
+from codeupipe.core import Pipeline
 
 from tests.lower.fixtures.instance_config import AtLeast, Discount, HoldsAnObject, SetFlag
 from tests.lower.fixtures.plane_b import ExplodingTap
 
 PRICING = Pipeline()
 PRICING.add_filter(Discount(0.1))
-PRICING.add_filter(Valve(SetFlag("bulk"), AtLeast("qty", 10)))
+PRICING.add_valve(AtLeast("qty", 10), SetFlag("bulk"))
 PRICING.add_tap(ExplodingTap())
 
 

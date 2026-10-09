@@ -1,7 +1,7 @@
 """Anonymous steps the Python analyzer must flag. Each flagged line carries
 an ``expect:`` comment naming the rule; the test compares them exactly."""
 
-from codeupipe import Pipeline, Valve
+from codeupipe import Pipeline
 import codeupipe
 
 
@@ -38,8 +38,8 @@ def build():
     p = Pipeline()
     p.add_filter(lambda payload: payload)  # expect: CUP-A001
     p.add_tap(lambda payload: None)  # expect: CUP-A001
-    p.add_filter(Valve(Add(), lambda payload: True))  # expect: CUP-A001
-    p.add_filter(codeupipe.Valve(Add(), lambda payload: True))  # expect: CUP-A001
+    p.add_valve(lambda payload: True, Add())  # expect: CUP-A001
+    p.add_valve(predicate=lambda payload: True, filter=Add())  # expect: CUP-A001
 
     def nested(payload):
         return payload
@@ -51,8 +51,8 @@ def build():
     p.add_filter(nested)  # expect: CUP-A002
     p.add_filter(LocalFilter())  # expect: CUP-A003
     p.add_filter(LocalFilter)  # expect: CUP-A003
-    p.add_filter(Valve(LocalFilter(), is_on))  # expect: CUP-A003 CUP-A008
-    p.add_filter(Valve(Add(), nested))  # expect: CUP-A002
+    p.add_valve(is_on, LocalFilter())  # expect: CUP-A003 CUP-A008
+    p.add_valve(nested, Add())  # expect: CUP-A002
 
     bound = lambda payload: payload  # noqa: E731
     p.add_filter(bound)  # expect: CUP-A001
@@ -62,7 +62,7 @@ def build():
 
     p.add_filter(make_closure("x"))  # expect: CUP-A002
     p.add_filter(make_local_class())  # expect: CUP-A003
-    p.add_filter(Valve(Add(), make_lambda()))  # expect: CUP-A001
+    p.add_valve(make_lambda(), Add())  # expect: CUP-A001
 
     sub = Pipeline()
     sub.add_filter(Add())
@@ -95,7 +95,9 @@ class Builder:
         def pred(payload):
             return True
 
-        return Valve(Add(), pred)  # expect: CUP-A002
+        p = Pipeline()
+        p.add_valve(pred, Add())  # expect: CUP-A002
+        return p
 
 
 def is_on(payload):
@@ -104,4 +106,6 @@ def is_on(payload):
 
 def function_predicates():
     # Valve predicates are objects: a named function is not one.
-    return Valve(Add(), is_on)  # expect: CUP-A008
+    p = Pipeline()
+    p.add_valve(is_on, Add())  # expect: CUP-A008
+    return p

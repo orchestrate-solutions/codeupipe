@@ -204,7 +204,7 @@ class TestValveInPipeline:
 
 
         pipeline.add_filter(SetValueFilter())
-        pipeline.add_filter(Valve(GatedFilter(), _Predicate()))
+        pipeline.add_valve(_Predicate(), GatedFilter())
 
         async def run_test():
             result = await pipeline.run_async(Payload())
@@ -218,7 +218,7 @@ class TestValveInPipeline:
         """Test that a Valve skips its filter when predicate is False."""
         pipeline = Pipeline()
         pipeline.add_filter(MarkFirst())
-        pipeline.add_filter(Valve(MarkGated(), _Predicate2()))
+        pipeline.add_valve(_Predicate2(), MarkGated())
 
         async def run_test():
             result = await pipeline.run_async(Payload())
@@ -237,8 +237,8 @@ class TestValveInPipeline:
 
 
         pipeline.add_filter(SuccessFilter())
-        pipeline.add_filter(Valve(SuccessFilter(), _Predicate3()))
-        pipeline.add_filter(Valve(FailureFilter(), _Predicate4()))
+        pipeline.add_valve(_Predicate3(), SuccessFilter())
+        pipeline.add_valve(_Predicate4(), FailureFilter())
 
         async def run_test():
             result = await pipeline.run_async(Payload())
@@ -415,7 +415,7 @@ class TestRunSyncWithValves:
 
     def _pipeline(self, inner, predicate):
         p = Pipeline()
-        p.add_filter(Valve(inner, predicate))
+        p.add_valve(predicate, inner)
         return p
 
     @pytest.mark.unit
@@ -496,7 +496,7 @@ class TestTapFailureIsolation:
         p = Pipeline()
         p.add_filter(self._Score())
         p.add_tap(tap)
-        p.add_filter(Valve(self._Score(), _Predicate5()))
+        p.add_valve(_Predicate5(), self._Score())
         if hook is not None:
             p.use_hook(hook)
         return p

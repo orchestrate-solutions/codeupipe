@@ -1,7 +1,8 @@
 """PythonStepVisitor: finds anonymous steps in one parsed Python module.
 
 A step is an argument of ``add_filter``, ``add_tap`` or ``add_pipeline``
-(on any receiver), or of ``Valve(inner, predicate)``. It is
+(on any receiver), or one of the two arguments of
+``add_valve(predicate, filter)``. It is
 anonymous when it is (or, through a simple local name, is bound to):
 
 - a lambda (CUP-A001);
@@ -35,8 +36,9 @@ _STEP_METHODS = {
     "add_tap": "Tap",
     "add_pipeline": "Nested pipeline",
 }
-_VALVE_ROLES = ["Valve inner filter", "Valve predicate"]
-_VALVE_KEYWORDS = {"inner": "Valve inner filter", "predicate": "Valve predicate"}
+# add_valve(predicate, filter): the condition first, then the Filter it controls
+_VALVE_ROLES = ["Valve predicate", "Valve filter"]
+_VALVE_KEYWORDS = {"predicate": "Valve predicate", "filter": "Valve filter"}
 
 # A binding: (kind, name, owner, node). Kinds: lambda, local_def, local_class,
 # local_instance, plain_pipeline, module_def, module_class, other. ``name`` is
@@ -304,8 +306,7 @@ class PythonStepVisitor:
                 elements = arg.elts if isinstance(arg, (ast.List, ast.Tuple, ast.Set)) else [arg]
                 for element in elements:
                     self._report(element, role, call, chain, in_main)
-        elif (isinstance(func, ast.Name) and func.id == "Valve") or (
-                isinstance(func, ast.Attribute) and func.attr == "Valve"):
+        elif isinstance(func, ast.Attribute) and func.attr == "add_valve":
             for index, arg in enumerate(call.args):
                 self._report(arg, _VALVE_ROLES[min(index, 1)], call, chain, in_main)
             for keyword in call.keywords:

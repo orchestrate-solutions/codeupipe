@@ -121,11 +121,10 @@ def _export_files(pipeline):
 
 class TestValvePredicateExport:
     def _pipeline(self, predicate):
-        from codeupipe import Valve
 
         p = Pipeline()
         p.add_filter(_CleanText())
-        p.add_filter(Valve(_Discount(), predicate))
+        p.add_valve(predicate, _Discount())
         return p
 
     def test_valve_gates_exported_step_like_dynamic_run(self, tmp_path):

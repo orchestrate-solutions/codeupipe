@@ -2,7 +2,7 @@
 
 import pytest
 
-from codeupipe import Payload, Pipeline, Valve
+from codeupipe import Payload, Pipeline
 from codeupipe.lower.errors import UnsupportedFilterShape
 from codeupipe.lower.filters.load_pipeline_filter import LoadPipelineFilter
 from codeupipe.lower.ir import PipelineIR
@@ -51,10 +51,8 @@ class TestLoadPipeline:
         assert all(isinstance(x, _ExFilter) for x in instances)
 
     def test_valve_is_detected_and_unwrapped(self):
-        inner = _AlwaysTrue()
-        v = Valve(inner, _Always())
         p = Pipeline()
-        p.add_filter(v)
+        p.add_valve(_Always(), _AlwaysTrue())
         result = LoadPipelineFilter().call(Payload({"pipeline": p}))
         ir = result.get("pipeline_ir")
         assert ir.steps[0].kind == "valve"

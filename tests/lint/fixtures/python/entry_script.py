@@ -1,7 +1,7 @@
 """A script: its classes are __main__.X when run, so steps defined here and
 added from the __main__ block (directly or via a function it calls) are flagged."""
 
-from codeupipe import Payload, Pipeline, Valve
+from codeupipe import Payload, Pipeline
 
 
 class Local:
@@ -23,7 +23,7 @@ def library_builder():
 def main():
     p = Pipeline()
     p.add_filter(Local())  # expect: CUP-A006
-    p.add_filter(Valve(Local(), is_on))  # expect: CUP-A006 CUP-A006
+    p.add_valve(is_on, Local())  # expect: CUP-A006 CUP-A006
     helper(p)
     return p.run(Payload({}))
 

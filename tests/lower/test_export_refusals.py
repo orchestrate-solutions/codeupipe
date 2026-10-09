@@ -12,7 +12,7 @@ import asyncio
 
 import pytest
 
-from codeupipe import Hook, Payload, Pipeline, Valve
+from codeupipe import Hook, Payload, Pipeline
 from codeupipe.lower import build_export_pipeline_v2
 from codeupipe.lower.errors import UnsupportedFilterShape
 
@@ -96,6 +96,12 @@ def _one(step, kind=Pipeline):
     return p
 
 
+def _valve(predicate, filter_):
+    p = Pipeline()
+    p.add_valve(predicate, filter_)
+    return p
+
+
 @pytest.mark.parametrize("lowering", LOWERINGS)
 class TestHooksAreRefused:
     def test_hook_on_the_exported_pipeline(self, lowering):
@@ -128,10 +134,10 @@ class TestAsyncStepsAreRefused:
         assert "_AsyncTap" in _refused(p, lowering)
 
     def test_valve_around_an_async_filter(self, lowering):
-        assert "_AsyncAwaits" in _refused(_one(Valve(_AsyncAwaits(), _Always())), lowering)
+        assert "_AsyncAwaits" in _refused(_valve(_Always(), _AsyncAwaits()), lowering)
 
     def test_valve_with_an_async_predicate(self, lowering):
-        assert "predicate" in _refused(_one(Valve(_Add(), _AsyncPredicate())), lowering)
+        assert "predicate" in _refused(_valve(_AsyncPredicate(), _Add()), lowering)
 
     def test_dynamic_run_refuses_the_same_pipeline(self, lowering):
         from codeupipe.core import AsyncStepInSyncRun
