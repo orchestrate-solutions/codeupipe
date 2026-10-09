@@ -1,0 +1,28 @@
+[
+  {"id": "valve/runs-when-predicate-true",
+   "steps": [{"kind": "valve", "name": "gate", "when": {"op": "equals", "key": "flag", "value": true},
+              "filter": {"op": "set", "key": "ran", "value": true}}],
+   "input": {"flag": true},
+   "expect": {"output": {"flag": true, "ran": true}, "state": {"executed": ["gate"], "skipped": []}}},
+  {"id": "valve/skips-when-predicate-false",
+   "steps": [{"kind": "valve", "name": "gate", "when": {"op": "equals", "key": "flag", "value": true},
+              "filter": {"op": "set", "key": "ran", "value": true}}],
+   "input": {"flag": false},
+   "expect": {"output": {"flag": false}, "state": {"executed": [], "skipped": ["gate"]}}},
+  {"id": "valve/missing-key-is-falsy",
+   "steps": [{"kind": "valve", "name": "gate", "when": {"op": "truthy", "key": "flag"},
+              "filter": {"op": "set", "key": "ran", "value": true}}],
+   "input": {}, "expect": {"output": {}, "state": {"skipped": ["gate"]}}},
+  {"id": "valve/sees-upstream-changes",
+   "steps": [
+     {"kind": "filter", "name": "on", "op": "set", "key": "flag", "value": true},
+     {"kind": "valve", "name": "gate", "when": {"op": "truthy", "key": "flag"},
+      "filter": {"op": "set", "key": "ran", "value": true}}],
+   "input": {}, "expect": {"output": {"flag": true, "ran": true}, "state": {"executed": ["on", "gate"], "skipped": []}}},
+  {"id": "valve/independent-gates",
+   "steps": [
+     {"kind": "valve", "name": "g1", "when": {"op": "truthy", "key": "a"}, "filter": {"op": "set", "key": "got_a", "value": true}},
+     {"kind": "valve", "name": "g2", "when": {"op": "truthy", "key": "b"}, "filter": {"op": "set", "key": "got_b", "value": true}}],
+   "input": {"a": 1, "b": 0},
+   "expect": {"output": {"a": 1, "b": 0, "got_a": true}, "state": {"executed": ["g1"], "skipped": ["g2"]}}}
+]

@@ -1,0 +1,4 @@
+pytest
+pytest-asyncio
+# optional in core; without it the Payload serde tests skip
+msgpack

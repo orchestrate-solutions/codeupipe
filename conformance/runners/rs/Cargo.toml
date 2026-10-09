@@ -1,0 +1,13 @@
+[package]
+name = "cup-conformance-runner"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Conformance runner for runtimes/rs. Standalone workspace so it never
+# joins (or alters) the runtime's own build.
+[workspace]
+
+[dependencies]
+codeupipe-core = { path = "../../../runtimes/rs" }
+serde_json = "1"

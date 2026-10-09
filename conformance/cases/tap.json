@@ -1,0 +1,24 @@
+[
+  {"id": "tap/observes-without-changing-output",
+   "steps": [
+     {"kind": "filter", "name": "s1", "op": "set", "key": "a", "value": 1},
+     {"kind": "tap", "name": "t", "op": "record", "key": "a"},
+     {"kind": "filter", "name": "s2", "op": "set", "key": "a", "value": 2}],
+   "input": {}, "expect": {"output": {"a": 2}, "taps": [1], "state": {"executed": ["s1", "t", "s2"]}}},
+  {"id": "tap/failure-never-halts-the-pipeline",
+   "steps": [
+     {"kind": "filter", "name": "s1", "op": "set", "key": "a", "value": 1},
+     {"kind": "tap", "name": "audit", "op": "fail", "message": "sink down"},
+     {"kind": "filter", "name": "s2", "op": "set", "key": "b", "value": 2}],
+   "input": {}, "expect": {"output": {"a": 1, "b": 2}, "state": {"executed": ["s1", "audit", "s2"], "errors": ["audit"]}}},
+  {"id": "tap/failure-does-not-stop-later-taps",
+   "steps": [
+     {"kind": "tap", "name": "bad", "op": "fail", "message": "sink down"},
+     {"kind": "tap", "name": "good", "op": "record", "key": "a"}],
+   "input": {"a": "seen"}, "expect": {"output": {"a": "seen"}, "taps": ["seen"], "state": {"errors": ["bad"]}}},
+  {"id": "tap/sees-payload-after-a-skipped-valve",
+   "steps": [
+     {"kind": "valve", "name": "gate", "when": {"op": "truthy", "key": "flag"}, "filter": {"op": "set", "key": "a", "value": "changed"}},
+     {"kind": "tap", "name": "t", "op": "record", "key": "a"}],
+   "input": {"a": "original"}, "expect": {"output": {"a": "original"}, "taps": ["original"]}}
+]

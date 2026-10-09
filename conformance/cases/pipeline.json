@@ -1,0 +1,152 @@
+[
+  {
+    "id": "pipeline/empty-returns-input",
+    "steps": [],
+    "input": {
+      "a": 1
+    },
+    "expect": {
+      "output": {
+        "a": 1
+      },
+      "state": {
+        "executed": [],
+        "skipped": [],
+        "errors": []
+      }
+    }
+  },
+  {
+    "id": "pipeline/steps-run-in-order",
+    "steps": [
+      {
+        "kind": "filter",
+        "name": "s",
+        "op": "set",
+        "key": "x",
+        "value": 1
+      },
+      {
+        "kind": "filter",
+        "name": "c",
+        "op": "copy",
+        "from": "x",
+        "to": "y"
+      },
+      {
+        "kind": "filter",
+        "name": "add",
+        "op": "add",
+        "key": "x",
+        "by": 5
+      }
+    ],
+    "input": {},
+    "expect": {
+      "output": {
+        "x": 6,
+        "y": 1
+      },
+      "state": {
+        "executed": [
+          "s",
+          "c",
+          "add"
+        ],
+        "skipped": [],
+        "errors": []
+      }
+    }
+  },
+  {
+    "id": "pipeline/filter-error-halts-the-run",
+    "steps": [
+      {
+        "kind": "filter",
+        "name": "first",
+        "op": "set",
+        "key": "a",
+        "value": 1
+      },
+      {
+        "kind": "filter",
+        "name": "boom",
+        "op": "fail",
+        "message": "boom"
+      },
+      {
+        "kind": "filter",
+        "name": "never",
+        "op": "set",
+        "key": "b",
+        "value": 2
+      }
+    ],
+    "input": {},
+    "expect": {
+      "error": {
+        "message_contains": "boom"
+      },
+      "state": {
+        "executed": [
+          "first"
+        ],
+        "skipped": []
+      }
+    }
+  },
+  {
+    "id": "pipeline/nested-pipeline-is-a-step",
+    "steps": [
+      {
+        "kind": "filter",
+        "name": "s",
+        "op": "set",
+        "key": "a",
+        "value": 1
+      },
+      {
+        "kind": "pipeline",
+        "name": "inner",
+        "steps": [
+          {
+            "kind": "filter",
+            "name": "inner_add",
+            "op": "add",
+            "key": "a",
+            "by": 1
+          },
+          {
+            "kind": "filter",
+            "name": "inner_set",
+            "op": "set",
+            "key": "b",
+            "value": true
+          }
+        ]
+      },
+      {
+        "kind": "filter",
+        "name": "outer_add",
+        "op": "add",
+        "key": "a",
+        "by": 10
+      }
+    ],
+    "input": {},
+    "expect": {
+      "output": {
+        "a": 12,
+        "b": true
+      },
+      "state": {
+        "executed": [
+          "s",
+          "inner",
+          "outer_add"
+        ],
+        "skipped": []
+      }
+    }
+  }
+]

@@ -1,0 +1,27 @@
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+/build/
+packages/*/build/
+
+# runtime build output
+runtimes/go/bench/bench_hop
+runtimes/rs/pkg/
+runtimes/rs/target/
+runtimes/ts/node_modules/
+runtimes/ts/dist/
+runtimes/kt/**/build/
+runtimes/kt/.gradle/
+runtimes/cs/**/bin/
+runtimes/cs/**/obj/
+runtimes/cpp/build/
+conformance/results/
+conformance/runners/cpp/build/
+conformance/runners/kt/build/
+conformance/runners/cs/build/
+conformance/runners/rs/target/
+conformance/runners/rs/Cargo.lock
+.venv-*/
+conformance/runners/cs/obj/
+scorecard/results/

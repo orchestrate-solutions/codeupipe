@@ -1,0 +1,18 @@
+# The repo root is a workspace, not a distribution. The two Python packages
+# are packages/codeupipe and packages/codeupipe-lint, each with its own
+# pyproject.toml. This file holds only the settings for the shared tests.
+#
+#   python -m pip install -e packages/codeupipe -e packages/codeupipe-lint -r requirements-dev.txt
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = ["--tb=short"]
+asyncio_mode = "strict"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "core: Core functionality tests",
+    "asyncio: Async tests",
+    "slow: Slow tests (skippable during dev with -m \"not slow\")",
+]

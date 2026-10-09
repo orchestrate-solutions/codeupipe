@@ -1,0 +1,241 @@
+[
+  {
+    "id": "payload/insert-adds-a-key",
+    "steps": [
+      {
+        "kind": "filter",
+        "name": "s",
+        "op": "set",
+        "key": "x",
+        "value": 1
+      }
+    ],
+    "input": {},
+    "expect": {
+      "output": {
+        "x": 1
+      }
+    }
+  },
+  {
+    "id": "payload/insert-overwrites",
+    "steps": [
+      {
+        "kind": "filter",
+        "name": "s",
+        "op": "set",
+        "key": "x",
+        "value": 2
+      }
+    ],
+    "input": {
+      "x": 1,
+      "keep": "me"
+    },
+    "expect": {
+      "output": {
+        "x": 2,
+        "keep": "me"
+      }
+    }
+  },
+  {
+    "id": "payload/missing-key-reads-as-null",
+    "steps": [
+      {
+        "kind": "filter",
+        "name": "c",
+        "op": "copy",
+        "from": "absent",
+        "to": "y"
+      }
+    ],
+    "input": {},
+    "expect": {
+      "output": {
+        "y": null
+      }
+    }
+  },
+  {
+    "id": "payload/nested-input-is-never-mutated",
+    "steps": [
+      {
+        "kind": "filter",
+        "name": "ap",
+        "op": "append",
+        "key": "items",
+        "value": "b"
+      }
+    ],
+    "input": {
+      "items": [
+        "a"
+      ]
+    },
+    "expect": {
+      "output": {
+        "items": [
+          "a",
+          "b"
+        ]
+      }
+    }
+  },
+  {
+    "id": "payload/json-value-types-round-trip",
+    "steps": [
+      {
+        "kind": "filter",
+        "name": "s",
+        "op": "set",
+        "key": "v",
+        "value": {
+          "n": 1.5,
+          "s": "x",
+          "b": false,
+          "z": null,
+          "l": [
+            1,
+            "two",
+            [
+              3
+            ]
+          ]
+        }
+      }
+    ],
+    "input": {},
+    "expect": {
+      "output": {
+        "v": {
+          "n": 1.5,
+          "s": "x",
+          "b": false,
+          "z": null,
+          "l": [
+            1,
+            "two",
+            [
+              3
+            ]
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": "payload/remove-drops-a-key",
+    "steps": [
+      {
+        "kind": "filter",
+        "name": "r",
+        "op": "remove",
+        "key": "x"
+      }
+    ],
+    "input": {
+      "x": 1,
+      "y": 2
+    },
+    "expect": {
+      "output": {
+        "y": 2
+      }
+    }
+  },
+  {
+    "id": "payload/remove-of-a-missing-key-is-a-no-op",
+    "steps": [
+      {
+        "kind": "filter",
+        "name": "r",
+        "op": "remove",
+        "key": "absent"
+      }
+    ],
+    "input": {
+      "a": 1
+    },
+    "expect": {
+      "output": {
+        "a": 1
+      }
+    }
+  },
+  {
+    "id": "payload/merge-right-side-wins",
+    "steps": [
+      {
+        "kind": "filter",
+        "name": "m",
+        "op": "merge",
+        "value": {
+          "a": 2,
+          "c": 3
+        }
+      }
+    ],
+    "input": {
+      "a": 1,
+      "b": 1
+    },
+    "expect": {
+      "output": {
+        "a": 2,
+        "b": 1,
+        "c": 3
+      }
+    }
+  },
+  {
+    "id": "payload/has-reports-presence-even-for-null",
+    "steps": [
+      {
+        "kind": "filter",
+        "name": "h1",
+        "op": "has",
+        "key": "a",
+        "to": "has_a"
+      },
+      {
+        "kind": "filter",
+        "name": "h2",
+        "op": "has",
+        "key": "zz",
+        "to": "has_zz"
+      }
+    ],
+    "input": {
+      "a": null
+    },
+    "expect": {
+      "output": {
+        "a": null,
+        "has_a": true,
+        "has_zz": false
+      }
+    }
+  },
+  {
+    "id": "payload/mutable-escape-hatch-sets-in-place",
+    "steps": [
+      {
+        "kind": "filter",
+        "name": "mut",
+        "op": "mutate",
+        "key": "k",
+        "value": "v"
+      }
+    ],
+    "input": {
+      "a": 1
+    },
+    "expect": {
+      "output": {
+        "a": 1,
+        "k": "v"
+      }
+    }
+  }
+]

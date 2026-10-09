@@ -1,0 +1,31 @@
+[
+  {"id": "hook/lifecycle-on-success",
+   "hooks": true,
+   "steps": [
+     {"kind": "filter", "name": "a", "op": "set", "key": "a", "value": 1},
+     {"kind": "tap", "name": "t", "op": "record", "key": "a"},
+     {"kind": "valve", "name": "v", "when": {"op": "truthy", "key": "never"}, "filter": {"op": "set", "key": "b", "value": 1}}],
+   "input": {},
+   "expect": {"output": {"a": 1}, "taps": [1], "hooks": ["before:", "before:a", "after:a", "before:v", "after:v", "after:"]}},
+  {"id": "hook/on-error-when-a-filter-fails",
+   "hooks": true,
+   "steps": [
+     {"kind": "filter", "name": "a", "op": "set", "key": "a", "value": 1},
+     {"kind": "filter", "name": "b", "op": "fail", "message": "boom"}],
+   "input": {},
+   "expect": {"error": {"message_contains": "boom"}, "hooks": ["before:", "before:a", "after:a", "before:b", "error:b", "error:"]}},
+  {"id": "hook/not-notified-of-a-tap-failure",
+   "hooks": true,
+   "steps": [
+     {"kind": "tap", "name": "bad", "op": "fail", "message": "sink down"},
+     {"kind": "filter", "name": "a", "op": "set", "key": "a", "value": 1}],
+   "input": {},
+   "expect": {"output": {"a": 1}, "hooks": ["before:", "before:a", "after:a", "after:"], "state": {"errors": ["bad"]}}},
+  {"id": "hook/on-error-names-a-failing-valve",
+   "hooks": true,
+   "steps": [
+     {"kind": "valve", "name": "gate", "when": {"op": "truthy", "key": "go"}, "filter": {"op": "fail", "message": "inner boom"}},
+     {"kind": "filter", "name": "never", "op": "set", "key": "x", "value": 1}],
+   "input": {"go": true},
+   "expect": {"error": {"message_contains": "inner boom"}, "hooks": ["before:", "before:gate", "error:gate", "error:"]}}
+]

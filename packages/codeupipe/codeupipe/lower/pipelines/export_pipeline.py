@@ -1,0 +1,61 @@
+"""
+Export pipeline: CUP Pipeline instance -> plain-Python package on disk.
+
+Milestone: M1 (wire).
+"""
+
+from __future__ import annotations
+
+from codeupipe.core import Pipeline, Valve
+
+from ..filters.load_pipeline import LoadPipelineFilter
+from ..filters.parse_filter_source import ParseFilterSourceFilter
+from ..filters.rewrite_payload_ops import RewritePayloadOpsFilter
+from ..filters.lower_control_flow import LowerControlFlowFilter
+from ..filters.emit_plain_files import EmitPlainFilesFilter
+from ..filters.emit_orchestrator import EmitOrchestratorFilter
+from ..filters.emit_inline_module import EmitInlineModuleFilter
+from ..taps.write_files import WriteFilesTap
+from .lowering_mode import LoweringMode
+
+
+__all__ = ["build_export_pipeline_v2"]
+
+
+def build_export_pipeline_v2(*, write: bool = True) -> Pipeline:
+    """Assemble the v2 export pipeline.
+
+    Args:
+        write: If True, adds the ``WriteFilesTap`` at the end so
+            emitted files land on disk. Set False for tests that
+            only want the ``files`` payload in memory.
+
+    Input payload keys:
+        ``pipeline``     (Pipeline)     — the CUP instance to export.
+        ``pattern``      (str)          — layout pattern; defaults to "flat".
+        ``output_dir``   (str)          — root for WriteFilesTap.
+        ``lowering``     (str)          — "steps" (default): one module per
+                                          step plus an orchestrator.
+                                          "inline": one flattened ``run()``
+                                          with in-place writes (static mode).
+        ``observe``      (bool)         — False (default): run(data), no
+                                          State or Hooks. True: run() also
+                                          records State and calls Hooks as
+                                          the dynamic run does; "steps"
+                                          layout only. docs/static-export.md
+
+    Output payload keys:
+        ``pipeline_ir``  (PipelineIR)   — the canonical IR.
+        ``files``        (list[dict])   — the emitted files.
+    """
+    p = Pipeline()
+    p.add_filter(LoadPipelineFilter())
+    p.add_filter(ParseFilterSourceFilter())
+    p.add_filter(RewritePayloadOpsFilter())
+    p.add_filter(LowerControlFlowFilter())
+    p.add_filter(Valve(EmitPlainFilesFilter(), LoweringMode(inline=False)))
+    p.add_filter(Valve(EmitOrchestratorFilter(), LoweringMode(inline=False)))
+    p.add_filter(Valve(EmitInlineModuleFilter(), LoweringMode(inline=True)))
+    if write:
+        p.add_tap(WriteFilesTap())
+    return p

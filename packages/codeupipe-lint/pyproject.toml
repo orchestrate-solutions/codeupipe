@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "codeupipe-lint"
+version = "0.1.0"
+description = "Lint for codeupipe: anonymous steps, payload mutation behind the API, State reads in steps"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "Apache-2.0"}
+dependencies = ["codeupipe==0.1.0"]
+
+[tool.setuptools.packages.find]
+include = ["codeupipe_lint*"]
+
+[tool.setuptools.package-data]
+# the Go and TypeScript helpers the analyzers run
+codeupipe_lint = ["anonymous_steps/go/*", "anonymous_steps/ts/*"]

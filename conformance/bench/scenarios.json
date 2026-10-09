@@ -1,0 +1,722 @@
+[
+ {
+  "id": "micro-pass",
+  "about": "10 filters (spec section 6: pure dispatch overhead)",
+  "steps": [
+   {
+    "kind": "filter",
+    "name": "s0",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s1",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s2",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s3",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s4",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s5",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s6",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s7",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s8",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s9",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   }
+  ],
+  "input": {
+   "n": 0
+  }
+ },
+ {
+  "id": "valve-gated",
+  "about": "10 steps, 5 of them Valves",
+  "steps": [
+   {
+    "kind": "filter",
+    "name": "s0",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "valve",
+    "name": "v1",
+    "when": {
+     "op": "truthy",
+     "key": "on"
+    },
+    "filter": {
+     "op": "add",
+     "key": "n",
+     "by": 1
+    }
+   },
+   {
+    "kind": "filter",
+    "name": "s2",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "valve",
+    "name": "v3",
+    "when": {
+     "op": "truthy",
+     "key": "on"
+    },
+    "filter": {
+     "op": "add",
+     "key": "n",
+     "by": 1
+    }
+   },
+   {
+    "kind": "filter",
+    "name": "s4",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "valve",
+    "name": "v5",
+    "when": {
+     "op": "truthy",
+     "key": "on"
+    },
+    "filter": {
+     "op": "add",
+     "key": "n",
+     "by": 1
+    }
+   },
+   {
+    "kind": "filter",
+    "name": "s6",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "valve",
+    "name": "v7",
+    "when": {
+     "op": "truthy",
+     "key": "on"
+    },
+    "filter": {
+     "op": "add",
+     "key": "n",
+     "by": 1
+    }
+   },
+   {
+    "kind": "filter",
+    "name": "s8",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "valve",
+    "name": "v9",
+    "when": {
+     "op": "truthy",
+     "key": "on"
+    },
+    "filter": {
+     "op": "add",
+     "key": "n",
+     "by": 1
+    }
+   }
+  ],
+  "input": {
+   "n": 0,
+   "on": true
+  }
+ },
+ {
+  "id": "taps",
+  "about": "10 filters + 3 no-op Taps (Plane B handoff cost)",
+  "steps": [
+   {
+    "kind": "filter",
+    "name": "s0",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s1",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s2",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s3",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s4",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s5",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s6",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s7",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s8",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s9",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "tap",
+    "name": "t0",
+    "op": "noop"
+   },
+   {
+    "kind": "tap",
+    "name": "t1",
+    "op": "noop"
+   },
+   {
+    "kind": "tap",
+    "name": "t2",
+    "op": "noop"
+   }
+  ],
+  "input": {
+   "n": 0
+  }
+ },
+ {
+  "id": "hook",
+  "about": "10 filters + 1 no-op Hook",
+  "steps": [
+   {
+    "kind": "filter",
+    "name": "s0",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s1",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s2",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s3",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s4",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s5",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s6",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s7",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s8",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s9",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   }
+  ],
+  "hooks": "noop",
+  "input": {
+   "n": 0
+  }
+ },
+ {
+  "id": "heavy-allocation",
+  "about": "50 inserts of distinct keys (copy-on-write cost)",
+  "steps": [
+   {
+    "kind": "filter",
+    "name": "s0",
+    "op": "set",
+    "key": "k0",
+    "value": 0
+   },
+   {
+    "kind": "filter",
+    "name": "s1",
+    "op": "set",
+    "key": "k1",
+    "value": 1
+   },
+   {
+    "kind": "filter",
+    "name": "s2",
+    "op": "set",
+    "key": "k2",
+    "value": 2
+   },
+   {
+    "kind": "filter",
+    "name": "s3",
+    "op": "set",
+    "key": "k3",
+    "value": 3
+   },
+   {
+    "kind": "filter",
+    "name": "s4",
+    "op": "set",
+    "key": "k4",
+    "value": 4
+   },
+   {
+    "kind": "filter",
+    "name": "s5",
+    "op": "set",
+    "key": "k5",
+    "value": 5
+   },
+   {
+    "kind": "filter",
+    "name": "s6",
+    "op": "set",
+    "key": "k6",
+    "value": 6
+   },
+   {
+    "kind": "filter",
+    "name": "s7",
+    "op": "set",
+    "key": "k7",
+    "value": 7
+   },
+   {
+    "kind": "filter",
+    "name": "s8",
+    "op": "set",
+    "key": "k8",
+    "value": 8
+   },
+   {
+    "kind": "filter",
+    "name": "s9",
+    "op": "set",
+    "key": "k9",
+    "value": 9
+   },
+   {
+    "kind": "filter",
+    "name": "s10",
+    "op": "set",
+    "key": "k10",
+    "value": 10
+   },
+   {
+    "kind": "filter",
+    "name": "s11",
+    "op": "set",
+    "key": "k11",
+    "value": 11
+   },
+   {
+    "kind": "filter",
+    "name": "s12",
+    "op": "set",
+    "key": "k12",
+    "value": 12
+   },
+   {
+    "kind": "filter",
+    "name": "s13",
+    "op": "set",
+    "key": "k13",
+    "value": 13
+   },
+   {
+    "kind": "filter",
+    "name": "s14",
+    "op": "set",
+    "key": "k14",
+    "value": 14
+   },
+   {
+    "kind": "filter",
+    "name": "s15",
+    "op": "set",
+    "key": "k15",
+    "value": 15
+   },
+   {
+    "kind": "filter",
+    "name": "s16",
+    "op": "set",
+    "key": "k16",
+    "value": 16
+   },
+   {
+    "kind": "filter",
+    "name": "s17",
+    "op": "set",
+    "key": "k17",
+    "value": 17
+   },
+   {
+    "kind": "filter",
+    "name": "s18",
+    "op": "set",
+    "key": "k18",
+    "value": 18
+   },
+   {
+    "kind": "filter",
+    "name": "s19",
+    "op": "set",
+    "key": "k19",
+    "value": 19
+   },
+   {
+    "kind": "filter",
+    "name": "s20",
+    "op": "set",
+    "key": "k20",
+    "value": 20
+   },
+   {
+    "kind": "filter",
+    "name": "s21",
+    "op": "set",
+    "key": "k21",
+    "value": 21
+   },
+   {
+    "kind": "filter",
+    "name": "s22",
+    "op": "set",
+    "key": "k22",
+    "value": 22
+   },
+   {
+    "kind": "filter",
+    "name": "s23",
+    "op": "set",
+    "key": "k23",
+    "value": 23
+   },
+   {
+    "kind": "filter",
+    "name": "s24",
+    "op": "set",
+    "key": "k24",
+    "value": 24
+   },
+   {
+    "kind": "filter",
+    "name": "s25",
+    "op": "set",
+    "key": "k25",
+    "value": 25
+   },
+   {
+    "kind": "filter",
+    "name": "s26",
+    "op": "set",
+    "key": "k26",
+    "value": 26
+   },
+   {
+    "kind": "filter",
+    "name": "s27",
+    "op": "set",
+    "key": "k27",
+    "value": 27
+   },
+   {
+    "kind": "filter",
+    "name": "s28",
+    "op": "set",
+    "key": "k28",
+    "value": 28
+   },
+   {
+    "kind": "filter",
+    "name": "s29",
+    "op": "set",
+    "key": "k29",
+    "value": 29
+   },
+   {
+    "kind": "filter",
+    "name": "s30",
+    "op": "set",
+    "key": "k30",
+    "value": 30
+   },
+   {
+    "kind": "filter",
+    "name": "s31",
+    "op": "set",
+    "key": "k31",
+    "value": 31
+   },
+   {
+    "kind": "filter",
+    "name": "s32",
+    "op": "set",
+    "key": "k32",
+    "value": 32
+   },
+   {
+    "kind": "filter",
+    "name": "s33",
+    "op": "set",
+    "key": "k33",
+    "value": 33
+   },
+   {
+    "kind": "filter",
+    "name": "s34",
+    "op": "set",
+    "key": "k34",
+    "value": 34
+   },
+   {
+    "kind": "filter",
+    "name": "s35",
+    "op": "set",
+    "key": "k35",
+    "value": 35
+   },
+   {
+    "kind": "filter",
+    "name": "s36",
+    "op": "set",
+    "key": "k36",
+    "value": 36
+   },
+   {
+    "kind": "filter",
+    "name": "s37",
+    "op": "set",
+    "key": "k37",
+    "value": 37
+   },
+   {
+    "kind": "filter",
+    "name": "s38",
+    "op": "set",
+    "key": "k38",
+    "value": 38
+   },
+   {
+    "kind": "filter",
+    "name": "s39",
+    "op": "set",
+    "key": "k39",
+    "value": 39
+   },
+   {
+    "kind": "filter",
+    "name": "s40",
+    "op": "set",
+    "key": "k40",
+    "value": 40
+   },
+   {
+    "kind": "filter",
+    "name": "s41",
+    "op": "set",
+    "key": "k41",
+    "value": 41
+   },
+   {
+    "kind": "filter",
+    "name": "s42",
+    "op": "set",
+    "key": "k42",
+    "value": 42
+   },
+   {
+    "kind": "filter",
+    "name": "s43",
+    "op": "set",
+    "key": "k43",
+    "value": 43
+   },
+   {
+    "kind": "filter",
+    "name": "s44",
+    "op": "set",
+    "key": "k44",
+    "value": 44
+   },
+   {
+    "kind": "filter",
+    "name": "s45",
+    "op": "set",
+    "key": "k45",
+    "value": 45
+   },
+   {
+    "kind": "filter",
+    "name": "s46",
+    "op": "set",
+    "key": "k46",
+    "value": 46
+   },
+   {
+    "kind": "filter",
+    "name": "s47",
+    "op": "set",
+    "key": "k47",
+    "value": 47
+   },
+   {
+    "kind": "filter",
+    "name": "s48",
+    "op": "set",
+    "key": "k48",
+    "value": 48
+   },
+   {
+    "kind": "filter",
+    "name": "s49",
+    "op": "set",
+    "key": "k49",
+    "value": 49
+   }
+  ],
+  "input": {}
+ }
+]

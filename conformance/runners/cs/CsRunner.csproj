@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Conformance runner for runtimes/cs. Restores offline from the local NuGet
+       cache (the runtime has no package dependencies). -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>cs_runner</AssemblyName>
+    <BaseOutputPath>build/bin/</BaseOutputPath>
+    <BaseIntermediateOutputPath>build/obj/</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../runtimes/cs/CupPipe/CupPipe.csproj" />
+  </ItemGroup>
+</Project>

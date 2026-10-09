@@ -1,0 +1,6 @@
+{
+  "lint": {
+    "paths": ["packages/codeupipe/codeupipe", "packages/codeupipe-lint/codeupipe_lint", "scorecard", "conformance/runners/python", "examples"],
+    "exclude": ["*/tests/lint/fixtures/*"]
+  }
+}
