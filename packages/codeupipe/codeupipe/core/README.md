@@ -2,9 +2,9 @@
 
 The foundation of codeupipe: the seven primitives — `Payload`, `Filter`,
 `Pipeline`, `Valve`, `Tap`, `State`, `Hook` — plus supporting protocols,
-governance, security, and events. Everything else in the framework (linter,
-converter, connect, ux, etc.) is built on top of this package. Zero external
-dependencies, stdlib only.
+governance and events. The export (`codeupipe.lower`) and the linter
+(`codeupipe-lint`) are built on this package. No dependencies: standard
+library only.
 
 ## Key files/classes
 
@@ -50,23 +50,12 @@ dependencies, stdlib only.
   (shape validation), `ContractViolation`, `PipelineTimeoutError`,
   `AuditEntry`/`AuditTrail`/`AuditHook` (immutable transformation log),
   `DeadLetterHandler`/`LogDeadLetterHandler` (route failed payloads).
-- `secure.py` — functional crypto helpers: `seal_payload`/`verify_payload`
-  (HMAC-SHA256 signing) and `encrypt_data`/`decrypt_data` (symmetric
-  encryption), plus `SecurePayloadError`. Principle: plaintext at rest,
-  signed on boundary, encrypted on wire.
-- `sign_filter.py`, `verify_filter.py`, `encrypt_filter.py`,
-  `decrypt_filter.py` — `SignFilter`, `VerifyFilter`, `EncryptFilter`,
-  `DecryptFilter`: one-class-per-file Filter wrappers around `secure.py`'s
-  functional helpers, for use at pipeline boundaries.
 - `typed/` — parallel typed-payload API (`TypedFilter`, `TypedPipeline`,
   etc.) — see its own README.
-- `v2/` — experimental next-generation core primitives — see its own README.
 
 ## How it fits in
 
-`core` has no dependencies on any other codeupipe subpackage — every other
-directory in this repo (`connect`, `converter`, `linter`, `kb`, `browser`,
-`ux`, `coda`, `cli`) imports from `core` (typically via `codeupipe.core` or
-the top-level `codeupipe` re-exports), never the reverse. The canonical data
-flow the whole framework is built around is `Payload → Pipeline.run(payload)
+`core` imports nothing else from codeupipe. `codeupipe.lower` and
+`codeupipe-lint` import from it, never the reverse. The data flow the
+framework is built around is `Payload → Pipeline.run(payload)
 → Filter.call(payload) → Payload`.
