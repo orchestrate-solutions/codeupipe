@@ -154,61 +154,8 @@ class TestTraceAndLineageAreRefused:
 
 
 @pytest.mark.parametrize("lowering", LOWERINGS)
-class TestResilienceWrappersAreRefused:
-    @pytest.mark.parametrize("wrap", [
-        lambda p: p.with_retry(3),
-        lambda p: p.with_timeout(1.0),
-        lambda p: p.with_circuit_breaker(2),
-        lambda p: p.with_rate_limit(10.0),
-    ], ids=["retry", "timeout", "circuit_breaker", "rate_limit"])
-    def test_wrapped_pipeline(self, lowering, wrap):
-        message = _refused(wrap(_one(_Add())), lowering)
-        assert "wrapper" in message and "export the inner Pipeline" in message
-
-    def test_wrapped_pipeline_nested_inside_another(self, lowering):
-        outer = Pipeline()
-        outer.add_pipeline(_one(_Add()).with_retry(3))
-        assert "_RetryPipeline" in _refused(outer, lowering)
-
-
-@pytest.mark.parametrize("lowering", LOWERINGS)
 def test_a_plain_pipeline_still_exports(lowering):
     assert _export(_one(_Add()), lowering).get("files")
 
 
-def _callback(event):
-    pass
 
-
-@pytest.mark.parametrize("lowering", LOWERINGS)
-class TestRunTimeBehaviourOnThePipelineIsRefused:
-    """Settings on the Pipeline itself that change what run() does. The
-    exported run() ignored every one of them."""
-
-    def test_required_input_keys(self, lowering):
-        p = _one(_Add())
-        p.require_input("x")
-        assert "require_input" in _refused(p, lowering)
-
-    def test_guaranteed_output_keys(self, lowering):
-        p = _one(_Add())
-        p.guarantee_output("n")
-        assert "guarantee_output" in _refused(p, lowering)
-
-    def test_event_listeners(self, lowering):
-        p = _one(_Add())
-        p.on("*", _callback)
-        assert "event listeners" in _refused(p, lowering)
-
-    def test_disabled_taps(self, lowering):
-        p = _one(_Add())
-        p.add_tap(_Tap())
-        p._disabled_taps = frozenset({f"{__name__}._Tap"})
-        assert f"{__name__}._Tap" in _refused(p, lowering)
-
-    def test_contract_on_a_nested_pipeline(self, lowering):
-        inner = _one(_Add(), SubPipeline)
-        inner.require_input("x")
-        outer = Pipeline()
-        outer.add_pipeline(inner)
-        assert "SubPipeline" in _refused(outer, lowering)

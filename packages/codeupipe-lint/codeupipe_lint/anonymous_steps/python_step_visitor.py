@@ -1,8 +1,7 @@
 """PythonStepVisitor: finds anonymous steps in one parsed Python module.
 
-A step is an argument of ``add_filter``, ``add_async_filter``,
-``insert_filter_after``, ``add_tap``, ``add_async_tap``, ``add_pipeline`` or
-``add_parallel`` (on any receiver), or of ``Valve(inner, predicate)``. It is
+A step is an argument of ``add_filter``, ``add_tap`` or ``add_pipeline``
+(on any receiver), or of ``Valve(inner, predicate)``. It is
 anonymous when it is (or, through a simple local name, is bound to):
 
 - a lambda (CUP-A001);
@@ -33,12 +32,8 @@ from .rules import (ENTRY_SCRIPT, FUNCTION_PREDICATE, LAMBDA, LOCAL_FUNCTION, LO
 
 _STEP_METHODS = {
     "add_filter": "Filter",
-    "add_async_filter": "Filter",
-    "insert_filter_after": "Filter",
     "add_tap": "Tap",
-    "add_async_tap": "Tap",
     "add_pipeline": "Nested pipeline",
-    "add_parallel": "Parallel filter",
 }
 _VALVE_ROLES = ["Valve inner filter", "Valve predicate"]
 _VALVE_KEYWORDS = {"inner": "Valve inner filter", "predicate": "Valve predicate"}

@@ -1,34 +1,28 @@
 """
-Core Module: Base Protocols and Classes
+Core: the seven primitives.
 
-The foundation — protocols, abstract base classes, and fundamental types.
+Payload, Filter, Pipeline, Valve, Tap, Hook and State, as conformance/API.md
+defines them. Standard library only.
 """
 
 from .payload import Payload, MutablePayload
 from .filter import AsyncFilter, Filter
-from .stream_filter import StreamFilter
 from .async_step_in_sync_run import AsyncStepInSyncRun
 from .anonymous_step import AnonymousStep
-from .pipeline import Pipeline, CircuitOpenError
+from .pipeline import Pipeline
 from .valve import Valve
 from .predicate import Predicate
 from .tap import AsyncTap, Tap
 from .state import State
 from .hook import AsyncHook, Hook
-from .event import PipelineEvent, EventEmitter
-from .govern import (
-    PayloadSchema, SchemaViolation, ContractViolation, PipelineTimeoutError,
-    AuditEntry, AuditTrail, AuditHook,
-    DeadLetterHandler, LogDeadLetterHandler,
-)
 
 __all__ = [
     "Payload", "MutablePayload",
-    "AsyncFilter", "AsyncHook", "AsyncTap", "Filter", "StreamFilter", "Pipeline", "AsyncStepInSyncRun", "AnonymousStep", "CircuitOpenError", "Valve", "Predicate", "Tap",
-    "State", "Hook",
-    "PipelineEvent", "EventEmitter",
-    # Govern
-    "PayloadSchema", "SchemaViolation", "ContractViolation", "PipelineTimeoutError",
-    "AuditEntry", "AuditTrail", "AuditHook",
-    "DeadLetterHandler", "LogDeadLetterHandler",
+    "Filter", "AsyncFilter",
+    "Pipeline",
+    "Valve", "Predicate",
+    "Tap", "AsyncTap",
+    "Hook", "AsyncHook",
+    "State",
+    "AnonymousStep", "AsyncStepInSyncRun",
 ]

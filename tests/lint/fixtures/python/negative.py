@@ -37,12 +37,10 @@ def build(steps, predicate):
     p.add_tap(Audit())
     p.add_filter(Valve(Add(), IsOn()))
     p.add_pipeline(UserOnboarding())
-    p.add_parallel([Add(), Add()])
     p.add_filter(make_add())
     for step in steps:
         p.add_filter(step)  # a parameter: unknown, not flagged
     p.add_filter(Valve(Add(), predicate))
-    p.insert_filter_after("codeupipe.Add", Add())
 
     # Not steps: lambdas elsewhere are fine.
     key = sorted([3, 1], key=lambda x: -x)

@@ -38,35 +38,11 @@ def _check_pipeline(pipeline, name: str, allow_hooks: bool = False) -> None:
     """
     if not hasattr(pipeline, "_steps"):
         raise _refuse(name, type(pipeline).__name__,
-                      "Resilience wrappers (with_retry, with_timeout, with_circuit_breaker, "
-                      "with_rate_limit, with_dead_letter) have no static form: export the inner "
-                      "Pipeline and wrap the generated run() yourself.")
+                      "Export takes a Pipeline. This object wraps one or is not one.")
     if getattr(pipeline, "_hooks", None) and not allow_hooks:
         raise _refuse(name, "Hook",
                       "Hooks do not run in the fast static export. Export with observe=True "
                       "(top-level Hooks only), or remove them.")
-    # Settings that change what run() does. The exported run() has no
-    # counterpart for any of them, so exporting would silently drop them.
-    contracts = [label for attr, label in (
-        ("_require_input_keys", "require_input"),
-        ("_guarantee_output_keys", "guarantee_output"),
-        ("_input_schema", "require_input_schema"),
-        ("_output_schema", "guarantee_output_schema"),
-    ) if getattr(pipeline, attr, None)]
-    if contracts:
-        raise _refuse(name, "Contract",
-                      f"{', '.join(contracts)} is not checked by exported code (dynamic run() raises "
-                      "ContractViolation). Remove the contract, or validate before calling run().")
-    emitter = getattr(pipeline, "_emitter", None)
-    if emitter is not None and emitter.has_listeners():
-        raise _refuse(name, "EventEmitter",
-                      "Pipeline event listeners (Pipeline.on) do not fire in exported code. "
-                      "Remove them before exporting.")
-    disabled = sorted(getattr(pipeline, "_disabled_taps", ()) or ())
-    if disabled:
-        raise _refuse(name, "Tap",
-                      f"Tap(s) {', '.join(disabled)} are disabled at runtime; exported code would run "
-                      "them. Remove them from the Pipeline, or re-enable them, before exporting.")
 
 
 def _ident(index: int, identity: str) -> str:
@@ -134,16 +110,6 @@ class LoadPipelineFilter:
         step_predicates = []
 
         for name, instance, step_type, group in _flatten(pipeline._steps):
-            if step_type in {"parallel", "stream_filter", "async_stream_filter"}:
-                raise UnsupportedFilterShape(
-                    filter_name=name,
-                    method_name="call",
-                    line=0,
-                    col=0,
-                    node_kind=step_type,
-                    suggestion="Flatten parallel or streaming shapes before export.",
-                )
-
             kind = None
             source_instance = instance
             predicate = None

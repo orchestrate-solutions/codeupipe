@@ -210,8 +210,3 @@ class TestNamesAreGone:
             Valve("gate", Add(), IsOn())  # type: ignore[call-arg]
 
 
-class TestInsertAfterUsesIdentity:
-    def test_insert_after_an_identity(self):
-        p = _pipeline(Add(), Add())
-        p.insert_filter_after(f"{MODULE}.Add", Boom())
-        assert p.identities == [f"{MODULE}.Add", f"{MODULE}.Boom", f"{MODULE}.Add#2"]

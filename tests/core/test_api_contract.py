@@ -47,12 +47,12 @@ class TestPipelineEntryPoints:
 
     def test_run_async_is_opt_in(self):
         p = Pipeline()
-        p.add_async_filter(AsyncInc())
+        p.add_filter(AsyncInc())
         assert asyncio.run(p.run_async(Payload({"n": 1}))).get("n") == 2
 
     def test_run_never_starts_an_event_loop_for_an_async_step(self):
         p = Pipeline()
-        p.add_async_filter(AsyncInc())
+        p.add_filter(AsyncInc())
         with pytest.raises(AsyncStepInSyncRun, match="AsyncInc"):
             p.run(Payload({}))
 
@@ -64,24 +64,6 @@ class TestPipelineEntryPoints:
         with pytest.raises(AsyncStepInSyncRun):
             p.run(Payload({}))
 
-    def test_run_never_starts_an_event_loop_for_an_async_listener(self):
-        async def listener(event):
-            pass
-
-        p = Pipeline()
-        p.add_filter(Inc())
-        p.on("step.end", listener)
-        with pytest.raises(AsyncStepInSyncRun):
-            p.run(Payload({}))
-
-    def test_sync_listeners_see_events_from_run(self):
-        seen = []
-        p = Pipeline()
-        p.add_filter(Inc())
-        p.on("*", lambda event: seen.append((event.kind, event.step_name)))
-        p.run(Payload({}))
-        assert seen == [("pipeline.start", None), ("step.start", INC),
-                        ("step.end", INC), ("pipeline.end", None)]
 
     def test_nested_pipeline_runs_synchronously_as_one_step(self):
         outer = Pipeline()
@@ -90,16 +72,11 @@ class TestPipelineEntryPoints:
         assert outer.run(Payload({})).get("n") == 2
         assert outer.state.executed == [INC, f"{__name__}.IncTwice"]
 
-    def test_stream_is_synchronous(self):
-        p = Pipeline()
-        p.add_filter(Inc())
-        assert [c.get("n") for c in p.stream(Payload({"n": i}) for i in range(3))] == [1, 2, 3]
-
 
 class TestStepsHaveNoNames:
     """Identity is derived from the filter (tests/core/test_step_identity.py)."""
 
-    @pytest.mark.parametrize("add", ["add_filter", "add_tap", "add_async_filter"])
+    @pytest.mark.parametrize("add", ["add_filter", "add_tap"])
     def test_a_name_argument_is_rejected(self, add):
         with pytest.raises(TypeError):
             getattr(Pipeline(), add)(Inc(), "a")

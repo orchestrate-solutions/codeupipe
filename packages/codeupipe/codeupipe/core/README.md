@@ -1,8 +1,8 @@
 # core
 
 The foundation of codeupipe: the seven primitives — `Payload`, `Filter`,
-`Pipeline`, `Valve`, `Tap`, `State`, `Hook` — plus supporting protocols,
-governance and events. The export (`codeupipe.lower`) and the linter
+`Pipeline`, `Valve`, `Tap`, `State`, `Hook` — and nothing else. The contract is
+[conformance/API.md](../../../../conformance/API.md). The export (`codeupipe.lower`) and the linter
 (`codeupipe-lint`) are built on this package. No dependencies: standard
 library only.
 
@@ -13,14 +13,10 @@ library only.
   is needed). Generic over a type parameter for type-safe workflows.
 - `filter.py` — `Filter` (sync `Protocol`: `call(payload) -> payload`) and
   `AsyncFilter` (async opt-in). The core processing-unit contract.
-- `stream_filter.py` — `StreamFilter`: chunk-at-a-time `Protocol` that yields
-  zero or more output chunks per input chunk (filtering, mapping, fan-out).
-  Regular Filters are auto-adapted to stream 1-in/1-out.
-- `pipeline.py` — `Pipeline`, `CircuitOpenError`: the one orchestrator.
-  `run()` / `stream()` are synchronous (the default) and never start an event
-  loop; `run_async()` / `stream_async()` are the opt-in async entry points.
-  Runs Filters in sequence, wires in Valves, Taps, Hooks, and State tracking,
-  plus governance (schema, timeout, audit, dead-letter). Steps have no
+- `pipeline.py` — `Pipeline`: the one orchestrator. `add_filter`, `add_tap`,
+  `add_pipeline`, `use_hook`, `run`, `run_async`, `state`. `run()` is
+  synchronous and never starts an event loop; `run_async()` is the opt-in
+  entry point for async steps. Steps have no
   names: each is identified by its filter (`step_identity.py`), `#n` from
   the second use; State and Hooks report that identity. Nested pipelines are
   named `Pipeline` subclasses. See conformance/API.md, "Step identity".
@@ -40,13 +36,6 @@ library only.
   after a run.
 - `hook.py` — `Hook` / `AsyncHook`: lifecycle ABC with `before`/`after`/
   `on_error` callbacks around filter and pipeline execution.
-- `event.py` — `PipelineEvent`, `EventEmitter`: structured, OpenTelemetry-
-  shaped events (`pipeline.start`, `step.end`, `circuit.open`, etc.)
-  subscribable via `Pipeline.on(kind, callback)`.
-- `govern.py` — Ring-6 pipeline guarantees: `PayloadSchema`/`SchemaViolation`
-  (shape validation), `ContractViolation`, `PipelineTimeoutError`,
-  `AuditEntry`/`AuditTrail`/`AuditHook` (immutable transformation log),
-  `DeadLetterHandler`/`LogDeadLetterHandler` (route failed payloads).
 
 ## How it fits in
 

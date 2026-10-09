@@ -38,9 +38,6 @@ def build():
     p = Pipeline()
     p.add_filter(lambda payload: payload)  # expect: CUP-A001
     p.add_tap(lambda payload: None)  # expect: CUP-A001
-    p.add_async_filter(lambda payload: payload)  # expect: CUP-A001
-    p.add_async_tap(lambda payload: None)  # expect: CUP-A001
-    p.insert_filter_after("x", lambda payload: payload)  # expect: CUP-A001
     p.add_filter(Valve(Add(), lambda payload: True))  # expect: CUP-A001
     p.add_filter(codeupipe.Valve(Add(), lambda payload: True))  # expect: CUP-A001
 
@@ -56,7 +53,6 @@ def build():
     p.add_filter(LocalFilter)  # expect: CUP-A003
     p.add_filter(Valve(LocalFilter(), is_on))  # expect: CUP-A003 CUP-A008
     p.add_filter(Valve(Add(), nested))  # expect: CUP-A002
-    p.add_parallel([Add(), lambda payload: payload, LocalFilter()])  # expect: CUP-A001 CUP-A003
 
     bound = lambda payload: payload  # noqa: E731
     p.add_filter(bound)  # expect: CUP-A001

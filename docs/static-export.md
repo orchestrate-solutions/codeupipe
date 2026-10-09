@@ -85,17 +85,12 @@ and the older shape tests beside it.
 
 | Shape | Why there is no static form | What to do |
 |---|---|---|
-| **Hooks**, in the fast export | the fast code has no lifecycle to hook into; it used to drop them with only a warning | export with `observe=True`, or remove them |
+| **Hooks**, in the fast export | the fast code has no lifecycle to hook into | export with `observe=True`, or remove them |
 | **Hooks on a nested pipeline**, in either export | they belong to the inner run, which is flattened away | move them to the top-level pipeline |
 | `observe=True` with `lowering="inline"` (`ValueError`) | inline writes the payload in place, so a Hook holding it would see later steps' writes | use the default `steps` layout |
 | **Async steps** (async `call`/`observe`, Valve around one, async `test`) | static `run` is sync, as the dynamic `run` is: it raises `AsyncStepInSyncRun` on the same pipeline | make the step sync |
-| **`payload.trace_id`, `payload.lineage`, `payload.with_trace`** | a plain dict carries neither; this used to emit `data.trace_id` and fail at runtime | keep the step dynamic |
+| **`payload.trace_id`, `payload.lineage`, `payload.with_trace`** | a plain dict carries neither | keep the step dynamic |
 | any other payload attribute (`payload._data`, ...) | same: only the operations above have a dict form | use an exportable operation |
-| **Resilience wrappers** (`with_retry`, `with_timeout`, `with_circuit_breaker`, `with_rate_limit`, `with_dead_letter`) | they wrap a run, they are not steps | export the inner Pipeline, wrap the generated `run()` yourself |
-| **Contracts**: `require_input`, `guarantee_output` and their schema forms | exported code would not check them; the dynamic run raises `ContractViolation` | validate before calling `run()` |
-| **Event listeners** (`Pipeline.on`) | no events fire in exported code | remove them |
-| **Taps disabled at runtime** | exported code would run them | remove or re-enable them |
-| parallel steps, stream filters | no sequential dict form | flatten before export |
 | callables or objects on `self` (filter or predicate), steps writing `self.x` | no source or literal to compile in | literal settings (predicates and filters are module-level classes anyway: the runtime refuses anything else) |
 
 ## What the fast export gives up

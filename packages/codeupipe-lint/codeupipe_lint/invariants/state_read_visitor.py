@@ -20,8 +20,8 @@ import ast
 from .rules import STATE_READ, make_finding
 
 STEP_METHODS = {"call", "test"}
-STATE_MEMBERS = {"executed", "skipped", "errors", "timings", "metadata", "chunks_processed", "mark_executed",
-                 "mark_skipped", "increment_chunks", "record_timing", "record_error", "has_errors",
+STATE_MEMBERS = {"executed", "skipped", "errors", "timings", "metadata", "mark_executed",
+                 "mark_skipped", "record_timing", "record_error", "has_errors",
                  "last_error", "reset", "diff"}
 
 

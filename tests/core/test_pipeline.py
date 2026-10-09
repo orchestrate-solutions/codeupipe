@@ -541,24 +541,6 @@ class TestTapFailureIsolation:
         p = self._pipeline(self._Boom())
         self._assert_contained(p, p.run(Payload({})))
 
-    @pytest.mark.unit
-    @pytest.mark.core
-    def test_stream_contains_a_tap_failure_on_every_chunk(self):
-        p = Pipeline()
-        p.add_filter(self._Score())
-        p.add_tap(self._Boom())
-
-        async def source():
-            for n in range(3):
-                yield Payload({"n": n})
-
-        async def collect():
-            return [chunk async for chunk in p.stream_async(source())]
-
-        chunks = asyncio.run(collect())
-
-        assert [c.get("n") for c in chunks] == [0, 1, 2]
-        assert [step for step, _ in p.state.errors] == [f"{__name__}.TestTapFailureIsolation._Boom"] * 3
 
     @pytest.mark.unit
     @pytest.mark.core

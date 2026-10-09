@@ -60,6 +60,7 @@ From the repo root.
 
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
+python -m pip install --upgrade pip           # an editable install needs pip 21.3 or later
 python -m pip install -e packages/codeupipe -e packages/codeupipe-lint -r requirements-dev.txt
 python -m pytest tests -q                        # core, lowering, lint, config, Python conformance
 python conformance/run.py                        # every runtime, one judge

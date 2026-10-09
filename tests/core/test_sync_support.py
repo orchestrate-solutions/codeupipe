@@ -262,7 +262,7 @@ class TestDeclaredAsync:
 
         async def go():
             pipeline = Pipeline()
-            pipeline.add_async_filter(AsyncMul2())
+            pipeline.add_filter(AsyncMul2())
             return await pipeline.run_async(Payload({"n": 2}))
 
         assert run(go()).get("n") == 6
@@ -272,23 +272,12 @@ class TestDeclaredAsync:
 
         async def go():
             pipeline = Pipeline()
-            pipeline.add_async_tap(tap)
+            pipeline.add_tap(tap)
             return await pipeline.run_async(Payload({"x": 42}))
 
         result = run(go())
         assert result.get("x") == 42
         assert tap.seen == [42]
-
-    def test_describe_marks_explicit_async_steps(self):
-
-
-        pipeline = Pipeline()
-        pipeline.add_async_filter(AsyncPass())
-        pipeline.add_async_tap(AsyncTapper())
-
-        steps = pipeline.describe()["steps"]
-        assert steps[0]["type"] == "async_filter"
-        assert steps[1]["type"] == "async_tap"
 
 
 # ===========================================================================
@@ -321,7 +310,7 @@ class TestPipelineRunSyncFastPath:
 
 
         pipeline = Pipeline()
-        pipeline.add_async_filter(AsyncAdd())
+        pipeline.add_filter(AsyncAdd())
         with pytest.raises(AsyncStepInSyncRun):
             pipeline.run(Payload({"n": 1}))
         assert asyncio.run(pipeline.run_async(Payload({"n": 1}))).get("n") == 2

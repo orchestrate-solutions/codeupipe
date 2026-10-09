@@ -59,8 +59,3 @@ class TestLoadPipeline:
         ir = result.get("pipeline_ir")
         assert ir.steps[0].kind == "valve"
 
-    def test_parallel_step_raises(self):
-        p = Pipeline()
-        p.add_parallel([_ExFilter(), _ExFilter()])
-        with pytest.raises(UnsupportedFilterShape):
-            LoadPipelineFilter().call(Payload({"pipeline": p}))

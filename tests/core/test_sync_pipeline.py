@@ -178,40 +178,6 @@ class TestSyncPipelineObserve:
 # ── Govern contracts ────────────────────────────────────────────────
 
 
-class TestSyncPipelineGovern:
-    """Input/output contracts validated in sync mode."""
-
-    def test_require_input_pass(self):
-        sp = Pipeline()
-        sp.add_filter(AddOneFilter())
-        sp.require_input("x")
-        result = sp.run(Payload({"x": 1}))
-        assert result.get("x") == 2
-
-    def test_require_input_fail(self):
-        from codeupipe.core.govern import ContractViolation
-        sp = Pipeline()
-        sp.add_filter(AddOneFilter())
-        sp.require_input("missing_key")
-        with pytest.raises(ContractViolation):
-            sp.run(Payload({"x": 1}))
-
-    def test_guarantee_output_pass(self):
-        sp = Pipeline()
-        sp.add_filter(AddOneFilter())
-        sp.guarantee_output("x")
-        result = sp.run(Payload({"x": 0}))
-        assert result.get("x") == 1
-
-    def test_guarantee_output_fail(self):
-        from codeupipe.core.govern import ContractViolation
-        sp = Pipeline()
-        sp.add_filter(AddOneFilter())
-        sp.guarantee_output("nonexistent")
-        with pytest.raises(ContractViolation):
-            sp.run(Payload({"x": 0}))
-
-
 # ── Performance ─────────────────────────────────────────────────────
 
 
@@ -266,8 +232,6 @@ class TestSyncPipelinePerformance:
 # ── With PersistentSubprocess ───────────────────────────────────────
 
 
-
-
 class TestTapFailureIsolation:
     """Plane B: a Tap failure never halts Plane A — same contract as Pipeline:
     recorded in state.errors, Tap counted as executed, no
@@ -304,14 +268,3 @@ class TestTapFailureIsolation:
         assert f"{__name__}.TestTapFailureIsolation._Boom" in p.state.executed
         assert hook.errors == []
 
-    @pytest.mark.unit
-    @pytest.mark.core
-    def test_stream_contains_a_tap_failure_on_every_chunk(self):
-        p = Pipeline()
-        p.add_filter(self._Score())
-        p.add_tap(self._Boom())
-
-        chunks = list(p.stream(Payload({"n": n}) for n in range(3)))
-
-        assert [c.get("n") for c in chunks] == [0, 1, 2]
-        assert [step for step, _ in p.state.errors] == [f"{__name__}.TestTapFailureIsolation._Boom"] * 3
