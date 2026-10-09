@@ -7,6 +7,7 @@ Steps:
     4. AnalyzeStateReads        CUP-I003
     5. AnalyzeOutsideWrites     CUP-I004
     6. AnalyzePrimitivesPerFile CUP-I005
+    7. DropDisabledFilter       rules switched off for the project
     7. ApplySuppressions        ``cup: allow-mutation``, ``cup: allow-state-read``,
                                 ``cup: allow-outside-write``, ``cup: allow-shared-file``
     8. FormatReport             report lines + exit code
@@ -18,6 +19,7 @@ from typing import Iterable, Optional
 from codeupipe import Payload, Pipeline
 from codeupipe_lint.anonymous_steps.apply_suppressions import ApplySuppressions
 from codeupipe_lint.anonymous_steps.collect_files import CollectFiles
+from codeupipe_lint.anonymous_steps.drop_disabled_filter import DropDisabledFilter
 from codeupipe_lint.anonymous_steps.format_report import FormatReport
 
 from .analyze_outside_writes import AnalyzeOutsideWrites
@@ -37,15 +39,19 @@ def build_lint_pipeline() -> Pipeline:
     pipeline.add_filter(AnalyzeStateReads())
     pipeline.add_filter(AnalyzeOutsideWrites())
     pipeline.add_filter(AnalyzePrimitivesPerFile())
+    pipeline.add_filter(DropDisabledFilter())
     pipeline.add_filter(ApplySuppressions(MARKER))
     pipeline.add_filter(FormatReport("invariant violation", "invariant violations"))
     return pipeline
 
 
-def lint_paths(paths: Iterable[str], exclude: Optional[Iterable[str]] = None) -> Payload:
+def lint_paths(paths: Iterable[str], exclude: Optional[Iterable[str]] = None,
+               disable: Optional[Iterable[str]] = None) -> Payload:
     """Run the linter over ``paths``; the result Payload holds ``findings``,
     ``suppressed``, ``errors``, ``report``, ``error_report`` and ``exit_code``."""
     data = {"paths": list(paths), "findings": [], "errors": []}
     if exclude:
         data["exclude"] = list(exclude)
+    if disable:
+        data["disable"] = list(disable)
     return build_lint_pipeline().run(Payload(data))

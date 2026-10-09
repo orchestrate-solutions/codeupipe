@@ -1,6 +1,6 @@
 """cup.config.json: what Lint and Compile do when they are given no arguments.
 
-    {"lint":    {"paths": ["src"], "exclude": ["*/generated/*"]},
+    {"lint":    {"paths": ["src"], "exclude": ["*/generated/*"], "disable": ["CUP-I005"]},
      "compile": [{"target": "app.pipelines:checkout", "out": "build/checkout",
                   "lowering": "inline", "observe": false}]}
 
@@ -18,7 +18,7 @@ __all__ = ["ConfigError", "DEFAULT_NAME", "load_config"]
 
 DEFAULT_NAME = "cup.config.json"
 _SECTIONS = ("lint", "compile")
-_LINT_KEYS = ("paths", "exclude")
+_LINT_KEYS = ("paths", "exclude", "disable")
 _PIPELINE_KEYS = ("target", "out", "lowering", "observe")
 _LOWERINGS = ("steps", "inline")
 

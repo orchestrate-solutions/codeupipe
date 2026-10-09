@@ -3,6 +3,23 @@
 Two linters for codeupipe pipelines, in Python: anonymous steps, and
 invariants. Standard library only; depends on `codeupipe`.
 
+## Using a part of the rules
+
+Each rule can be switched off. There are three ways.
+
+| For | How |
+|---|---|
+| One line | A comment on the line: `# cup: allow-anonymous`, `# cup: allow-mutation`, `# cup: allow-state-read`, `# cup: allow-outside-write`, `# cup: allow-shared-file` |
+| Some files | `--exclude GLOB`, or `lint.exclude` in `cup.config.json` |
+| The whole project | `--disable RULE`, or `lint.disable` in `cup.config.json` |
+
+```bash
+python -m codeupipe_lint.invariants --disable CUP-I005 src
+```
+
+A rule id that does not exist is an error. A rule of the other linter can be
+in the list: each linter uses the ids that are its own.
+
 ## Anonymous-step linter
 
 Step identity (conformance/API.md, "Step identity") makes a step's identity a

@@ -204,3 +204,48 @@ def test_a_bad_config_stops_compile_with_exit_2(project, capsys):
 
     assert compile_main([]) == 2
     assert "out" in capsys.readouterr().err
+
+
+# --- lint.disable: switch a rule off for the whole project -------------------
+
+def test_a_disabled_rule_is_not_reported(project, capsys):
+    write(project, {"lint": {"paths": ["src"], "disable": ["CUP-I001"]}})
+    assert invariants_main([]) == 0
+    assert "No invariant violations." in capsys.readouterr().out
+
+
+def test_disable_on_the_command_line(project, capsys):
+    assert invariants_main(["src"]) == 1
+    capsys.readouterr()
+    assert invariants_main(["--disable", "CUP-I001", "src"]) == 0
+
+
+def test_disable_on_the_command_line_wins_over_the_config(project):
+    write(project, {"lint": {"paths": ["src"], "disable": ["CUP-I001"]}})
+    assert invariants_main(["--disable", "CUP-I002"]) == 1
+
+
+def test_a_rule_of_the_other_linter_can_be_listed(project):
+    write(project, {"lint": {"paths": ["src"], "disable": ["CUP-A001", "CUP-I001"]}})
+    assert invariants_main([]) == 0
+    assert anonymous_main([]) == 0
+
+
+def test_disable_works_in_the_anonymous_step_linter(project, capsys):
+    (project / "src" / "lam.py").write_text(
+        "from codeupipe import Pipeline\n\np = Pipeline()\np.add_filter(lambda payload: payload)\n")
+    assert anonymous_main(["src"]) == 1
+    capsys.readouterr()
+    assert anonymous_main(["--disable", "CUP-A001", "src"]) == 0
+
+
+@pytest.mark.parametrize("main", [invariants_main, anonymous_main])
+def test_a_rule_id_that_does_not_exist_is_an_error(project, capsys, main):
+    assert main(["--disable", "CUP-I999", "src"]) == 2
+    assert "CUP-I999" in capsys.readouterr().err
+
+
+def test_disable_must_be_a_list_of_strings(project):
+    write(project, {"lint": {"paths": ["src"], "disable": "CUP-I001"}})
+    with pytest.raises(ConfigError, match="disable"):
+        load_config()

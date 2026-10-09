@@ -9,7 +9,8 @@ every time.
 {
   "lint": {
     "paths": ["src"],
-    "exclude": ["*/generated/*"]
+    "exclude": ["*/generated/*"],
+    "disable": ["CUP-I005"]
   },
   "compile": [
     {"target": "app.pipelines:checkout", "out": "build/checkout"},
@@ -30,6 +31,7 @@ python -m codeupipe.lower          # every pipeline under compile
 |---|---|---|
 | `lint.paths` | both linters | files or directories to check |
 | `lint.exclude` | both linters | fnmatch globs for files to skip |
+| `lint.disable` | both linters | rule ids to switch off for the whole project |
 | `compile[].target` | Compile | the pipeline, as `module:name` |
 | `compile[].out` | Compile | the directory to write its package into |
 | `compile[].lowering` | Compile | `steps` (default) or `inline` |
@@ -42,7 +44,8 @@ That is all of them.
 - **The command line wins.** Give paths to a linter, or a target to Compile,
   and the file is not used for that run at all: a file someone names is
   checked even if `lint.exclude` would skip it. With no paths, `--exclude` on
-  the command line replaces `lint.exclude`.
+  the command line replaces `lint.exclude`, and `--disable` replaces
+  `lint.disable`.
 - **A key no tool reads is an error.** So is a wrong value. The message names
   the key and the keys there are. A setting that does nothing cannot sit in
   the file.
