@@ -42,7 +42,6 @@ fast export `inline`, observable export (`observe=True`).
 | a hooked pipeline is refused (documented), then the unhooked one compared | ✓ | ✓ | |
 | State: executed, skipped, errors (name + error), timing keys | | | ✓ |
 | Hook event sequence, with a deep snapshot of the payload at every event | | | ✓ |
-| isolation: no payload changed after a Hook saw it | dynamic ✓ | | ✓ |
 | `SOURCE_HOOKS` guard: `run()` without `hooks=` raises `TypeError` | | | ✓ |
 
 **Verdicts.** *pass*: agrees on every check. *refused*: export raised
@@ -51,14 +50,11 @@ divergence, or an export that crashed (a `SyntaxError` on load is not a
 refusal). Every distinct failure signature is shrunk (`minimize.py`) to a
 minimal case and printed.
 
-**Isolation (item 4)** is measured inside the same runs. A `SnapshotHook`
-(`snapshot_hook.py`) is attached to the dynamic run and passed to the
-observable export's `run()` on every case: at each event it deep-copies the
-payload and keeps the reference it was handed. At the end every held
-reference must still equal its snapshot, so a step writing into a payload an
-earlier step produced is caught. The caller's input is deep-compared after
-every run in every mode. The fast `inline` layout writes in place into its
-own copy by design and has no hook point, so its intermediates are not
-checked here; item 3 checks every exported per-step function in isolation.
+**Isolation (item 4)** is measured inside the same runs: the caller's input
+is deep-compared after every run in every mode, and a second run on a fresh
+copy must give the same result. A `SnapshotHook` (`snapshot_hook.py`) is
+attached to the dynamic run and passed to the observable export's `run()`;
+at each event it deep-copies the payload, because a Payload is written in
+place and the object changes later by design.
 
 Results: `results/differential-<seed>-<count>.{json,md}`.

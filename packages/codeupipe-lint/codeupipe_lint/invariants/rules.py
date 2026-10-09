@@ -18,9 +18,9 @@ RULES = {
 
 _FIX = {
     PARSE_ERROR: "Fix the syntax error so the file can be checked.",
-    PAYLOAD_INTERNALS: ("A Payload is changed through insert, remove and merge, which return a new Payload. "
-                        "For a deliberate in-place write, use payload.with_mutation()."),
-    SHARED_VALUE_MUTATION: ("A Payload shares its nested values, so every earlier Payload and the caller's "
+    PAYLOAD_INTERNALS: ("A Payload is changed through insert, remove and merge. They write in place; "
+                        "for a separate Payload, use payload.copy()."),
+    SHARED_VALUE_MUTATION: ("A Payload shares its nested values, so every copy of the Payload and the caller's "
                             "input change too. Copy the value first (list(...), dict(...)), change the copy, "
                             "and insert it."),
     STATE_READ: ("A Filter's result and a Valve's decision must depend only on the Payload. Put what the step "

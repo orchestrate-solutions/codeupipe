@@ -1,7 +1,7 @@
 """Fixture: step shapes that make inlining + in-place writes risky.
 
 Each one is a way a flattened ``run()`` that mutates one private dict could
-diverge from the dynamic runtime, where every Payload is immutable.
+diverge from the dynamic runtime.
 """
 
 KEPT = []
@@ -13,10 +13,9 @@ class SetA:
         return payload.insert("a", 1)
 
 
-class ChainReadsOldValue:
-    """Immutable semantics: ``payload.get("a")`` sees the payload *before*
-    this chain, so ``b`` must be the old ``a`` even though ``a`` is also
-    being written in the same chain."""
+class ChainReadsItsOwnWrite:
+    """A write changes the Payload at once, so the second link reads the
+    ``a`` that the first link wrote."""
 
     def call(self, payload):
         return payload.insert("a", 100).insert("b", payload.get("a"))
@@ -29,19 +28,19 @@ class EarlyReturn:
         return payload
 
 
-class KeepsReference:
-    """Stores the payload itself. A later in-place write must not show up
-    in what was stored."""
+class KeepsACopy:
+    """A step that keeps the payload keeps a copy: later writes do not
+    reach it."""
 
     def call(self, payload):
         KEPT.append(payload.to_dict())
-        KEPT.append(payload)
+        KEPT.append(payload.copy().to_dict())
         return payload.insert("kept", True)
 
 
-class TapKeepsReference:
+class TapKeepsACopy:
     def observe(self, payload):
-        SEEN_BY_TAP.append(payload)
+        SEEN_BY_TAP.append(payload.to_dict())
 
 
 class TapReadsOnly:

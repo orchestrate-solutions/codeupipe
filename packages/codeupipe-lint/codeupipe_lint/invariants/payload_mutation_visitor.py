@@ -1,8 +1,8 @@
 """PayloadMutationVisitor: in-place changes to a Payload, inside one step method.
 
-A Payload is immutable only at the top level: ``payload.get("items")`` hands
-back the live list, shared with every earlier Payload and with the caller's
-input. This walks a step method (``call``, ``observe``, ``test``) in source
+A Payload owns its keys, not its values: ``payload.get("items")`` hands
+back the live list, shared with every copy of the Payload and with the
+caller's input. This walks a step method (``call``, ``observe``, ``test``) in source
 order and flags:
 
 * CUP-I001: a write through ``<payload>._data``;
@@ -10,7 +10,7 @@ order and flags:
   directly or through a local name, including the loop variable of a ``for``
   over one.
 
-Not flagged: ``payload.with_mutation()`` (the sanctioned in-place path), a
+Not flagged: a write through the Payload's own operations, a
 copy (``list(x)``, ``dict(x)``, ``x[:]``, ``x.copy()``, ``sorted(x)``), a name
 rebound before it is changed, and ``name += ..`` on a local name, which is
 almost always a number or a string.

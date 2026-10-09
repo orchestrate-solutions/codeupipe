@@ -15,13 +15,11 @@ Only removing both costs reaches hand-written speed, so this does both:
 ``run()`` copies the caller's dict once, then each step's body runs inline
 and writes keys in place.
 
-In-place writes are only sound while nothing else holds the dict. A step is
-inlined only when it touches ``data`` in ways that cannot let it escape —
-``data.get(...)``, ``dict(data)``, and a final ``return data`` or
-``return {**data, ...}``. Anything else (storing ``data``, passing it on,
-returning early, a lambda closing over it) is emitted as a function and
-called on a copy. That keeps every guarantee the immutable Payload gave the
-dynamic runtime, at the price of one copy on exactly the steps that need it.
+A Payload write is in place, so a step's body is already in-place writes on
+``data`` and can stand in ``run()`` as it is. A step is emitted as a function
+and called instead when its shape cannot be pasted into ``run()``: an early
+return, a nested function that closes over ``data``, a generator, or a step
+that rebinds ``data``.
 """
 
 from __future__ import annotations
@@ -29,7 +27,7 @@ from __future__ import annotations
 import ast
 import copy
 import os
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Set
 
 from codeupipe.core import Payload
 
@@ -104,11 +102,11 @@ class EmitInlineModuleFilter:
 # --------------------------------------------------------------------------
 
 def _filter_lines(step, fn: ast.FunctionDef, prefix: str, functions: List[str]) -> List[str]:
-    """Inline a filter body writing in place, or call it on a copy."""
+    """Inline a filter body, or call it as a function."""
     if _inlinable(fn, allow_final_return=True):
         return _inline_filter(fn, prefix)
     functions.append(_as_function(fn, f"{prefix}step"))
-    return [f"data = dict({prefix}step(dict(data)))"]
+    return [f"data = {prefix}step(data)"]
 
 
 def _tap_lines(step, fn: ast.FunctionDef, prefix: str, functions: List[str]) -> List[str]:
@@ -117,7 +115,7 @@ def _tap_lines(step, fn: ast.FunctionDef, prefix: str, functions: List[str]) -> 
         inner = [ast.unparse(stmt) for stmt in _body_without_docstring(_rename_locals(fn, prefix))]
     else:
         functions.append(_as_function(fn, f"{prefix}tap"))
-        inner = [f"{prefix}tap(dict(data))"]
+        inner = [f"{prefix}tap(data)"]
     return ["try:", *_indent(inner or ["pass"]), "except Exception:", "    pass"]
 
 
@@ -130,12 +128,9 @@ def _predicate_condition(fn: ast.FunctionDef, prefix: str, functions: List[str],
                          helpers: Dict[str, ast.FunctionDef]) -> str:
     body = _body_without_docstring(fn)
     if len(body) == 1 and isinstance(body[0], ast.Return) and body[0].value is not None:
-        expr = _inline_helper_call(body[0].value, helpers)
-        if _data_uses_are_safe(expr, final_return=None):
-            return ast.unparse(expr)
+        return ast.unparse(_inline_helper_call(body[0].value, helpers))
     functions.append(_as_function(fn, f"{prefix}predicate"))
-    safe = _inlinable(fn, allow_final_return=True, any_return=True)
-    return f"{prefix}predicate({'data' if safe else 'dict(data)'})"
+    return f"{prefix}predicate(data)"
 
 
 def _inline_filter(fn: ast.FunctionDef, prefix: str) -> List[str]:
@@ -146,30 +141,7 @@ def _inline_filter(fn: ast.FunctionDef, prefix: str) -> List[str]:
     value = last.value
     if isinstance(value, ast.Name) and value.id == "data":
         return lines
-    pairs = _insert_pairs(value)
-    if pairs is None:
-        return lines + [f"data = dict({ast.unparse(value)})"]
-    if len(pairs) == 1:
-        key, val = pairs[0]
-        return lines + [f"data[{ast.unparse(key)}] = {ast.unparse(val)}"]
-    # Immutable semantics: every value is computed from the payload *before*
-    # the chain, so evaluate them all before writing any key.
-    temps = [f"{prefix}v{i}" for i in range(len(pairs))]
-    lines += [f"{t} = {ast.unparse(val)}" for t, (_key, val) in zip(temps, pairs)]
-    lines += [f"data[{ast.unparse(key)}] = {t}" for t, (key, _val) in zip(temps, pairs)]
-    return lines
-
-
-def _insert_pairs(value: ast.AST) -> Optional[List[Tuple[ast.AST, ast.AST]]]:
-    """``{**data, k: v, ...}`` -> [(k, v), ...]; anything else -> None."""
-    if not isinstance(value, ast.Dict) or not value.keys or value.keys[0] is not None:
-        return None
-    first = value.values[0]
-    if not (isinstance(first, ast.Name) and first.id == "data"):
-        return None
-    if any(key is None for key in value.keys[1:]):
-        return None
-    return list(zip(value.keys[1:], value.values[1:]))
+    return lines + [f"data = {ast.unparse(value)}"]
 
 
 # --------------------------------------------------------------------------
@@ -248,37 +220,6 @@ def _inlinable(fn: ast.FunctionDef, allow_final_return: bool, any_return: bool =
         if final is None or final.value is None or returns != [final]:
             return False
     elif returns:
-        return False
-    return all(_data_uses_are_safe(stmt, final_return=final) for stmt in body)
-
-
-def _data_uses_are_safe(tree: ast.AST, final_return: Optional[ast.Return]) -> bool:
-    parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
-    for node in ast.walk(tree):
-        if not (isinstance(node, ast.Name) and node.id == "data"):
-            continue
-        parent = parents.get(node)
-        if isinstance(parent, ast.Attribute) and parent.attr == "get" and isinstance(parents.get(parent), ast.Call):
-            continue
-        if (isinstance(parent, ast.Call) and isinstance(parent.func, ast.Name) and parent.func.id == "dict"
-                and parent.args == [node] and not parent.keywords):
-            continue
-        # ``k in data`` (lowered ``has``): a read, the dict does not escape
-        if (isinstance(parent, ast.Compare) and node in parent.comparators
-                and all(isinstance(op, (ast.In, ast.NotIn)) for op in parent.ops)):
-            continue
-        # ``for k, v in data.items()`` as a comprehension's iterable (lowered
-        # ``remove``): consumed on the spot to build a new dict
-        if isinstance(parent, ast.Attribute) and parent.attr in {"items", "keys", "values"}:
-            call = parents.get(parent)
-            if (isinstance(call, ast.Call) and call.func is parent and not call.args
-                    and isinstance(parents.get(call), ast.comprehension) and parents[call].iter is call):
-                continue
-        if final_return is not None:
-            if parent is final_return:
-                continue
-            if isinstance(parent, ast.Dict) and parents.get(parent) is final_return and parent.values[0] is node:
-                continue
         return False
     return True
 

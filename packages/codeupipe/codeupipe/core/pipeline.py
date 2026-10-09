@@ -115,7 +115,7 @@ class Pipeline(Generic[TInput, TOutput]):
     async def _run_fast(self, initial_payload: Payload[TInput]) -> Payload[TOutput]:
         """Hot path for simple pipelines: no hooks, no timing, no lineage."""
         self._state = State()
-        payload = initial_payload
+        payload = initial_payload.copy()  # the caller's Payload is not changed
         for name, step, step_type in self._steps:
             if step_type == "tap":
                 self._observe(name, step, payload)
@@ -157,7 +157,7 @@ class Pipeline(Generic[TInput, TOutput]):
             return await self._run_fast(initial_payload)
 
         self._state = State()
-        payload = initial_payload
+        payload = initial_payload.copy()  # the caller's Payload is not changed
         _step_name: Optional[str] = None
         _step_t0: Optional[float] = None
 
@@ -321,7 +321,7 @@ class Pipeline(Generic[TInput, TOutput]):
 
     def _run_sync(self, initial_payload: Payload[TInput]) -> Payload[TOutput]:
         self._state = State()
-        payload = initial_payload
+        payload = initial_payload.copy()  # the caller's Payload is not changed
 
         # Clock reads cost ~0.1 µs each; only take them when someone reads them.
         timed = self._observe_timing

@@ -17,16 +17,12 @@ def _diff(check, a, b, out):
 
 
 def self_checks(record, who):
-    """Checks a run makes of itself: input untouched, reruns identical,
-    no payload changed after a Hook saw it."""
+    """Checks a run makes of itself: input untouched, reruns identical."""
     out = []
     if record.get("input_diff"):
         out.append({"check": "input_mutated", "detail": f"{who}: {record['input_diff']}"})
     if record.get("rerun_diff"):
         out.append({"check": "rerun_differs", "detail": f"{who}: {record['rerun_diff']}"})
-    for index, event, step in record.get("isolation") or ():
-        out.append({"check": "payload_mutated_after_the_fact",
-                    "detail": f"{who}: event #{index} {event}({step!r}) payload changed later"})
     return out
 
 

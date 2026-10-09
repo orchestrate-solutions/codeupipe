@@ -72,7 +72,7 @@ Numbers compare as JSON numbers (`1 == 1.0`), but `true` is never `1`.
 | filter | `remove` key | `remove(key)` |
 | filter | `merge` value | `merge(Payload(value))` |
 | filter | `has` key, to | insert `to = has(key)` |
-| filter | `mutate` key, value | `with_mutation()`, `set(key, value)`, `to_immutable()` |
+| filter | `mutate` key, value | an in-place write: Python `insert(key, value)` as a statement, then return the payload |
 | tap | `record` key | append `get(key)` to the runner's tap log |
 | tap | `fail` message | fail the way that language's Taps fail (raise, panic) |
 | valve `when` | `equals` key, value | `get(key) == value` |

@@ -62,7 +62,8 @@ def _plain_lines(step, pad: str, var: str = "data") -> List[str]:
 
 
 def _fast_run(steps) -> List[str]:
-    lines = ["def run(data):"]
+    # Steps write in place, so run() works on its own copy of the caller's dict.
+    lines = ["def run(data):", "    data = dict(data)"]
     for step in steps:
         lines.extend(_plain_lines(step, "    "))
     lines.append("    return data")
@@ -93,11 +94,10 @@ def _observed_run(steps, source_hooks) -> List[str]:
         if group is not None:
             # A nested pipeline: one step in this run's State and Hooks. Its
             # own skips and Tap errors belong to its run, as dynamically.
-            # It works on its own variable, as the nested run has its own
-            # payload: if it fails, the outer on_error hooks see ``data`` as
+            # It works on its own copy, as the nested run does: if it fails, the outer on_error hooks see ``data`` as
             # it was when the nested pipeline was entered, as dynamically.
             inner = [line for step in members for line in _plain_lines(step, pad, "_nested")]
-            body.extend(_observed_step(group, [f"{pad}_nested = data", *inner, f"{pad}data = _nested",
+            body.extend(_observed_step(group, [f"{pad}_nested = dict(data)", *inner, f"{pad}data = _nested",
                                                f"{pad}executed.append({group!r})"], pad))
             continue
         for step in members:
@@ -153,6 +153,7 @@ def _observed_run(steps, source_hooks) -> List[str]:
         '    state["trace_id"] = trace_id',
         "    _step = None",
         "    _t0 = 0.0",
+        "    data = dict(data)",
         "    for _hook in hooks:",
         "        _hook.before(None, data)",
         "    try:",

@@ -23,7 +23,7 @@ no dependencies. `codeupipe-lint` depends only on `codeupipe`.
 ```python
 from codeupipe import Payload, Pipeline, Valve
 
-class Discount:                      # a Filter: Payload in, new Payload out
+class Discount:                      # a Filter: takes the Payload, writes to it, returns it
     def __init__(self, rate):
         self.rate = rate
     def call(self, payload):

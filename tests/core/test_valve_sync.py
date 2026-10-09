@@ -17,23 +17,15 @@ import asyncio
 
 import pytest
 
-from codeupipe import MutablePayload, Payload, Valve
+from codeupipe import Payload, Valve
 from codeupipe import Pipeline
 
 
 class Append:
-    """Synchronous inner filter, payload-agnostic.
-
-    MutablePayload has `set`, Payload has `insert` — this runs under both so
-    the same filter can be used for semantics and for timing.
-    """
+    """Synchronous inner filter."""
 
     def call(self, payload):
-        value = payload.get("s") + "!"
-        if hasattr(payload, "set"):
-            payload.set("s", value)
-            return payload
-        return payload.insert("s", value)
+        return payload.insert("s", payload.get("s") + "!")
 
 
 class AsyncAppend:
@@ -133,12 +125,12 @@ class TestThroughSyncPipeline:
     def test_valve_runs_in_sync_pipeline(self):
         pipeline = Pipeline()
         pipeline.add_filter(Valve(Append(), _Predicate7()))
-        assert pipeline.run(MutablePayload({"s": "a"})).get("s") == "a!"
+        assert pipeline.run(Payload({"s": "a"})).get("s") == "a!"
 
     def test_skipped_valve_is_marked_skipped(self):
         pipeline = Pipeline()
         pipeline.add_filter(Valve(Append(), _Predicate8()))
-        pipeline.run(MutablePayload({"s": "a"}))
+        pipeline.run(Payload({"s": "a"}))
         assert f"{__name__}.Append" in pipeline.state.skipped
 
     def test_valve_is_no_longer_far_slower_than_a_plain_step(self):
@@ -148,8 +140,8 @@ class TestThroughSyncPipeline:
         plain = Pipeline(); plain.add_filter(Append())
         valved = Pipeline(); valved.add_filter(Valve(Append(), _Predicate9()))
         n = 300
-        t_plain = timeit.timeit(lambda: plain.run(MutablePayload({"s": "a"})), number=n)
-        t_valve = timeit.timeit(lambda: valved.run(MutablePayload({"s": "a"})), number=n)
+        t_plain = timeit.timeit(lambda: plain.run(Payload({"s": "a"})), number=n)
+        t_valve = timeit.timeit(lambda: valved.run(Payload({"s": "a"})), number=n)
         assert t_valve < t_plain * 10, (
             f"valve is {t_valve / t_plain:.0f}x a plain step — asyncio path is back"
         )

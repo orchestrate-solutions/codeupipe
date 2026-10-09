@@ -21,41 +21,47 @@ shows where each one stands.
 4. **Every rule here is checked.** Semantics by the conformance cases; the
    vocabulary by the runners, which may only use the operations named here.
 
-## Payload — immutable keyed data
+## Payload — keyed data
 
 Keys are strings. Values are JSON-shaped: null, bool, number, string, list,
-map.
+map. There is one Payload type. **A write changes the Payload and returns
+it.** `copy()` gives a separate Payload for the caller who wants to keep the
+one they have.
+
+> **Python implements this section. The other six runtimes still have the
+> earlier form** (writes return a new Payload; a separate `MutablePayload`
+> for in-place writes). Their columns below show that earlier form.
 
 | Operation | Meaning | Python | TypeScript | Go | Rust | Kotlin | C# | C++ |
 |---|---|---|---|---|---|---|---|---|
 | construct | from a native map (copied) | `Payload(d)` | `new Payload(o)` | `NewPayload(m)` | `Payload::from_data(m)` | `Payload(m)` | `new Payload(d)` | `Payload(m)` |
 | get | value, or `default`, or **absent** | `get(k, default=None)` | `get(k, default = null)` | `Get(k, default...)` | `get(k) -> Option`, `get_or(k, default)` | `get(k, default)` | `Get(k, default)` | `get(k[, default])` |
-| insert | **new** payload with `k = v` | `insert(k, v)` | `insert(k, v)` | `Insert(k, v)` | `insert(k, v)` | `insert(k, v)` | `Insert(k, v)` | `insert(k, v)` |
-| remove | **new** payload without `k` | `remove(k)` | `remove(k)` | `Remove(k)` | `remove(k)` | `remove(k)` | `Remove(k)` | `remove(k)` |
-| merge | **new** payload, right side wins | `merge(other)` | `merge(other)` | `Merge(other)` | `merge(other)` | `merge(other)` | `Merge(other)` | `merge(other)` |
+| insert | set `k = v` in this payload; returns it | `insert(k, v)` | `insert(k, v)` | `Insert(k, v)` | `insert(k, v)` | `insert(k, v)` | `Insert(k, v)` | `insert(k, v)` |
+| remove | remove `k` from this payload; returns it | `remove(k)` | `remove(k)` | `Remove(k)` | `remove(k)` | `remove(k)` | `Remove(k)` | `remove(k)` |
+| merge | write `other` into this payload, `other` wins; returns it | `merge(other)` | `merge(other)` | `Merge(other)` | `merge(other)` | `merge(other)` | `Merge(other)` | `merge(other)` |
 | has | key present | `has(k)` | `has(k)` | `Has(k)` | `has(k)` | `has(k)` | `Has(k)` | `has(k)` |
 | to_dict | native map copy | `to_dict()` | `toDict()` | `ToDict()` | `to_dict()` | `toDict()` | `ToDict()` | `to_dict()` |
-| with_trace | **new** payload with trace id | `with_trace(id)` | `withTrace(id)` | `WithTrace(id)` | `with_trace(id)` | `withTrace(id)` | `WithTrace(id)` | `with_trace(id)` |
+| with_trace | set the trace id on this payload; returns it | `with_trace(id)` | `withTrace(id)` | `WithTrace(id)` | `with_trace(id)` | `withTrace(id)` | `WithTrace(id)` | `with_trace(id)` |
 | trace_id, lineage | observability | `trace_id`, `lineage` | `traceId`, `lineage` | `TraceID()`, `Lineage()` | `trace_id()`, `lineage()` | `traceId`, `lineage` | `TraceId`, `Lineage` | `trace_id()`, `lineage()` |
-| with_mutation | a `MutablePayload` copy | `with_mutation()` | `withMutation()` | `WithMutation()` | `with_mutation()` | `withMutation()` | `WithMutation()` | `with_mutation()` |
+| copy | a separate payload, same contents | `copy()` | `withMutation()` | `WithMutation()` | `with_mutation()` | `withMutation()` | `WithMutation()` | `with_mutation()` |
 
 **Absent** is the language's null: Python `None`, TypeScript `null` (never
 `undefined`), Go `nil`, Rust `None`, Kotlin `null`, C# `null`, C++ the null
 `Value`.
 
-Rules that never differ:
+Rules:
 
-- `insert`, `remove`, `merge`, `with_trace` **never change the receiver.**
-  Where the language can enforce use of the result it must: C++
-  `[[nodiscard]]`, Rust `#[must_use]`, C# `[Pure]`.
+- `insert`, `remove`, `merge` and `with_trace` **change the receiver and
+  return it**, so a step can write and return in one line:
+  `return payload.insert(k, v)`.
+- `copy()` is shallow: the two payloads have separate keys and share their
+  values. Change a nested value by copying it first.
+- The caller's input map is never changed (copied on construct).
+- **`run` works on a copy of the Payload it is given**, so the caller's
+  Payload is not changed either.
+- A Tap, a Hook and a predicate receive the live Payload. One that keeps
+  it for later keeps a `copy()`.
 - A typed read of the wrong type **fails loudly**; it never returns absent.
-- The caller's input map is never mutated (copied on construct).
-
-### MutablePayload — the explicit mutable escape hatch
-
-`get(k, default)`, `set(k, v)` (in place), `remove(k)` (in place),
-`to_immutable()`. The name split is deliberate: `insert` returns a new
-payload; `set` changes this one.
 
 ## Filter
 

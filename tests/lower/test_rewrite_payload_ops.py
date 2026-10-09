@@ -1,11 +1,4 @@
-"""RED tests for RewritePayloadOpsFilter (M0).
-
-These tests describe the full rewrite table from
-docs/plan/converter-v2/architecture.md. Every rule is a test.
-
-Developer contract: make each test pass. When they're all green, the
-export-side AST rewriter is done.
-"""
+"""RewritePayloadOpsFilter: every Payload operation and its plain-dict form."""
 
 import ast
 import textwrap
@@ -62,7 +55,7 @@ class TestGetRewrites:
 
 
 class TestInsertRewrites:
-    def test_single_insert_becomes_dict_merge(self):
+    def test_single_insert_becomes_an_assignment(self):
         fn = _fn(
             """
             def call(self, payload):
@@ -72,10 +65,10 @@ class TestInsertRewrites:
         ir = _rewrite(_wrap(fn))
         src = _unparse(ir.steps[0])
         assert "payload" not in src
-        assert "**data" in src
-        assert "1" in src
+        assert "data['k'] = 1" in src
+        assert src.rstrip().endswith("return data")
 
-    def test_chained_insert_collapses_to_single_merge(self):
+    def test_chained_inserts_become_assignments_in_order(self):
         fn = _fn(
             """
             def call(self, payload):
@@ -83,12 +76,8 @@ class TestInsertRewrites:
             """
         )
         ir = _rewrite(_wrap(fn))
-        src = _unparse(ir.steps[0])
-        # collapsed into ONE dict merge, not three nested calls
-        assert src.count("**data") == 1
-        assert "'a'" in src or '"a"' in src
-        assert "'b'" in src or '"b"' in src
-        assert "'c'" in src or '"c"' in src
+        body = [line.strip() for line in _unparse(ir.steps[0]).splitlines()[1:]]
+        assert body == ["data['a'] = 1", "data['b'] = 2", "data['c'] = 3", "return data"]
 
     def test_insert_return_no_payload_leak(self):
         fn = _fn(
@@ -217,20 +206,20 @@ class TestValvePredicateRewrite:
 
 
 class TestContractVocabulary:
-    """The API contract's Payload vocabulary lowers to plain dict operations
-    (conformance/API.md): has, remove, merge, the Payload constructor, and
-    the MutablePayload escape hatch."""
+    """The contract's Payload vocabulary lowers to plain dict operations
+    (conformance/API.md). A write changes the dict it is given, as a Payload
+    write changes the Payload; the exported run() makes the one copy."""
 
-    def _run(self, src, data):
-        out = _rewrite(_wrap(_fn(src), name="step"))
+    def _code(self, src, kind="filter"):
+        out = _rewrite(_wrap(_fn(src), name="step", kind=kind))
         code = ast.unparse(out.steps[0].call_ast)
         assert "payload" not in code and "Payload" not in code, code
+        return code
+
+    def _run(self, src, data):
         namespace = {}
-        exec(code, namespace)  # noqa: S102 — rewritten test source
-        before = dict(data)
-        result = namespace["step"](data)
-        assert data == before, "the lowered step mutated its input"
-        return result
+        exec(self._code(src), namespace)  # noqa: S102 — rewritten test source
+        return namespace["step"](dict(data))
 
     def test_has_is_a_membership_test(self):
         src = """
@@ -240,7 +229,7 @@ class TestContractVocabulary:
         assert self._run(src, {"a": None}) == {"a": None, "has_a": True}
         assert self._run(src, {}) == {"has_a": False}
 
-    def test_remove_drops_the_key_without_touching_the_input(self):
+    def test_remove_drops_the_key(self):
         src = """
             def call(self, payload):
                 return payload.remove("x")
@@ -255,23 +244,52 @@ class TestContractVocabulary:
             """
         assert self._run(src, {"a": 1, "b": 1}) == {"a": 2, "b": 1, "c": 3}
 
-    def test_mutable_escape_hatch(self):
+    def test_a_write_as_a_statement_changes_the_payload(self):
         src = """
             def call(self, payload):
-                m = payload.with_mutation()
-                m.set("k", "v")
-                m.remove("drop")
-                m.set("had_drop", m.has("drop"))
-                return m.to_immutable()
+                payload.insert("k", "v")
+                payload.remove("drop")
+                payload.insert("had_drop", payload.has("drop"))
+                return payload
             """
         assert self._run(src, {"drop": 1, "a": 1}) == {"a": 1, "k": "v", "had_drop": False}
 
-    def test_an_operation_on_a_lowered_payload_is_lowered_too(self):
+    def test_a_later_link_of_a_chain_reads_the_earlier_write(self):
         src = """
             def call(self, payload):
-                return payload.remove("drop").insert("had_a", payload.has("a"))
+                return payload.remove("drop").insert("had_drop", payload.has("drop")).insert("a2", payload.get("a"))
             """
-        assert self._run(src, {"a": 1, "drop": 2}) == {"a": 1, "had_a": True}
+        assert self._run(src, {"a": 1, "drop": 2}) == {"a": 1, "had_drop": False, "a2": 1}
+
+    def test_a_second_name_for_the_payload_is_the_same_payload(self):
+        src = """
+            def call(self, payload):
+                out = payload
+                out = out.remove("drop")
+                out.insert("seen", payload.has("drop"))
+                return out
+            """
+        assert self._run(src, {"drop": 1}) == {"seen": False}
+
+    def test_copy_gives_a_separate_payload(self):
+        src = """
+            def call(self, payload):
+                before = payload.copy()
+                payload.insert("a", 2)
+                return payload.insert("was", before.get("a"))
+            """
+        assert self._run(src, {"a": 1}) == {"a": 2, "was": 1}
+
+    def test_a_copy_can_be_written_and_returned(self):
+        src = """
+            def call(self, payload):
+                return payload.copy().insert("a", 2)
+            """
+        data = {"a": 1}
+        namespace = {}
+        exec(self._code(src), namespace)  # noqa: S102 — rewritten test source
+        assert namespace["step"](data) == {"a": 2}
+        assert data == {"a": 1}
 
     def test_a_non_payload_insert_is_left_alone(self):
         src = """
@@ -281,3 +299,25 @@ class TestContractVocabulary:
                 return payload.insert("items", items)
             """
         assert self._run(src, {}) == {"items": [1, 2]}
+
+    @pytest.mark.parametrize("line", [
+        'return [payload.insert("a", 1)]',
+        'return payload.insert("a", 1).get("a")',
+        'return payload.insert("a", 1) if payload.has("b") else payload',
+        'print(payload.merge(Payload({"a": 1})))',
+    ])
+    def test_a_write_inside_a_larger_expression_is_refused(self, line):
+        src = f"""
+            def call(self, payload):
+                {line}
+            """
+        with pytest.raises(UnsupportedFilterShape, match="statement of its own"):
+            self._code(src)
+
+    def test_a_tap_that_writes_is_refused(self):
+        src = """
+            def observe(self, payload):
+                payload.insert("seen", True)
+            """
+        with pytest.raises(UnsupportedFilterShape, match="Tap or a predicate"):
+            self._code(src, kind="tap")

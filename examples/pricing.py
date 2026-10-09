@@ -12,7 +12,7 @@ from codeupipe import Payload, Pipeline, Valve
 
 
 class Discount:
-    """Filter: takes a Payload, returns a new one."""
+    """Filter: takes the Payload, writes to it, returns it."""
 
     def __init__(self, rate):
         self.rate = rate

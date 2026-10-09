@@ -8,9 +8,8 @@ library only.
 
 ## Key files/classes
 
-- `payload.py` — `Payload` (immutable data container; modifications return
-  fresh copies) and `MutablePayload` (in-place variant for when flexibility
-  is needed). Generic over a type parameter for type-safe workflows.
+- `payload.py` — `Payload`: one keyed container. `insert`, `remove` and
+  `merge` change it in place and return it; `copy()` gives a separate one.
 - `filter.py` — `Filter` (sync `Protocol`: `call(payload) -> payload`) and
   `AsyncFilter` (async opt-in). The core processing-unit contract.
 - `pipeline.py` — `Pipeline`: the one orchestrator. `add_filter`, `add_tap`,

@@ -72,7 +72,7 @@ generated `run()` (scorecard findings F3–F8).
 | Nested Pipeline (a named `Pipeline` type) | its steps flattened in place; reported as the one nesting step | conformance, `test_export_pipeline` |
 | Literal instance settings (`self.key` holding a str, number, ...) | compiled in as constants | `test_export_instance_config` |
 | Type hints on a step (`Payload[Reads] -> Payload[Writes]`, hinted locals) | erased: exported code carries no hints and never imports their names | `test_export_typed_steps` |
-| Payload ops `get insert remove merge has to_dict with_mutation` | dict operations | `test_rewrite_payload_ops` |
+| Payload ops `get insert remove merge has to_dict copy` | dict operations; a write is an in-place statement (`data[k] = v`) | `test_rewrite_payload_ops` |
 
 Evidence: all 27 conformance cases on both layouts (`python:static-steps`,
 `python:static-inline`), and the parity spike at 2400/2400 inputs.
@@ -102,8 +102,8 @@ The fast export produces the same **output**. It does not produce:
 - **Tap errors**: contained, as in the dynamic runtime, but not recorded.
 - **Nested pipeline names**: flattened away.
 
-So conformance can judge the fast targets only on output, Taps and input
-immutability: they pass the State and Hook cases as ✅\* (partial).
+So conformance can judge the fast targets only on output, Taps and an
+unchanged caller input: they pass the State and Hook cases as ✅\* (partial).
 
 ## Observable export (`observe=True`)
 

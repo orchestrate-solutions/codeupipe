@@ -19,7 +19,6 @@ snapshots, which are JSON-shaped anyway):
     state         executed / skipped / errors [(name, "Type: message")] /
                   timing keys (dynamic, observe)
     hooks         SnapshotHook event sequence (dynamic, observe)
-    isolation     events whose payload changed after the hook saw it
 """
 
 import copy
@@ -88,7 +87,6 @@ def run_dynamic(case, predicates):
     state = holder["pipeline"].state
     record["state"] = _state_record(state.executed, state.skipped, state.errors, state.timings)
     record["hooks"] = holder["hook"].sequence()
-    record["isolation"] = holder["hook"].mutated_after_the_fact()
     return record
 
 
@@ -115,7 +113,7 @@ def run_fast(case, predicates, lowering):
 def run_observe(case, predicates):
     """Observable export. The pipeline carries the case's Hooks (so
     SOURCE_HOOKS is exercised); a SnapshotHook is passed at run time
-    either way, so every case gets hook parity and isolation checks."""
+    either way, so every case gets the hook parity check."""
     source_hooks = [SnapshotHook()] if case.get("hooks") else []
     package, failure = _export(vocab.build_pipeline(case, predicates, hooks=source_hooks), "steps", True)
     if failure:
@@ -132,7 +130,6 @@ def run_observe(case, predicates):
     state = holder["state"]
     record["state"] = _state_record(state["executed"], state["skipped"], state["errors"], state["timings"])
     record["hooks"] = holder["hook"].sequence()
-    record["isolation"] = holder["hook"].mutated_after_the_fact()
     if case.get("hooks"):
         try:
             package.run(copy.deepcopy(case["input"]))

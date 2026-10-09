@@ -25,6 +25,11 @@ INC = f"{__name__}.Inc"
 BOOM = f"{__name__}.Boom"
 
 
+class _SetsX:
+    def call(self, payload):
+        return payload.insert("x", 1)
+
+
 class IncTwice(Pipeline):
     """A named pipeline type: nested pipelines must have one."""
 
@@ -116,8 +121,8 @@ class TestHooksReceiveStepIdentities:
 class TestPayloadVocabulary:
     def test_remove_returns_a_new_payload_without_the_key(self):
         p = Payload({"a": 1, "b": 2})
-        assert p.remove("a").to_dict() == {"b": 2}
-        assert p.to_dict() == {"a": 1, "b": 2}
+        assert p.remove("a") is p
+        assert p.to_dict() == {"b": 2}
 
     def test_remove_of_a_missing_key_is_a_no_op(self):
         assert Payload({"a": 1}).remove("zz").to_dict() == {"a": 1}
@@ -126,8 +131,19 @@ class TestPayloadVocabulary:
         p = Payload({"a": None})
         assert p.has("a") and not p.has("b")
 
-    def test_mutable_payload_sets_and_removes_in_place(self):
-        m = Payload({"a": 1, "b": 2}).with_mutation()
-        m.set("c", 3)
-        m.remove("a")
-        assert m.to_immutable().to_dict() == {"b": 2, "c": 3}
+    def test_run_does_not_change_the_callers_payload(self):
+        pipeline = Pipeline()
+        pipeline.add_filter(_SetsX())
+        given = Payload({"a": 1})
+        out = pipeline.run(given)
+        assert out.to_dict() == {"a": 1, "x": 1}
+        assert given.to_dict() == {"a": 1}
+        assert asyncio.run(pipeline.run_async(given)).to_dict() == {"a": 1, "x": 1}
+        assert given.to_dict() == {"a": 1}
+
+    def test_copy_separates_two_payloads(self):
+        p = Payload({"a": 1, "b": 2})
+        kept = p.copy()
+        p.insert("c", 3).remove("a")
+        assert p.to_dict() == {"b": 2, "c": 3}
+        assert kept.to_dict() == {"a": 1, "b": 2}

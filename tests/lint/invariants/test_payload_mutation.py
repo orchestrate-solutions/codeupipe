@@ -43,7 +43,7 @@ def test_suppression_comment_drops_the_finding_and_counts_it():
 def test_messages_name_the_variable_and_the_fix():
     messages = {f.rule: f.message for f in analyze(POSITIVE)}
     assert "_data" in messages["CUP-I001"]
-    assert "with_mutation" in messages["CUP-I001"]
+    assert "payload.copy()" in messages["CUP-I001"]
     assert "Copy" in messages["CUP-I002"]
     named = [f.message for f in analyze(POSITIVE) if "`items`" in f.message]
     assert named

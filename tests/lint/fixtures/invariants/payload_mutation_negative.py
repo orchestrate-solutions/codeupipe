@@ -16,14 +16,14 @@ class CopiesFirst:
         return payload.insert("items", items).insert("config", config)
 
 
-class UsesTheSanctionedMutablePath:
-    """In-place writes done on purpose, through the API."""
+class WritesThroughTheApi:
+    """In-place writes, and a copy, through the Payload's own operations."""
 
     def call(self, payload):
-        scratch = payload.with_mutation()
-        scratch.set("a", 1)
+        scratch = payload.copy()
+        scratch.insert("a", 1)
         scratch.remove("b")
-        return scratch.to_immutable()
+        return scratch
 
 
 class UsesThePayloadApi:

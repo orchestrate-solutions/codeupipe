@@ -173,16 +173,16 @@ a path could not be read. From Python:
 | CUP-I002 | shared-value-mutation | an in-place change to a value that came from `payload.get(..)`: `payload.get("items").append(x)`, or the same through a local name, a nested key, or the loop variable of a `for` over it |
 | CUP-I003 | state-read-in-step | a Filter (`call`) or Valve predicate (`test`) reaching pipeline State: `self.pipeline.state.executed`, `PIPELINE.state.errors`, or an attribute `__init__` set to a State |
 
-**Why CUP-I002.** A Payload is immutable only at the top level.
-`payload.get("items")` returns the live list, shared with every earlier
+**Why CUP-I002.** A Payload owns its keys, not its values.
+`payload.get("items")` returns the live list, shared with every copy of the
 Payload and with the caller's input, so appending to it changes all of them.
 The conformance suite requires that this never happens
 (`payload/nested-input-is-never-mutated`) and the runtime has no way to
 refuse it. The fix is to copy, change the copy, and insert it.
 
-**Mutation done on purpose is not flagged.** `payload.with_mutation()` is the
-sanctioned in-place path, and the inline export writes one private dict in
-place. These rules are about changes behind the API, not about mutation.
+**A write through the API is not flagged.** `insert`, `remove` and `merge`
+change the Payload in place by design. These rules are about changes behind
+the API.
 
 **Why CUP-I003.** A Filter's result and a Valve's decision must depend only
 on the Payload. A step is never handed State, so the only way to read it is

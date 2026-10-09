@@ -63,7 +63,6 @@ def test_planted_fast_divergence_fails(monkeypatch, change, check):
     (lambda r: r["state"]["skipped"].append("v1"), "state.skipped"),
     (lambda r: r["state"]["errors"].clear(), "state.errors"),
     (lambda r: r["hooks"].pop(1), "hooks"),
-    (lambda r: r.update(isolation=[(3, "after", "s1")]), "payload_mutated_after_the_fact"),
     (lambda r: r.update(source_hooks_guard="did not raise"), "source_hooks_guard"),
 ])
 def test_planted_observe_divergence_fails(monkeypatch, change, check):

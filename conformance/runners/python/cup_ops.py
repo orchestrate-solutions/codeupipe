@@ -75,9 +75,8 @@ class Mutate:
         self.value = value
 
     def call(self, payload):
-        mutable = payload.with_mutation()
-        mutable.set(self.key, self.value)
-        return mutable.to_immutable()
+        payload.insert(self.key, self.value)
+        return payload
 
 
 class Fail:

@@ -4,7 +4,7 @@
 
 For every generated case: run dynamic, fast steps, fast inline and
 observable export. A mode passes when it agrees with dynamic on
-output-or-error, Tap records and input immutability (observe also: State,
+output-or-error, Tap records and an unchanged caller input (observe also: State,
 the full Hook event sequence with payload snapshots, and timing keys), and
 its own run is isolated (no payload changed after a Hook saw it, a rerun is
 identical). A mode that refuses with UnsupportedFilterShape is counted as
@@ -82,7 +82,7 @@ def run_campaign(seed, count, hostile_rate=0.15, max_repros=12, max_steps=8, max
                 refusals[mode][_refusal_kind(r["reason"])] += 1
             for d in r["divergences"]:
                 checks[f"{mode}:{d['check']}"] += 1
-                if d["check"] in ("input_mutated", "payload_mutated_after_the_fact", "rerun_differs"):
+                if d["check"] in ("input_mutated", "rerun_differs"):
                     isolation[f"{mode}:{d['check']}"] += 1
             failed = failed or r["verdict"] == "fail"
         if failed or result["dynamic"]:
@@ -129,7 +129,7 @@ def markdown(report):
         lines.append(f"| {mode} | {v.get('pass', 0)} | {v.get('refused', 0)} | {v.get('fail', 0)} |")
     lines += ["", f"Failing cases: {report['failing_cases']} "
               f"(of which with hostile step names: {report['failing_cases_hostile_names']}).",
-              "", "Isolation violations (input mutated, payload changed after a Hook saw it, rerun differs): "
+              "", "Isolation violations (input mutated, rerun differs): "
               + (json.dumps(report["isolation_violations"]) if report["isolation_violations"] else "**none**") + "."]
     if report["divergences_by_check"]:
         lines += ["", "Divergences by check:", ""]

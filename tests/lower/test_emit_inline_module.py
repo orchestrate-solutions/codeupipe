@@ -91,16 +91,16 @@ class TestInlineParity:
 
     def test_valve_gates_an_inlined_step(self, tmp_path):
         p = _pipeline(("set_a", s.SetA()))
-        p.add_filter(Valve(s.ChainReadsOldValue(), s.AIsSet()))
+        p.add_filter(Valve(s.ChainReadsItsOwnWrite(), s.AIsSet()))
         package = _write_and_import(_export_inline(p), tmp_path)
 
         _assert_parity(p, package, [{}, {"a": 5}])
 
-    def test_a_multi_key_insert_reads_the_payload_from_before_the_chain(self, tmp_path):
-        p = _pipeline(("set_a", s.SetA()), ("chain", s.ChainReadsOldValue()))
+    def test_a_chain_reads_its_own_earlier_write(self, tmp_path):
+        p = _pipeline(("set_a", s.SetA()), ("chain", s.ChainReadsItsOwnWrite()))
         package = _write_and_import(_export_inline(p), tmp_path)
 
-        assert package.run({}) == {"a": 100, "b": 1}
+        assert package.run({}) == {"a": 100, "b": 100}
         _assert_parity(p, package, [{}])
 
     def test_a_step_with_an_early_return_still_runs_correctly(self, tmp_path):
@@ -109,8 +109,8 @@ class TestInlineParity:
 
         _assert_parity(p, package, [{}, {"a": 1}, {"a": 0}])
 
-    def test_a_stored_reference_does_not_see_later_in_place_writes(self, tmp_path):
-        p = _pipeline(("keeps", s.KeepsReference()), ("tap", s.TapKeepsReference()), ("set_a", s.SetA()))
+    def test_a_kept_copy_does_not_see_later_writes(self, tmp_path):
+        p = _pipeline(("keeps", s.KeepsACopy()), ("tap", s.TapKeepsACopy()), ("set_a", s.SetA()))
         package = _write_and_import(_export_inline(p), tmp_path)
 
         result = package.run({"x": 1})

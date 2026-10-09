@@ -51,11 +51,11 @@ class TestAsyncFilterBehavior:
 
     @pytest.mark.unit
     @pytest.mark.core
-    def test_async_filter_returns_new_payload(self):
+    def test_async_filter_writes_in_place_and_returns_the_payload(self):
         original = Payload({"value": 1})
         result = asyncio.run(DoublingFilter().call(original))
-        assert original.get("value") == 1, "filter mutated its input"
-        assert result is not original
+        assert result is original
+        assert result.get("value") == 2
 
     @pytest.mark.unit
     @pytest.mark.core
