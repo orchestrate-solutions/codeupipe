@@ -6,7 +6,6 @@ mutable when flexibility is needed.
 Enhanced with generic typing for type-safe workflows.
 """
 
-import json
 from typing import Any, Dict, List, Optional, TypeVar, Generic, Union
 
 __all__ = ["Payload", "MutablePayload"]
@@ -202,64 +201,6 @@ class Payload(Generic[T]):
     def to_dict(self) -> Dict[str, Any]:
         """Express as dict for ecosystem integration."""
         return dict(self._materialized())
-
-    def serialize(self, fmt: str = "json") -> bytes:
-        """Serialize payload for network/storage transport.
-
-        Supported formats:
-          - "json"    — human-readable, universal (default)
-          - "msgpack" — binary, ~2x faster (requires msgpack package)
-        """
-        envelope = {"data": self._materialized()}
-        if self._trace_id:
-            envelope["trace_id"] = self._trace_id
-        if self._lineage:
-            envelope["lineage"] = self._lineage
-
-        if fmt == "json":
-            return json.dumps(envelope).encode("utf-8")
-        if fmt == "msgpack":
-            try:
-                import msgpack  # type: ignore[import-untyped]
-            except ImportError:
-                raise ImportError(
-                    "msgpack is required for fmt='msgpack'. "
-                    "Install it with: pip install msgpack"
-                )
-            return msgpack.packb(envelope, use_bin_type=True)
-        raise ValueError(f"Unsupported format: {fmt}")
-
-    @classmethod
-    def deserialize(cls, raw: bytes, fmt: str = "json") -> 'Payload':
-        """Deserialize payload from network/storage transport."""
-        if fmt == "json":
-            envelope = json.loads(raw.decode("utf-8"))
-            data = envelope.get("data", {})
-            if not isinstance(data, dict):
-                data = dict(data)
-            return cls._from_parts(
-                data,
-                trace_id=envelope.get("trace_id"),
-                _lineage=envelope.get("lineage"),
-            )
-        if fmt == "msgpack":
-            try:
-                import msgpack  # type: ignore[import-untyped]
-            except ImportError:
-                raise ImportError(
-                    "msgpack is required for fmt='msgpack'. "
-                    "Install it with: pip install msgpack"
-                )
-            envelope = msgpack.unpackb(raw, raw=False)
-            data = envelope.get("data", {})
-            if not isinstance(data, dict):
-                data = dict(data)
-            return cls._from_parts(
-                data,
-                trace_id=envelope.get("trace_id"),
-                _lineage=envelope.get("lineage"),
-            )
-        raise ValueError(f"Unsupported format: {fmt}")
 
     def __repr__(self) -> str:
         if self._trace_id:
