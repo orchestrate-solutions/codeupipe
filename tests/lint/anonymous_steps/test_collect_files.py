@@ -1,4 +1,4 @@
-"""CollectFiles: paths -> source files grouped by language."""
+"""CollectFiles: paths -> Python source files."""
 
 import os
 import tempfile
@@ -16,32 +16,18 @@ def _touch(root, rel):
     return path
 
 
-def _collect(paths, languages=None):
-    data = {"paths": paths}
-    if languages is not None:
-        data["languages"] = languages
-    return CollectFiles().call(Payload(data))
+def _collect(paths):
+    return CollectFiles().call(Payload({"paths": paths}))
 
 
-def test_groups_files_by_language_and_skips_build_output():
+def test_takes_python_files_and_skips_build_output_and_other_files():
     with tempfile.TemporaryDirectory() as root:
-        expected = {
-            "python": [_touch(root, "a/x.py")],
-            "go": [_touch(root, "b/x.go")],
-            "ts": [_touch(root, "c/x.ts"), _touch(root, "c/y.tsx")],
-            "rust": [_touch(root, "d/x.rs")],
-            "cpp": [_touch(root, "e/x.cpp"), _touch(root, "e/x.hpp")],
-            "kotlin": [_touch(root, "f/x.kt")],
-            "csharp": [_touch(root, "g/x.cs")],
-        }
-        for skipped in ["node_modules/m/x.ts", ".git/x.py", "target/x.rs", "c/types.d.ts",
-                        "bin/x.cs", "obj/x.cs", "build/x.kt", "__pycache__/x.py", ".venv/x.py", "dist/x.ts",
-                        "notes.md"]:
+        expected = [_touch(root, "a/x.py"), _touch(root, "b/deep/y.py")]
+        for skipped in ["node_modules/m/x.py", ".git/x.py", "build/x.py", "__pycache__/x.py", ".venv/x.py",
+                        "dist/x.py", "notes.md", "c/x.go", "c/x.ts"]:
             _touch(root, skipped)
         out = _collect([root])
-    files = out.get("files")
-    assert {lang: sorted(paths) for lang, paths in files.items() if paths} == {
-        lang: sorted(paths) for lang, paths in expected.items()}
+    assert out.get("files") == {"python": sorted(expected)}
     assert out.get("errors") == []
 
 
@@ -50,14 +36,6 @@ def test_explicit_file_is_taken_even_in_a_skipped_directory():
         path = _touch(root, "build/x.py")
         out = _collect([path])
     assert out.get("files")["python"] == [path]
-
-
-def test_languages_restricts_the_result():
-    with tempfile.TemporaryDirectory() as root:
-        py = _touch(root, "x.py")
-        _touch(root, "x.go")
-        out = _collect([root], languages=["python"])
-    assert out.get("files") == {"python": [py]}
 
 
 def test_exclude_globs_skip_matching_files():

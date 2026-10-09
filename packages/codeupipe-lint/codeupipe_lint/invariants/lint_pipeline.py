@@ -42,7 +42,7 @@ def build_lint_pipeline() -> Pipeline:
 def lint_paths(paths: Iterable[str], exclude: Optional[Iterable[str]] = None) -> Payload:
     """Run the linter over ``paths``; the result Payload holds ``findings``,
     ``suppressed``, ``errors``, ``report``, ``error_report`` and ``exit_code``."""
-    data = {"paths": list(paths), "languages": ["python"], "findings": [], "errors": []}
+    data = {"paths": list(paths), "findings": [], "errors": []}
     if exclude:
         data["exclude"] = list(exclude)
     return build_lint_pipeline().run(Payload(data))

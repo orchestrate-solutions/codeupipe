@@ -25,29 +25,17 @@ def test_lint_paths_clean():
     assert out.get("findings") == [] and out.get("exit_code") == 0
 
 
-def test_every_language_in_one_run():
-    out = lint_paths([fixture(lang, name) for lang, name in [
-        ("python", "probe.py"), ("go", "probe.go"), ("ts", "probe.ts"), ("rust", "probe.rs"),
-        ("cpp", "probe.cpp"), ("kotlin", "Probe.kt"), ("csharp", "Probe.cs")]])
-    langs = {f.lang for f in out.get("findings")}
-    if out.get("errors"):  # a toolchain is missing on this machine: the run says so
-        assert out.get("exit_code") == 2
-    else:
-        assert langs == {"python", "go", "ts", "rust", "cpp", "kotlin", "csharp"}
-
-
-def test_suppression_comment_in_a_c_family_language():
-    import os
-    import tempfile
-    source = ("fn main() {\n"
-              "    let p = Pipeline::new()\n"
-              "        .add_filter(Box::new(|p| p), \"a\") // cup: allow-anonymous (a test double)\n"
-              "        .add_filter(Box::new(|p| p), \"b\");\n"
-              "}\n")
-    with tempfile.TemporaryDirectory() as tmp:
-        path = os.path.join(tmp, "x.rs")
-        with open(path, "w") as handle:
-            handle.write(source)
-        out = lint_paths([path])
-    assert [f.line for f in out.get("findings")] == [4]
-    assert [f.line for f in out.get("suppressed")] == [3]
+def test_suppression_comment_drops_only_its_own_line(tmp_path):
+    source = "\n".join([
+        "from codeupipe import Pipeline",
+        "",
+        "p = Pipeline()",
+        "p.add_filter(lambda payload: payload)  # cup: allow-anonymous (a test double)",
+        "p.add_filter(lambda payload: payload)",
+        "",
+    ])
+    path = tmp_path / "x.py"
+    path.write_text(source)
+    out = lint_paths([str(path)])
+    assert [f.line for f in out.get("findings")] == [5]
+    assert [f.line for f in out.get("suppressed")] == [4]

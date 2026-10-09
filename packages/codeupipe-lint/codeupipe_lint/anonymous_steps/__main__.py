@@ -1,4 +1,4 @@
-"""``python -m codeupipe_lint.anonymous_steps [--lang LANG] [--exclude GLOB] [--config FILE] [--rules] [paths...]``
+"""``python -m codeupipe_lint.anonymous_steps [--exclude GLOB] [--config FILE] [--rules] [paths...]``
 
 With no paths, they come from ``cup.config.json`` (packages/codeupipe/codeupipe/config.py).
 
@@ -11,7 +11,6 @@ import sys
 
 from codeupipe.config import DEFAULT_NAME, ConfigError, load_config
 
-from .collect_files import EXTENSIONS
 from .lint_pipeline import lint_paths
 from .rules import RULES
 
@@ -20,8 +19,6 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="python -m codeupipe_lint.anonymous_steps",
                                      description="Flag anonymous pipeline steps (packages/codeupipe-lint/README.md).")
     parser.add_argument("paths", nargs="*", help="files or directories to check")
-    parser.add_argument("--lang", action="append", choices=sorted(set(EXTENSIONS.values())),
-                        help="only these languages (repeatable)")
     parser.add_argument("--exclude", action="append", metavar="GLOB",
                         help="skip files whose path matches this fnmatch glob (repeatable)")
     parser.add_argument("--config", metavar="FILE", help="read paths and excludes from FILE, not %s" % DEFAULT_NAME)
@@ -43,7 +40,7 @@ def main(argv=None) -> int:
         paths, exclude = lint.get("paths"), args.exclude or lint.get("exclude")
     if not paths:
         parser.error("give at least one path, or list them under lint.paths in %s" % DEFAULT_NAME)
-    out = lint_paths(paths, args.lang, exclude)
+    out = lint_paths(paths, exclude)
     print(out.get("report"))
     if out.get("error_report"):
         print(out.get("error_report"), file=sys.stderr)

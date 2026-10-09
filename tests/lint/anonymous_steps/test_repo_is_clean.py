@@ -13,12 +13,12 @@ INTENTIONAL = {"tests/core/test_step_identity.py", "tests/lower/test_export_refu
 
 
 def test_repo_python_has_no_anonymous_steps():
-    out = lint_paths([os.path.join(REPO, p) for p in CHECKED], languages=["python"])
+    out = lint_paths([os.path.join(REPO, p) for p in CHECKED])
     assert out.get("errors") == []
     assert [f.format() for f in out.get("findings")] == []
 
 
 def test_suppressions_are_only_in_tests_that_exercise_the_refusal():
-    out = lint_paths([os.path.join(REPO, p) for p in CHECKED], languages=["python"])
+    out = lint_paths([os.path.join(REPO, p) for p in CHECKED])
     suppressed = {os.path.relpath(f.path, REPO) for f in out.get("suppressed")}
     assert suppressed and suppressed <= INTENTIONAL
