@@ -119,6 +119,9 @@ The last command writes `build/pricing/src/steps/`. Nothing in it imports
   `conformance`, `scorecard`, `examples`. Checked on Python 3.9, 3.10, 3.12 and 3.14.
 - **Scorecard.** Random pipelines run in all four modes and compared
   ([scorecard/README.md](scorecard/README.md)).
+- **Speed.** `python conformance/bench.py --check` fails when a benchmark
+  number is more than 25% from its recorded baseline
+  ([conformance/README.md](conformance/README.md)).
 
 ## Layout
 

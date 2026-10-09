@@ -19,6 +19,24 @@ The committed snapshot is [MATRIX.md](MATRIX.md).
 ([BENCH.md](BENCH.md)). The runner has a `bench` mode that times the
 scenarios in `bench/scenarios.json`.
 
+**The speed check** compares each benchmark number with its recorded
+baseline (`bench/baseline.json`):
+
+```bash
+python conformance/bench.py --check                  # fails outside ±25%
+python conformance/bench.py --check --tolerance 15
+python conformance/bench.py --record                 # after a change in speed that you accept
+python -m pytest -m perf                             # the same check, as a test
+```
+
+A number is kept as a ratio to a reference workload (plain dict writes
+behind function calls) that the runner times beside it, so the check does
+not depend on how fast the machine is. Slower than the band is a regression.
+Faster than the band also fails, with the instruction to record again:
+otherwise the next regression would hide inside the gain. There is one
+baseline for each Python version. Run it on a quiet machine: under heavy
+load a number can leave the band.
+
 | Target | How it runs (all offline) |
 |---|---|
 | `python:run`, `python:run_async` | `codeupipe.core` Pipeline, sync and async entry points |

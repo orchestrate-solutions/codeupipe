@@ -1,0 +1,118 @@
+{
+  "3.12": {
+    "relative": {
+      "python:run": {
+        "heavy-allocation": 19.4199932713756,
+        "hook": 6.919312860691844,
+        "micro-pass": 5.865521809491184,
+        "taps": 6.230574834133851,
+        "valve-gated": 6.8810334461544365
+      },
+      "python:static-inline": {
+        "heavy-allocation": 1.6743862150542947,
+        "micro-pass": 0.6651100958022522,
+        "taps": 0.6838679671545667,
+        "valve-gated": 0.9307454683016372
+      },
+      "python:static-observe": {
+        "heavy-allocation": 7.540284508102581,
+        "hook": 3.2638971616352754,
+        "micro-pass": 2.080912562539567,
+        "taps": 2.220346637234905,
+        "valve-gated": 2.4910638571595825
+      },
+      "python:static-steps": {
+        "heavy-allocation": 3.1193478885936377,
+        "micro-pass": 0.8849024522027319,
+        "taps": 0.984993199112275,
+        "valve-gated": 1.2261998613974305
+      }
+    },
+    "us_per_run": {
+      "python:run": {
+        "heavy-allocation": 17.001587501727045,
+        "hook": 6.052320799790323,
+        "micro-pass": 5.1559291430749,
+        "taps": 5.252545850817114,
+        "valve-gated": 5.897839600220323
+      },
+      "python:static-inline": {
+        "heavy-allocation": 1.5160250011831522,
+        "micro-pass": 0.6183708435855806,
+        "taps": 0.6202103919349611,
+        "valve-gated": 0.8411978953517973
+      },
+      "python:static-observe": {
+        "heavy-allocation": 6.7896332941018045,
+        "hook": 3.048160392791033,
+        "micro-pass": 1.9606312504038217,
+        "taps": 2.0808208035305142,
+        "valve-gated": 2.312039607204497
+      },
+      "python:static-steps": {
+        "heavy-allocation": 2.7971250005066395,
+        "micro-pass": 0.85271040443331,
+        "taps": 0.8759437478147447,
+        "valve-gated": 1.1486687581054866
+      }
+    }
+  },
+  "3.9": {
+    "relative": {
+      "python:run": {
+        "heavy-allocation": 28.119019376221658,
+        "hook": 9.2070358873043,
+        "micro-pass": 8.032497729777848,
+        "taps": 8.695666269796273,
+        "valve-gated": 10.027804159965052
+      },
+      "python:static-inline": {
+        "heavy-allocation": 1.3170808115448494,
+        "micro-pass": 0.6335162519215812,
+        "taps": 0.650070877758639,
+        "valve-gated": 0.9771498079646342
+      },
+      "python:static-observe": {
+        "heavy-allocation": 7.226287780107185,
+        "hook": 3.1215135919898116,
+        "micro-pass": 1.904237065985248,
+        "taps": 2.0705063385742624,
+        "valve-gated": 2.4426105359254717
+      },
+      "python:static-steps": {
+        "heavy-allocation": 3.5926384231717683,
+        "micro-pass": 0.9659007012425005,
+        "taps": 1.1031927440481786,
+        "valve-gated": 1.4472875518921569
+      }
+    },
+    "us_per_run": {
+      "python:run": {
+        "heavy-allocation": 33.419310399999965,
+        "hook": 11.354881249999993,
+        "micro-pass": 9.873193749999999,
+        "taps": 10.419995849999975,
+        "valve-gated": 12.425493749999994
+      },
+      "python:static-inline": {
+        "heavy-allocation": 1.5649937499999989,
+        "micro-pass": 0.7338021,
+        "taps": 0.7397604499999988,
+        "valve-gated": 1.1039291499999992
+      },
+      "python:static-observe": {
+        "heavy-allocation": 8.715677100000008,
+        "hook": 3.7682562500000016,
+        "micro-pass": 2.2839354000000007,
+        "taps": 2.513879200000002,
+        "valve-gated": 2.9125458500000034
+      },
+      "python:static-steps": {
+        "heavy-allocation": 4.368958300000004,
+        "micro-pass": 1.1565312500000007,
+        "taps": 1.3212249999999925,
+        "valve-gated": 1.7382603999999968
+      }
+    }
+  }
+}

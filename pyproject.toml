@@ -7,7 +7,8 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = ["--tb=short"]
+# The speed check measures time, so it is not in the default run: pytest -m perf
+addopts = ["--tb=short", "-m", "not perf"]
 asyncio_mode = "strict"
 markers = [
     "unit: Unit tests",
@@ -15,4 +16,5 @@ markers = [
     "core: Core functionality tests",
     "asyncio: Async tests",
     "slow: Slow tests (skippable during dev with -m \"not slow\")",
+    "perf: The speed check against the recorded baseline (python conformance/bench.py --check)",
 ]

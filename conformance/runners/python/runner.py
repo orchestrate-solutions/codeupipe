@@ -260,19 +260,51 @@ BENCH_RUNS = 20000
 BENCH_REPEATS = 5
 
 
-def _best_us(fn):
-    """Best of BENCH_REPEATS x BENCH_RUNS, in microseconds per run."""
+_REFERENCE_KEYS = tuple("k%d" % i for i in range(10))
+
+
+def _reference_write(data, key):
+    data[key] = data.get(key, 0) + 1
+    return data
+
+
+def _reference():
+    """The reference workload: ten dict writes behind ten function calls,
+    with no framework. A pipeline's time is reported relative to it."""
+    data = {"a": 1}
+    for key in _REFERENCE_KEYS:
+        data = _reference_write(data, key)
+    return data
+
+
+def _timed(fn):
     import time
+    t0 = time.perf_counter()
+    for _ in range(BENCH_RUNS):
+        fn()
+    return time.perf_counter() - t0
+
+
+def _measure(fn):
+    """(µs per run, time relative to the reference workload).
+
+    µs per run is the best of BENCH_REPEATS x BENCH_RUNS. The relative time
+    is for comparing runs on different machines and under different load:
+    each repeat times the reference workload and then ``fn``, back to back,
+    so whatever slows one slows the other, and the median of the repeats'
+    ratios is reported.
+    """
+    import statistics
     for _ in range(BENCH_WARMUP):
         fn()
-    best = None
+        _reference()
+    best, ratios = None, []
     for _ in range(BENCH_REPEATS):
-        t0 = time.perf_counter()
-        for _ in range(BENCH_RUNS):
-            fn()
-        elapsed = time.perf_counter() - t0
+        reference = _timed(_reference)
+        elapsed = _timed(fn)
+        ratios.append(elapsed / reference)
         best = elapsed if best is None else min(best, elapsed)
-    return best / BENCH_RUNS * 1e6
+    return best / BENCH_RUNS * 1e6, statistics.median(ratios)
 
 
 def bench(target, scenarios):
@@ -303,7 +335,8 @@ def bench(target, scenarios):
             output = fn()
         else:
             raise SystemExit(f"unknown bench target {target!r}")
-        results.append({"id": case["id"], "us_per_run": _best_us(fn), "output": output})
+        us_per_run, relative = _measure(fn)
+        results.append({"id": case["id"], "us_per_run": us_per_run, "relative": relative, "output": output})
     return results
 
 

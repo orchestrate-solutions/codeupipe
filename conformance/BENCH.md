@@ -5,6 +5,10 @@ A snapshot of `python conformance/bench.py`. Scenarios:
 Every target's output is checked against the others before its time counts.
 Apple Silicon, one run.
 
+These numbers are a snapshot for reading. The numbers that the speed check
+compares are in `bench/baseline.json` (`python conformance/bench.py --check`,
+[README.md](README.md)).
+
 `python:run` is the dynamic run. The three `static-*` targets are the
 exports: `static-observe` records State and calls Hooks as `run` does; the
 two fast exports do neither, and refuse the `hook` scenario rather than

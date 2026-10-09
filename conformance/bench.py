@@ -2,12 +2,26 @@
 
     python conformance/bench.py                  # every target
     python conformance/bench.py python:run python:static-inline
+    python conformance/bench.py --check          # compare with the recorded baseline
+    python conformance/bench.py --record         # record a new baseline
 
 Scenarios (bench/scenarios.json) use the conformance vocabulary, so every
 runtime builds the same pipeline. Each runner times best of 5 x 20,000 runs
 after 20,000 warmup runs (so JIT runtimes are measured warm) and reports the
 output it produced; this script refuses a result whose output differs from
 the others, so a fast wrong answer cannot win.
+
+The speed check (--check). A recorded time is true for one machine, so each
+number is kept as a ratio to a reference workload: plain Python dict writes
+and function calls, the work a pipeline does. The runner times the reference
+and the scenario back to back, so a slower or a busier machine slows both
+and the ratio stays. --check
+fails when a ratio is more than --tolerance percent (default 25) away from
+its baseline, in either direction: slower is a regression, and faster means
+the baseline is out of date and must be recorded again, or the next
+regression would hide inside the gain. A baseline is kept for each Python
+version (bench/baseline.json), because interpreters differ in what they make
+fast.
 """
 
 import json
@@ -19,6 +33,8 @@ import run as conformance  # noqa: E402  (same target definitions and launchers)
 
 HERE = pathlib.Path(__file__).resolve().parent
 RESULTS = HERE / "results"
+BASELINE = HERE / "bench" / "baseline.json"
+DEFAULT_TOLERANCE = 25.0
 
 BENCH_TARGETS = {
     "python:run": ("python:run", "bench:run"),
@@ -37,16 +53,73 @@ def spec_for(target):
     return spec
 
 
+def python_key():
+    return "%d.%d" % sys.version_info[:2]
+
+
+def load_baseline():
+    return json.loads(BASELINE.read_text()) if BASELINE.exists() else {}
+
+
+def compare(baseline, current, tolerance=DEFAULT_TOLERANCE):
+    """Every number that is not within ``tolerance`` percent of its baseline.
+
+    ``baseline`` and ``current`` are {"relative": {target: {scenario: ratio}}},
+    each ratio a scenario's time over the reference workload's. Returns [{"target", "scenario", "kind", "change_percent"}],
+    kind one of slower, faster, missing, not recorded.
+    """
+    problems = []
+    was, now = baseline["relative"], current["relative"]
+    for target in sorted(set(was) | set(now)):
+        for scenario in sorted(set(was.get(target, {})) | set(now.get(target, {}))):
+            before, after = was.get(target, {}).get(scenario), now.get(target, {}).get(scenario)
+            if before is None or after is None:
+                problems.append({"target": target, "scenario": scenario, "change_percent": None,
+                                 "kind": "not recorded" if before is None else "missing"})
+                continue
+            change = (after / before - 1) * 100
+            if abs(change) > tolerance:
+                problems.append({"target": target, "scenario": scenario, "change_percent": change,
+                                 "kind": "slower" if change > 0 else "faster"})
+    return problems
+
+
+def _report(problems, tolerance):
+    if not problems:
+        return "Speed check: every number is within %g%% of its baseline." % tolerance
+    lines = ["Speed check: %d number(s) outside %g%% of the baseline." % (len(problems), tolerance)]
+    for p in problems:
+        where = "%s %s" % (p["target"], p["scenario"])
+        if p["kind"] == "slower":
+            lines.append("- %s: %+.0f%% slower. A regression: find the change that caused it." % (where, p["change_percent"]))
+        elif p["kind"] == "faster":
+            lines.append("- %s: %+.0f%% (faster). Record the gain: python conformance/bench.py --record" % (where, p["change_percent"]))
+        elif p["kind"] == "missing":
+            lines.append("- %s: in the baseline, not measured now." % where)
+        else:
+            lines.append("- %s: measured now, not in the baseline. Record it: python conformance/bench.py --record" % where)
+    return "\n".join(lines)
+
+
 def main(argv):
+    argv = list(argv)
+    record, check = "--record" in argv, "--check" in argv
+    tolerance = DEFAULT_TOLERANCE
+    if "--tolerance" in argv:
+        at = argv.index("--tolerance")
+        tolerance = float(argv[at + 1])
+        del argv[at:at + 2]
+    argv = [a for a in argv if a not in ("--record", "--check")]
+
     scenarios = json.loads((HERE / "bench" / "scenarios.json").read_text())
     names = argv or list(BENCH_TARGETS)
-    table, reference, problems, refused = {}, {}, [], []
+    table, relative, reference, problems, refused = {}, {}, {}, [], []
     for name in names:
         results, error = conformance.run_target(name, spec_for(name), scenarios)
         if error:
             problems.append(f"{name}: {error}")
             continue
-        table[name] = {}
+        table[name], relative[name] = {}, {}
         for sc in scenarios:
             r = results.get(sc["id"], {})
             if "unsupported" in r:
@@ -63,15 +136,35 @@ def main(argv):
                 problems.append(f"{name} {sc['id']}: output {r.get('output')!r} differs from {ref[0]}")
                 continue
             table[name][sc["id"]] = r["us_per_run"]
+            relative[name][sc["id"]] = r["relative"]
+    current = {"relative": relative, "us_per_run": table}
 
     RESULTS.mkdir(exist_ok=True)
     report = {"scenarios": {s["id"]: {"about": s["about"], "steps": len(s["steps"])} for s in scenarios},
-              "us_per_run": table, "problems": problems, "refused": refused}
+              "relative": relative, "us_per_run": table, "problems": problems, "refused": refused}
     (RESULTS / "bench-latest.json").write_text(json.dumps(report, indent=2))
     md = markdown(scenarios, table, problems, refused)
     (RESULTS / "bench-latest.md").write_text(md)
     print(md)
-    return 1 if problems else 0
+    if problems:
+        return 1
+
+    if record:
+        baseline = load_baseline()
+        baseline[python_key()] = current
+        BASELINE.write_text(json.dumps(baseline, indent=2, sort_keys=True) + "\n")
+        print("Recorded the baseline for Python %s in %s." % (python_key(), BASELINE.relative_to(HERE.parent)))
+        return 0
+    if check:
+        baseline = load_baseline().get(python_key())
+        if baseline is None:
+            print("Speed check: no baseline for Python %s. Record one: python conformance/bench.py --record"
+                  % python_key())
+            return 1
+        found = compare(baseline, current, tolerance)
+        print(_report(found, tolerance))
+        return 1 if found else 0
+    return 0
 
 
 def markdown(scenarios, table, problems, refused=()):
