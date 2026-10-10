@@ -14,9 +14,10 @@ parameters, their defaults, and how they fail.
 | State | records what happened |
 | Pipeline | runs the steps in order |
 
-Python implements it. A runtime in another language implements the same
-contract, with identifier casing in that language's style, and is judged by
-the same conformance cases.
+Python and TypeScript implement it. Each runtime has the same contract,
+with identifier casing in the style of its language, and the same
+conformance cases judge it. The tables below show the Python names. The
+TypeScript names and differences are in "Runtimes".
 
 ## Principles
 
@@ -78,7 +79,7 @@ Rules:
 
 `test(payload) -> bool`.
 
-- A Predicate is an object. It is identified by its class like a step, and
+- A Predicate is an object. Its class gives it its name, and
   any setting (a threshold, a flag) is on the instance:
   `AtLeastPredicate("qty", 10)`. Functions, lambdas and closures are not
   Predicates.
@@ -202,3 +203,29 @@ map and fails the comparison.
   it changes timing for callers who wait on a Tap's side effect.
 - **Other runtimes.** A runtime in another language is written to this
   contract and added with its conformance runner.
+
+## Runtimes
+
+| | Python | TypeScript |
+|---|---|---|
+| Package | `packages/codeupipe` | `packages/codeupipe-ts` |
+| Names | snake_case | camelCase: `addFilter`, `addValve`, `toDict`, `withTrace`, `traceId`, `onError` |
+| Run | `run` is sync. `run_async` is opt-in | One `run`. It returns a Promise. A step can be sync or async |
+| Absent | `None` | `null` |
+| Label of a step | `type(step).__name__` | `step.constructor.name` |
+| Export | `codeupipe.lower` | none |
+| Linter | `codeupipe-lint` | none |
+
+Notes on TypeScript:
+
+- **Principle 3.** JavaScript always has an event loop, so there is no
+  second entry point. Inside `run`, a step that returns a value and not a
+  Promise is not awaited.
+- **A function is not a step.** Every JavaScript function has a `call`
+  method, so a step must be an object.
+- **Labels in minified code.** A minifier changes class names. A label is
+  then the changed name, unless the build keeps class names. A class with no
+  name has the label `anonymous`.
+- **State and concurrent runs.** Two runs of one pipeline at the same time
+  each write to their own State. `state` is the State of the run that
+  started last.

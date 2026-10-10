@@ -42,6 +42,7 @@ load a number can leave the band.
 | `python:run`, `python:run_async` | `codeupipe.core` Pipeline, sync and async entry points |
 | `python:static-steps`, `python:static-inline` | `codeupipe.lower` fast export, loaded from disk (no State or Hooks: ✅\*) |
 | `python:static-observe` | `codeupipe.lower` export with `observe=True`: State and Hooks judged too |
+| `typescript:run` | `packages/codeupipe-ts` Pipeline. Node runs the `.ts` runner as it is (Node 22.18 or later). With no arguments, `run.py` leaves this target out when the machine has no such Node |
 
 ## Statuses
 
@@ -115,4 +116,8 @@ never halts the pipeline). Where it is silent, they encode Python
 2. **Hooks around a skipped Valve.** Python fires `before:v` / `after:v` even
    when the Valve skips its filter.
 3. **`equals` across types.** Python's `==` makes `1 == true`; JSON does not.
+   TypeScript uses `===`, which does not compare lists or maps by content.
    No case depends on it yet.
+4. **`truthy` across languages.** An empty list or map is false in Python
+   and true in JavaScript. Each runner uses the rule of its language. No
+   case depends on it yet.
