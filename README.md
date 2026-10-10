@@ -82,12 +82,9 @@ These changes are not compatible with 1.0.0.
 
 The TypeScript packages are new. They are version `0.1.0`. A version below
 1.0 is not stable yet, and a new version can change in a way that is not
-compatible.
-
-```bash
-npm install codeupipe
-npm install --save-dev codeupipe-lint codeupipe-compile
-```
+compatible. They are not on npm yet:
+[packages/codeupipe-ts/README.md](packages/codeupipe-ts/README.md) says how to
+install them from this repository.
 
 ## Example
 

@@ -8,12 +8,26 @@ It implements the same contract as the Python
 package, and the same 27 conformance cases judge it:
 [conformance/API.md](../../conformance/API.md).
 
-```bash
-npm install codeupipe
-```
-
 The version is below 1.0: the package is not stable yet, and a new version
 can change in a way that is not compatible.
+
+The packages are not on npm yet. Make them from this repository, and
+install the files that `npm pack` writes:
+
+```bash
+git clone https://github.com/orchestrate-solutions/codeupipe
+cd codeupipe && npm ci
+npm pack --workspaces --pack-destination /tmp/codeupipe
+```
+
+```bash
+# in your project
+npm install /tmp/codeupipe/codeupipe-0.1.0.tgz
+npm install --save-dev /tmp/codeupipe/codeupipe-lint-0.1.0.tgz /tmp/codeupipe/codeupipe-compile-0.1.0.tgz
+```
+
+Install the three files in one project together: the two tools need
+`codeupipe` 0.1.0, and npm takes it from the file that you install.
 
 ## The eight primitives
 

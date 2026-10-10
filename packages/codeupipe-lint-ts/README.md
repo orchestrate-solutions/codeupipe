@@ -7,12 +7,10 @@ The linter is a codeupipe pipeline: [src/lint-pipeline.ts](src/lint-pipeline.ts)
 It depends on `codeupipe` and on the `typescript` package, which it uses to
 parse the files.
 
-```bash
-npm install --save-dev codeupipe-lint
-```
-
 The version is below 1.0: the package is not stable yet, and a new version
-can change in a way that is not compatible.
+can change in a way that is not compatible. It is not on npm yet: the
+[README of the core package](../codeupipe-ts/README.md) says how to install it
+from this repository.
 
 ```bash
 npx codeupipe-lint src                  # files or directories

@@ -13,8 +13,10 @@ The compiler is a codeupipe pipeline:
 `codeupipe` and on the `typescript` package, which it uses to read and
 write code.
 
+It is not on npm yet: the [README of the core package](../codeupipe-ts/README.md)
+says how to install it from this repository.
+
 ```bash
-npm install --save-dev codeupipe-compile
 npx codeupipe-compile src/pricing-pipeline.ts:PricingPipeline --out build/pricing.ts
 ```
 
