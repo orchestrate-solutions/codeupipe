@@ -66,6 +66,33 @@ jobs:
         working-directory: .
         run: python conformance/run.py typescript:run
 
+  typescript-lint:
+    name: TypeScript linter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - name: Install the core package
+        working-directory: packages/codeupipe-ts
+        run: npm ci
+      - name: Install
+        working-directory: packages/codeupipe-lint-ts
+        run: npm ci
+      - name: Type check
+        working-directory: packages/codeupipe-lint-ts
+        run: npm run typecheck
+      - name: Tests
+        working-directory: packages/codeupipe-lint-ts
+        run: npm test
+      - name: Build
+        working-directory: packages/codeupipe-lint-ts
+        run: npm run build
+      - name: The linter on the TypeScript code of this repository
+        working-directory: packages/codeupipe-lint-ts
+        run: npm run lint
+
   export:
     name: Export against dynamic run
     runs-on: ubuntu-latest

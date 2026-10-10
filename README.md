@@ -29,13 +29,14 @@ If you know Unix, these are close to things you know.
 | Hook | A git hook: code that runs before and after a step |
 | State | `$?` and `PIPESTATUS` |
 
-This repository has three packages.
+This repository has four packages.
 
 | Package | Contents | Reference |
 |---|---|---|
 | `codeupipe` | The eight primitives. An export command that writes a pipeline as plain Python with no import of codeupipe. A config file reader. No dependencies | [conformance/API.md](conformance/API.md), [docs/static-export.md](docs/static-export.md), [docs/config.md](docs/config.md) |
 | `codeupipe-lint` | Two linters for pipeline code. Depends on `codeupipe` only | [packages/codeupipe-lint/README.md](packages/codeupipe-lint/README.md) |
-| `codeupipe` for TypeScript | The eight primitives. No dependencies. No export and no linter | [packages/codeupipe-ts/README.md](packages/codeupipe-ts/README.md) |
+| `codeupipe` for TypeScript | The eight primitives. No dependencies | [packages/codeupipe-ts/README.md](packages/codeupipe-ts/README.md) |
+| `codeupipe-lint` for TypeScript | A linter for pipeline code in TypeScript | [packages/codeupipe-lint-ts/README.md](packages/codeupipe-lint-ts/README.md) |
 
 ## Install
 
@@ -166,6 +167,7 @@ An editable install needs pip 21.3 or later.
 | `packages/codeupipe/` | The `codeupipe` package: `core/`, `lower/` (the export), `config.py` |
 | `packages/codeupipe-lint/` | The `codeupipe-lint` package: `anonymous_steps/`, `invariants/` |
 | `packages/codeupipe-ts/` | The TypeScript runtime, with its tests and its example |
+| `packages/codeupipe-lint-ts/` | The TypeScript linter, with its tests |
 | `conformance/` | The contract ([API.md](conformance/API.md)), the cases, the runners, the benchmark |
 | `tests/` | The tests for the two Python packages |
 | `examples/pricing/` | The example, with its test in `tests/examples/` |
@@ -178,8 +180,8 @@ The root `pyproject.toml` is not a package. It holds the test settings.
 
 The contract and the conformance cases do not depend on a language. Python
 is the first runtime and TypeScript is the second
-([packages/codeupipe-ts/](packages/codeupipe-ts/)). The export and the
-linters are for Python only. A runtime in another language must implement
+([packages/codeupipe-ts/](packages/codeupipe-ts/)), with its own linter. The
+export is for Python only. A runtime in another language must implement
 the contract and add a conformance runner.
 
 ## License
