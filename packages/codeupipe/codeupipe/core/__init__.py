@@ -1,7 +1,7 @@
 """
-Core: the seven primitives.
+Core: the eight primitives.
 
-Payload, Filter, Pipeline, Valve, Tap, Hook and State, as conformance/API.md
+Payload, Filter, Predicate, Valve, Tap, Hook, State and Pipeline, as conformance/API.md
 defines them. Standard library only. A Valve is added with
 ``Pipeline.add_valve(predicate, filter)``; its class is not a public name.
 """

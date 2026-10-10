@@ -1,7 +1,7 @@
 # core
 
-This package holds the seven primitives: `Payload`, `Filter`, `Pipeline`,
-`Valve`, `Tap`, `State`, `Hook`. The contract is
+This package holds the eight primitives: `Payload`, `Filter`, `Predicate`,
+`Valve`, `Tap`, `Hook`, `State`, `Pipeline`. The contract is
 [conformance/API.md](../../../../conformance/API.md). The export (`codeupipe.lower`) and the linter
 (`codeupipe-lint`) are built on this package. No dependencies: standard
 library only.
@@ -26,6 +26,9 @@ library only.
   classes defined in a function, `__main__` filters, unnamed nested pipelines.
 - `async_step_in_sync_run.py` — `AsyncStepInSyncRun`: raised when the sync
   `Pipeline.run()` meets async work (it never starts an event loop).
+- `predicate.py` — `Predicate`: a yes-or-no question about the payload, an
+  object with `test(payload) -> bool`. It reads the payload and does not
+  write to it.
 - `valve.py` — `Valve`: the step that `Pipeline.add_valve(predicate, filter)`
   makes. The Filter runs only when the predicate is true; when it is false
   the payload passes through unchanged. Not a public name.

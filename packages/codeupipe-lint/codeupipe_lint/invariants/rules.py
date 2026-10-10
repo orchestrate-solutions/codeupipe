@@ -37,7 +37,7 @@ _FIX = {
                  "needs into the Payload, or observe State from a Tap or a Hook."),
     WRITE_OUTSIDE_FILTER: ("Only a Filter writes to the Payload, and nothing at run time stops this write. "
                            "Put the write in a Filter, or write to payload.copy()."),
-    ONE_PRIMITIVE_PER_FILE: ("Give each Filter, Tap, Hook, predicate and named Pipeline its own file, so it can "
+    ONE_PRIMITIVE_PER_FILE: ("Give each Filter, Predicate, Tap, Hook and named Pipeline its own file, so it can "
                              "be tested alone and used again. The pipeline file is where they come together."),
     PRIMITIVE_FILE_NAME: ("The file name of a primitive is its class name in snake_case, so one name gives "
                           "the other."),

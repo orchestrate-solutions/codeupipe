@@ -1,7 +1,18 @@
 # CUP API contract
 
-This document defines the primitives, their operations, their parameters,
-their defaults, and how they fail.
+This document defines the eight primitives, their operations, their
+parameters, their defaults, and how they fail.
+
+| Primitive | What it does |
+|---|---|
+| Payload | carries the data |
+| Filter | changes the data |
+| Predicate | asks a yes-or-no question about the data |
+| Valve | joins a Predicate to a Filter |
+| Tap | reads the data as it goes by |
+| Hook | sees the lifecycle of a run |
+| State | records what happened |
+| Pipeline | runs the steps in order |
 
 Python implements it. A runtime in another language implements the same
 contract, with identifier casing in that language's style, and is judged by
@@ -53,31 +64,36 @@ Rules:
 - The caller's input map is never changed (copied on construct).
 - **`run` works on a copy of the Payload it is given**, so the caller's
   Payload is not changed either.
-- **Only a Filter writes.** A Tap, a Hook and a predicate read the
+- **Only a Filter writes.** A Tap, a Hook and a Predicate read the
   Payload. To change the data, add a Filter. The linter is the guard
   (`CUP-I004`); the runtime does not check.
-- A Tap, a Hook or a predicate that wants its own changed version, or that
+- A Tap, a Hook or a Predicate that wants its own changed version, or that
   keeps the Payload for later, takes a `copy()`.
 
 ## Filter
 
 `call(payload) -> payload`. A failure raises.
 
-## Valve — a Filter that runs when a condition is true
+## Predicate — a yes-or-no question
 
-A Valve has two parts: a **predicate**, which is the condition, and a
-**Filter**. It is added with one call, the condition first:
+`test(payload) -> bool`.
+
+- A Predicate is an object. It is identified by its class like a step, and
+  any setting (a threshold, a flag) is on the instance:
+  `AtLeastPredicate("qty", 10)`. Functions, lambdas and closures are not
+  Predicates.
+- A Predicate reads the Payload and does not write to it.
+- One Predicate can be used in many Valves.
+
+## Valve — joins a Predicate to a Filter
+
+A Valve is added with one call, the condition first:
 
     pipeline.add_valve(predicate, filter)
 
-- The **predicate is an object** with `test(payload) -> bool`. It is
-  identified by its class like a step, and any setting (a threshold, a flag)
-  is on the instance: `AtLeastPredicate("qty", 10)`. Functions, lambdas and
-  closures are not predicates.
-- A predicate reads the Payload and does not write to it.
-- When `test` is true, the Filter runs. When `test` is false, the Payload
-  passes through unchanged and the step is recorded in `state.skipped`, not
-  `state.executed`.
+- When `predicate.test(payload)` is true, the Filter runs. When it is false,
+  the Payload passes through unchanged and the step is recorded in
+  `state.skipped`, not `state.executed`.
 - The step is identified by its Filter (see "Step identity").
 - `add_valve` is the one way to add a Valve. There is no Valve class for a
   user to make, and `add_filter` does not accept one.

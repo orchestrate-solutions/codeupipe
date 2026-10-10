@@ -3,13 +3,18 @@
 codeupipe is a Python library for writing a program as a pipeline of small
 steps.
 
-- A **Payload** holds the data.
-- A **Filter** changes the Payload.
-- A **Valve** runs a Filter only when a condition is true.
-- A **Tap** reads the Payload.
-- A **Hook** is called before and after each step.
-- **State** records which steps ran.
-- A **Pipeline** runs the steps in order.
+There are eight primitives. Each one does one thing.
+
+| Primitive | What it does | Who writes it |
+|---|---|---|
+| **Payload** | Carries the data | The library |
+| **Filter** | Changes the data | You |
+| **Predicate** | Asks a yes-or-no question about the data | You |
+| **Valve** | Joins a Predicate to a Filter: the Filter runs when the answer is yes | The library. You add one with `add_valve(predicate, filter)` |
+| **Tap** | Reads the data as it goes by | You |
+| **Hook** | Is called before and after each step | You |
+| **State** | Records which steps ran | The library |
+| **Pipeline** | Runs the steps in order | You |
 
 If you know Unix, these are close to things you know.
 
@@ -17,7 +22,8 @@ If you know Unix, these are close to things you know.
 |---|---|
 | Pipeline | A pipeline. A codeupipe pipeline sends one Payload through its steps, one step after another |
 | Filter | A filter, such as `sort` or `tr` |
-| Valve and predicate | `test condition && command`, or the address of a `sed` command |
+| Predicate | `test`: it gives true or false and changes nothing |
+| Valve | The `&&` in `test condition && command`, or a `sed` command with an address |
 | Tap | `tee` |
 | Hook | A git hook: code that runs before and after a step |
 | State | `$?` and `PIPESTATUS` |
@@ -26,7 +32,7 @@ This repository has two packages.
 
 | Package | Contents | Reference |
 |---|---|---|
-| `codeupipe` | The seven primitives. An export command that writes a pipeline as plain Python with no import of codeupipe. A config file reader. No dependencies | [conformance/API.md](conformance/API.md), [docs/static-export.md](docs/static-export.md), [docs/config.md](docs/config.md) |
+| `codeupipe` | The eight primitives. An export command that writes a pipeline as plain Python with no import of codeupipe. A config file reader. No dependencies | [conformance/API.md](conformance/API.md), [docs/static-export.md](docs/static-export.md), [docs/config.md](docs/config.md) |
 | `codeupipe-lint` | Two linters for pipeline code. Depends on `codeupipe` only | [packages/codeupipe-lint/README.md](packages/codeupipe-lint/README.md) |
 
 ## Status
@@ -42,7 +48,7 @@ pipeline file imports them and adds them.
 examples/pricing/
   discount_filter.py      Filter
   mark_bulk_filter.py     Filter
-  at_least_predicate.py   predicate (the condition of a Valve)
+  at_least_predicate.py   Predicate
   audit_tap.py            Tap
   print_steps_hook.py     Hook
   pricing_pipeline.py     Pipeline
@@ -99,8 +105,8 @@ PricingPipeline().run(Payload({"price": 100.0, "qty": 12})).to_dict()
 # {'price': 90.0, 'qty': 12, 'bulk': True}
 ```
 
-A Valve is made in the pipeline file, from two parts: `add_valve(predicate,
-filter)`. The predicate is the condition. The Filter runs only when
+A Valve is made in the pipeline file: `add_valve(predicate, filter)`. It
+joins a Predicate to a Filter. The Filter runs only when
 `predicate.test(payload)` is true. There is no Valve file.
 
 A step must be a class in a module. A lambda, or a class in the script that

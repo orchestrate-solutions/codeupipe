@@ -2,7 +2,7 @@
 
     discount_filter.py      Filter     takes the Payload, writes to it, returns it
     mark_bulk_filter.py     Filter
-    at_least_predicate.py   predicate  the condition of a Valve; the Valve is made in the pipeline
+    at_least_predicate.py   Predicate  a yes-or-no question; the pipeline joins it to a Filter with add_valve
     audit_tap.py            Tap        reads the Payload; its failure never halts the run
     print_steps_hook.py     Hook       sees each step start
     pricing_pipeline.py     Pipeline   where they come together

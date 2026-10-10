@@ -122,7 +122,7 @@ a path could not be read. From Python:
 | CUP-I002 | shared-value-mutation | an in-place change to a value that came from `payload.get(..)`: `payload.get("items").append(x)`, or the same through a local name, a nested key, or the loop variable of a `for` over it |
 | CUP-I003 | state-read-in-step | a Filter (`call`) or Valve predicate (`test`) reaching pipeline State: `self.pipeline.state.executed`, `PIPELINE.state.errors`, or an attribute `__init__` set to a State |
 | CUP-I004 | write-outside-filter | a Tap (`observe`), a predicate (`test`) or a Hook (`before`, `after`, `on_error`) that calls `insert`, `remove`, `merge` or `with_trace` on its payload |
-| CUP-I005 | one-primitive-per-file | a second Filter, Tap, Hook, predicate or named Pipeline class at module level in one file |
+| CUP-I005 | one-primitive-per-file | a second Filter, Predicate, Tap, Hook or named Pipeline class at module level in one file |
 | CUP-I006 | primitive-file-name | the file of a primitive is not its class name in snake_case (`DiscountFilter` is in `discount_filter.py`) |
 | CUP-I007 | primitive-role-suffix | the class name of a primitive does not end with its role: `Filter`, `Tap`, `Hook`, `Predicate` or `Pipeline` |
 
@@ -143,10 +143,9 @@ runtime does not check, so a write from a Tap, a Hook or a predicate that
 gets past the linter does happen. A write to `payload.copy()` belongs to the
 Tap, Hook or predicate that made the copy, and is not flagged. Suppress with `cup: allow-outside-write`.
 
-**Why CUP-I005.** The rule covers the classes that a user writes: a Filter,
-a predicate, a Tap, a Hook and a named Pipeline. A predicate is the condition
-of a Valve; it is not a primitive, but it is a class with its own file. A
-class alone in its file can be found by its name,
+**Why CUP-I005.** The rule covers the five primitives that a user writes: a
+Filter, a Predicate, a Tap, a Hook and a named Pipeline. A class alone in its
+file can be found by its name,
 tested alone, and used again in another pipeline. The pipeline file is where
 the parts come together. The first primitive in a file is accepted; each one
 after it is reported. Plain classes and functions beside the primitive are
