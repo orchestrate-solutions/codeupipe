@@ -1,6 +1,6 @@
 {
   "name": "codeupipe",
-  "version": "1.0.0-beta.1",
+  "version": "0.1.0",
   "description": "A TypeScript library for writing a program as a pipeline of small steps.",
   "license": "Apache-2.0",
   "repository": {
@@ -24,8 +24,7 @@
     "README.md"
   ],
   "publishConfig": {
-    "access": "public",
-    "tag": "beta"
+    "access": "public"
   },
   "sideEffects": false,
   "scripts": {

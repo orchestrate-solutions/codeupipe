@@ -1,6 +1,6 @@
 {
   "name": "codeupipe-lint",
-  "version": "1.0.0-beta.1",
+  "version": "0.1.0",
   "description": "A linter for TypeScript code that uses codeupipe.",
   "license": "Apache-2.0",
   "repository": {
@@ -21,8 +21,7 @@
     "README.md"
   ],
   "publishConfig": {
-    "access": "public",
-    "tag": "beta"
+    "access": "public"
   },
   "engines": {
     "node": ">=20"
@@ -39,7 +38,7 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "codeupipe": "1.0.0-beta.1",
+    "codeupipe": "0.1.0",
     "typescript": "^5.9.0"
   },
   "devDependencies": {

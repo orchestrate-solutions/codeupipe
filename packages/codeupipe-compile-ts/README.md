@@ -1,7 +1,7 @@
 # codeupipe-compile for TypeScript
 
 Writes a codeupipe pipeline as one plain TypeScript module with no import
-of codeupipe. It reads the source and does not run it. It is a beta.
+of codeupipe. It reads the source and does not run it.
 
 **The rule: code that compiles gives the same output as the pipeline. A
 pipeline for which the compiler cannot keep that rule is refused, with the
@@ -14,7 +14,7 @@ The compiler is a codeupipe pipeline:
 write code.
 
 ```bash
-npm install --save-dev codeupipe-compile@beta
+npm install --save-dev codeupipe-compile
 npx codeupipe-compile src/pricing-pipeline.ts:PricingPipeline --out build/pricing.ts
 ```
 

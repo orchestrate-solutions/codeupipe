@@ -80,11 +80,13 @@ These changes are not compatible with 1.0.0.
 - **`codeupipe.lower` is now `codeupipe.compile`.** The command is
   `python -m codeupipe.compile`.
 
-The TypeScript packages are new. They are version `1.0.0-beta.1`:
+The TypeScript packages are new. They are version `0.1.0`. A version below
+1.0 is not stable yet, and a new version can change in a way that is not
+compatible.
 
 ```bash
-npm install codeupipe@beta
-npm install --save-dev codeupipe-lint@beta codeupipe-compile@beta
+npm install codeupipe
+npm install --save-dev codeupipe-lint codeupipe-compile
 ```
 
 ## Example

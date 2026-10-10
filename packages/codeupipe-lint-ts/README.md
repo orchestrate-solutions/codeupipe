@@ -1,15 +1,18 @@
 # codeupipe-lint for TypeScript
 
 A linter for TypeScript code that uses codeupipe. It reads the source and
-does not run it. It is a beta.
+does not run it.
 
 The linter is a codeupipe pipeline: [src/lint-pipeline.ts](src/lint-pipeline.ts).
 It depends on `codeupipe` and on the `typescript` package, which it uses to
 parse the files.
 
 ```bash
-npm install --save-dev codeupipe-lint@beta
+npm install --save-dev codeupipe-lint
 ```
+
+The version is below 1.0: the package is not stable yet, and a new version
+can change in a way that is not compatible.
 
 ```bash
 npx codeupipe-lint src                  # files or directories
