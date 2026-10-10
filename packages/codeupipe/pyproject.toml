@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "codeupipe"
-version = "0.1.0"
+version = "1.0.0"
 description = "Payload, Filter, Pipeline: composable pipelines you run observable and export as plain code"
 readme = "README.md"
 requires-python = ">=3.9"
