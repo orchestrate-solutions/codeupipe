@@ -39,11 +39,8 @@ jobs:
         run: python conformance/run.py
 
   typescript:
-    name: TypeScript runtime
+    name: TypeScript packages
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: packages/codeupipe-ts
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -54,73 +51,20 @@ jobs:
           node-version: "24"
       - name: Install
         run: npm ci
+      - name: Build
+        run: npm run build
       - name: Type check
         run: npm run typecheck
       - name: Tests
         run: npm test
-      - name: Build
-        run: npm run build
       - name: Example
-        run: node examples/pricing/main.ts
-      - name: Conformance
-        working-directory: .
-        run: python conformance/run.py typescript:run
-
-  typescript-lint:
-    name: TypeScript linter
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version: "24"
-      - name: Install the core package
-        working-directory: packages/codeupipe-ts
-        run: npm ci
-      - name: Install
-        working-directory: packages/codeupipe-lint-ts
-        run: npm ci
-      - name: Type check
-        working-directory: packages/codeupipe-lint-ts
-        run: npm run typecheck
-      - name: Tests
-        working-directory: packages/codeupipe-lint-ts
-        run: npm test
-      - name: Build
-        working-directory: packages/codeupipe-lint-ts
-        run: npm run build
+        run: node packages/codeupipe-ts/examples/pricing/main.ts
       - name: The linter on the TypeScript code of this repository
-        working-directory: packages/codeupipe-lint-ts
-        run: npm run lint
-
-  typescript-compile:
-    name: TypeScript compiler
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-      - uses: actions/setup-node@v5
-        with:
-          node-version: "24"
-      - name: Install the core package
-        working-directory: packages/codeupipe-ts
-        run: npm ci
-      - name: Install
-        working-directory: packages/codeupipe-compile-ts
-        run: npm ci
-      - name: Type check
-        working-directory: packages/codeupipe-compile-ts
-        run: npm run typecheck
-      - name: Tests
-        working-directory: packages/codeupipe-compile-ts
-        run: npm test
-      - name: Build
-        working-directory: packages/codeupipe-compile-ts
-        run: npm run build
+        run: npm run lint -w codeupipe-lint
       - name: Conformance
-        run: python conformance/run.py typescript:static
+        run: python conformance/run.py typescript:run typescript:static
+      - name: The packages as npm makes them
+        run: npm pack --workspaces --dry-run
 
   export:
     name: Export against dynamic run

@@ -1,7 +1,7 @@
 # codeupipe-compile for TypeScript
 
 Writes a codeupipe pipeline as one plain TypeScript module with no import
-of codeupipe. It reads the source and does not run it. It is a beta, version `1.0.0-beta.1`, and it is not on npm yet.
+of codeupipe. It reads the source and does not run it.
 
 **The rule: code that compiles gives the same output as the pipeline. A
 pipeline for which the compiler cannot keep that rule is refused, with the
@@ -13,8 +13,11 @@ The compiler is a codeupipe pipeline:
 `codeupipe` and on the `typescript` package, which it uses to read and
 write code.
 
+It is not on npm yet: the [README of the core package](../codeupipe-ts/README.md)
+says how to install it from this repository.
+
 ```bash
-codeupipe-compile src/pricing-pipeline.ts:PricingPipeline --out build/pricing.ts
+npx codeupipe-compile src/pricing-pipeline.ts:PricingPipeline --out build/pricing.ts
 ```
 
 Exit code: **0** the module is written, **1** the pipeline is refused (the
@@ -107,8 +110,10 @@ compiler has neither.
 
 ## Development
 
+The three TypeScript packages are one npm workspace. Run `npm ci` once, at
+the root of the repository. Then, in this directory:
+
 ```bash
-npm install          # links ../codeupipe-ts and installs the TypeScript compiler
 npm test             # builds the core package first, then runs the tests
 npm run typecheck    # also checks the conformance runner
 npm run build        # JavaScript and type files in dist/

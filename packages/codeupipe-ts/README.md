@@ -4,9 +4,30 @@ codeupipe is a library for writing a program as a pipeline of small steps.
 This is the TypeScript runtime. It has no dependencies. The built JavaScript
 runs in a browser and in Node.
 
-It is a beta, version `1.0.0-beta.1`, and it is not on npm yet. It implements the same contract as the Python
+It implements the same contract as the Python
 package, and the same 27 conformance cases judge it:
 [conformance/API.md](../../conformance/API.md).
+
+The version is below 1.0: the package is not stable yet, and a new version
+can change in a way that is not compatible.
+
+The packages are not on npm yet. Make them from this repository, and
+install the files that `npm pack` writes:
+
+```bash
+git clone https://github.com/orchestrate-solutions/codeupipe
+cd codeupipe && npm ci
+npm pack --workspaces --pack-destination /tmp/codeupipe
+```
+
+```bash
+# in your project
+npm install /tmp/codeupipe/codeupipe-0.1.0.tgz
+npm install --save-dev /tmp/codeupipe/codeupipe-lint-0.1.0.tgz /tmp/codeupipe/codeupipe-compile-0.1.0.tgz
+```
+
+Install the three files in one project together: the two tools need
+`codeupipe` 0.1.0, and npm takes it from the file that you install.
 
 ## The eight primitives
 
@@ -92,8 +113,7 @@ result.toDict();
 // { price: 90, qty: 12, bulk: true }
 ```
 
-In this repository the example imports from `../../src/index.ts`, because
-the package is not installed.
+In this repository the example imports from `../../src/index.ts`.
 
 ## Names
 
@@ -143,8 +163,10 @@ that keeps names, and the labels change only in the second.
 
 Node 22.18 or later runs the `.ts` files as they are.
 
+The three TypeScript packages are one npm workspace. Run `npm ci` once, at
+the root of the repository. Then, in this directory:
+
 ```bash
-npm install          # the TypeScript compiler, the Node types and esbuild, for development only
 npm test             # the tests
 npm run typecheck    # the type check of the source, tests and example
 npm run build        # JavaScript and type files in dist/

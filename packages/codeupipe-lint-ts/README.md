@@ -1,18 +1,23 @@
 # codeupipe-lint for TypeScript
 
 A linter for TypeScript code that uses codeupipe. It reads the source and
-does not run it. It is a beta, version `1.0.0-beta.1`, and it is not on npm yet.
+does not run it.
 
 The linter is a codeupipe pipeline: [src/lint-pipeline.ts](src/lint-pipeline.ts).
 It depends on `codeupipe` and on the `typescript` package, which it uses to
 parse the files.
 
+The version is below 1.0: the package is not stable yet, and a new version
+can change in a way that is not compatible. It is not on npm yet: the
+[README of the core package](../codeupipe-ts/README.md) says how to install it
+from this repository.
+
 ```bash
-codeupipe-lint src                      # files or directories
-codeupipe-lint --exclude '*/generated/*' src
-codeupipe-lint --disable CUP-I005 src
-codeupipe-lint --rules                  # list the rule ids
-codeupipe-lint                          # paths come from cup.config.json
+npx codeupipe-lint src                  # files or directories
+npx codeupipe-lint --exclude '*/generated/*' src
+npx codeupipe-lint --disable CUP-I005 src
+npx codeupipe-lint --rules              # list the rule ids
+npx codeupipe-lint                      # paths come from cup.config.json
 ```
 
 Each finding is one line, and the message names the fix:
@@ -95,8 +100,10 @@ The file is used only when no paths are given on the command line. A key in
 
 ## Development
 
+The three TypeScript packages are one npm workspace. Run `npm ci` once, at
+the root of the repository. Then, in this directory:
+
 ```bash
-npm install          # links ../codeupipe-ts and installs the TypeScript compiler
 npm test             # builds the core package first, then runs the tests
 npm run typecheck
 npm run build        # JavaScript and type files in dist/

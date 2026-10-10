@@ -1,8 +1,7 @@
 # codeupipe
 
 codeupipe is a library for writing a program as a pipeline of small steps.
-It is for Python. A TypeScript runtime is in this repository and is not on
-npm yet.
+It is for Python and for TypeScript.
 
 There are eight primitives. Each one does one thing.
 
@@ -81,8 +80,11 @@ These changes are not compatible with 1.0.0.
 - **`codeupipe.lower` is now `codeupipe.compile`.** The command is
   `python -m codeupipe.compile`.
 
-The TypeScript packages are new. They are version `1.0.0-beta.1` and are not on
-npm.
+The TypeScript packages are new. They are version `0.1.0`. A version below
+1.0 is not stable yet, and a new version can change in a way that is not
+compatible. They are not on npm yet:
+[packages/codeupipe-ts/README.md](packages/codeupipe-ts/README.md) says how to
+install them from this repository.
 
 ## Example
 
@@ -203,7 +205,9 @@ An editable install needs pip 21.3 or later.
 | `scorecard/` | The comparison of the compiled code with the dynamic run on random pipelines |
 | `docs/` | Reference for the compiler and the config file |
 
-The root `pyproject.toml` is not a package. It holds the test settings.
+The root `pyproject.toml` is not a package. It holds the test settings. The
+root `package.json` is not a package: it makes the three TypeScript packages
+one npm workspace.
 
 ## Other languages
 
