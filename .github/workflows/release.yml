@@ -1,0 +1,85 @@
+name: Release
+
+# Runs when a version tag is pushed: v1.0.0, v1.0.1, ...
+# Publishes the two packages to PyPI with trusted publishing: PyPI accepts
+# the upload because it comes from this workflow in this repository. No
+# token is stored anywhere.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: The tag is the version of both packages
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          for package in packages/codeupipe packages/codeupipe-lint; do
+            version=$(python -c "import tomllib,sys; print(tomllib.load(open(sys.argv[1]+'/pyproject.toml','rb'))['project']['version'])" "$package")
+            if [ "$version" != "$tag" ]; then
+              echo "$package is version $version, and the tag is $tag"
+              exit 1
+            fi
+          done
+      - name: Install the packages and the test tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e packages/codeupipe -e packages/codeupipe-lint -r requirements-dev.txt
+      - name: Tests, linters and conformance
+        run: |
+          python -m pytest tests -q
+          python -m codeupipe_lint.anonymous_steps
+          python -m codeupipe_lint.invariants
+          python conformance/run.py
+      - name: Build
+        run: |
+          python -m pip install build twine
+          python -m build -o dist/codeupipe packages/codeupipe
+          python -m build -o dist/codeupipe-lint packages/codeupipe-lint
+          python -m twine check dist/codeupipe/* dist/codeupipe-lint/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish-codeupipe:
+    name: Publish codeupipe
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/codeupipe/
+
+  publish-codeupipe-lint:
+    name: Publish codeupipe-lint
+    # codeupipe-lint requires this version of codeupipe, so codeupipe goes first.
+    needs: publish-codeupipe
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/codeupipe-lint/

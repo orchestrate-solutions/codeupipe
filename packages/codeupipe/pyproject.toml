@@ -1,15 +1,35 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "codeupipe"
 version = "1.0.0"
-description = "Payload, Filter, Pipeline: composable pipelines you run observable and export as plain code"
+description = "A Python library for writing a program as a pipeline of small steps."
 readme = "README.md"
 requires-python = ">=3.9"
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{name = "Joshua Wink"}]
+keywords = ["pipeline", "filter", "payload", "composition"]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries",
+]
 dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/orchestrate-solutions/codeupipe"
+Repository = "https://github.com/orchestrate-solutions/codeupipe"
+Issues = "https://github.com/orchestrate-solutions/codeupipe/issues"
 
 [tool.setuptools.packages.find]
 include = ["codeupipe*"]

@@ -3,6 +3,10 @@
 Two linters for codeupipe pipelines, in Python: anonymous steps, and
 invariants. Standard library only; depends on `codeupipe`.
 
+```bash
+pip install codeupipe-lint
+```
+
 ## Using a part of the rules
 
 Each rule can be switched off. There are three ways.
@@ -40,7 +44,7 @@ path:line:col  CUP-A001 lambda-step  Valve predicate is a lambda. Define it at m
 ```
 
 With no paths, both linters read them from `cup.config.json`
-([docs/config.md](../../docs/config.md)).
+([docs/config.md](https://github.com/orchestrate-solutions/codeupipe/blob/main/docs/config.md)).
 
 Exit code: **0** no anonymous steps, **1** anonymous steps found, **2** a
 path could not be read.
