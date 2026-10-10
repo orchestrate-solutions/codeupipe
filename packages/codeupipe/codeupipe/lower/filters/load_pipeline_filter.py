@@ -45,14 +45,14 @@ def _check_pipeline(pipeline, name: str, allow_hooks: bool = False) -> None:
                       "(top-level Hooks only), or remove them.")
 
 
-def _ident(index: int, identity: str) -> str:
+def _ident(index: int, label: str) -> str:
     """A safe, readable Python identifier for a step: ``step_03_validate``.
 
-    Generated code never uses the identity itself as a name: it is a label
-    (``app.filters.Validate#2``), and anything derived from user code could
+    Generated code never uses the label itself as a name: it is a string
+    (``Validate#2``), and anything derived from user code could
     collide with a builtin, a module global or the generated run().
     """
-    short = identity.rsplit("/", 1)[-1].split("#", 1)[0].rsplit(".", 1)[-1]
+    short = label.rsplit("/", 1)[-1].split("#", 1)[0].rsplit(".", 1)[-1]
     snake = re.sub(r"(?<!^)(?=[A-Z])", "_", short).lower()
     snake = re.sub(r"\W+", "_", snake).strip("_") or "step"
     return f"step_{index:02d}_{snake}"

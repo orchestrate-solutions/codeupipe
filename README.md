@@ -123,10 +123,9 @@ A Valve is made in the pipeline file: `add_valve(predicate, filter)`. It
 joins a Predicate to a Filter. The Filter runs only when
 `predicate.test(payload)` is true. There is no Valve file.
 
-A step must be a class in a module. A lambda, or a class in the script that
-you run, is refused. The reason is step identity: a step is identified by its
-type, for example `examples.pricing.discount_filter.DiscountFilter`. State,
-Hooks and the export use that identity.
+A step is a class. State and Hooks report each step by the name of its
+class, for example `DiscountFilter`. A lambda is refused, because it does not
+have the method of a step.
 
 ```bash
 python -m examples.pricing

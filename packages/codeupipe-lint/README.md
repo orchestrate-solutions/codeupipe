@@ -26,10 +26,10 @@ in the list: each linter uses the ids that are its own.
 
 ## Anonymous-step linter
 
-Step identity (conformance/API.md, "Step identity") makes a step's identity a
-pointer to its filter. Anonymous steps have no such pointer and are
-unsupported. The runtime refuses them when the step is added; this linter
-flags them at authoring time.
+A step is reported by the name of its class (conformance/API.md, "Step
+labels"). A step that is a lambda, a function, a class defined inside a
+function, or a plain nested `Pipeline` has no useful name and cannot be
+imported and tested alone. This linter flags them when the code is written.
 
 ```bash
 python -m codeupipe_lint.anonymous_steps <paths...>            # files or directories
@@ -40,7 +40,7 @@ python -m codeupipe_lint.anonymous_steps --rules               # list the rule i
 Each finding is one line, and the message names the fix:
 
 ```
-path:line:col  CUP-A001 lambda-step  Valve predicate is a lambda. Define it at module level (...) so it has a stable identity and can be tested on its own.
+path:line:col  CUP-A001 lambda-step  Valve predicate is a lambda. Define it at module level (...) so it has a name in State and can be tested on its own.
 ```
 
 With no paths, both linters read them from `cup.config.json`
@@ -61,7 +61,6 @@ returns the result Payload (`findings`, `suppressed`, `errors`, `report`, `exit_
 | CUP-A002 | local-function-step | a named function declared inside a function |
 | CUP-A003 | local-type-step | a class declared inside a function, or an instance of one |
 | CUP-A005 | unnamed-pipeline-step | a plain, unnamed `Pipeline` nested as a step; nested pipelines must be named Pipeline types |
-| CUP-A006 | entry-script-step | a class or function of a script (`__main__`), added from its `if __name__ == "__main__":` block |
 | CUP-A008 | function-predicate | a named function as a Valve predicate. Predicates are objects with `test(payload)` (conformance/API.md, "Valve") |
 
 A step is any argument of `add_filter`, `add_tap` or `add_pipeline` (on any
@@ -75,19 +74,15 @@ A comment containing `# cup: allow-anonymous` (any text may follow)
 suppresses a finding when it is on the finding's line, on the line of the
 enclosing add or Valve call, or alone on the line directly above. Suppressed
 findings are counted in the summary. Use it only where the anonymous step is
-the point, as in the tests that exercise the runtime's refusal
-(`tests/core/test_step_identity.py`).
+the point, as in a test of what the runtime does with one
+(`tests/core/test_step_labels.py`).
 
 ### Limits
 
 Names resolve lexically (innermost function scope out to the module; a
 parameter, loop target or import shadows). A name bound two different ways
-in one scope is not flagged. CUP-A006 is deliberately conservative: only a
-module with a `__main__` guard, only steps added from that block or from a
-module-level function it calls (transitively); a script without a guard is
-not flagged (the runtime still refuses it). Not seen: `functools.partial`,
-`type(...)`-built classes, steps built in another module (all refused at
-runtime).
+in one scope is not flagged. Not seen: `functools.partial`,
+`type(...)`-built classes, steps built in another module.
 
 ### Layout
 

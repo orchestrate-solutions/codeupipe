@@ -5,4 +5,4 @@ from codeupipe import Pipeline
 
 class NestedPipeline(Pipeline):
     """The runner's named pipeline type: nested pipelines must be named
-    types (conformance/API.md, step identity)."""
+    types (conformance/API.md, step labels)."""

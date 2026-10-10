@@ -42,7 +42,7 @@ def test_the_filter_runs_when_the_predicate_is_true():
     pipeline = Pipeline()
     pipeline.add_valve(IsOn(), SetA())
     assert pipeline.run(Payload({"on": True})).to_dict() == {"on": True, "a": 1}
-    assert pipeline.state.executed == [f"{HERE}.SetA"]
+    assert pipeline.state.executed == ["SetA"]
     assert pipeline.state.skipped == []
 
 
@@ -51,20 +51,14 @@ def test_the_payload_passes_through_when_the_predicate_is_false():
     pipeline.add_valve(IsOn(), SetA())
     assert pipeline.run(Payload({"on": False})).to_dict() == {"on": False}
     assert pipeline.state.executed == []
-    assert pipeline.state.skipped == [f"{HERE}.SetA"]
+    assert pipeline.state.skipped == ["SetA"]
 
 
 def test_a_valve_is_identified_by_its_filter():
     pipeline = Pipeline()
     pipeline.add_valve(IsOn(), SetA())
     pipeline.add_valve(AtLeast("n", 2), SetA())
-    assert pipeline.identities == [f"{HERE}.SetA", f"{HERE}.SetA#2"]
-
-
-def test_the_step_site_is_the_add_valve_line():
-    pipeline = Pipeline()
-    pipeline.add_valve(IsOn(), SetA())
-    assert "test_add_valve.py:" in pipeline.step_sites[f"{HERE}.SetA"]
+    assert pipeline.labels == ["SetA", "SetA#2"]
 
 
 def test_a_predicate_keeps_its_settings():
@@ -91,7 +85,7 @@ def test_an_async_filter_behind_a_valve_needs_run_async():
 def test_a_function_is_not_a_predicate():
     def is_on(payload):
         return True
-    with pytest.raises(codeupipe.AnonymousStep):
+    with pytest.raises(TypeError, match=r"test\(payload\)"):
         Pipeline().add_valve(is_on, SetA())  # cup: allow-anonymous (exercises the refusal)
 
 

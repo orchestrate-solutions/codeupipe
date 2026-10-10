@@ -47,17 +47,17 @@ def test_dynamic_run():
     pipeline = PricingPipeline()
     out = pipeline.run(Payload({"price": 100.0, "qty": 12}))
     assert out.to_dict() == {"price": 90.0, "qty": 12, "bulk": True}
-    assert pipeline.identities == ["examples.pricing.discount_filter.DiscountFilter",
-                                   "examples.pricing.mark_bulk_filter.MarkBulkFilter",
-                                   "examples.pricing.audit_tap.AuditTap"]
-    assert [name for name, _ in pipeline.state.errors] == ["examples.pricing.audit_tap.AuditTap"]
+    assert pipeline.labels == ["DiscountFilter",
+                                   "MarkBulkFilter",
+                                   "AuditTap"]
+    assert [name for name, _ in pipeline.state.errors] == ["AuditTap"]
 
 
 def test_valve_skips_small_orders():
     pipeline = PricingPipeline()
     out = pipeline.run(Payload({"price": 100.0, "qty": 2}))
     assert out.to_dict() == {"price": 90.0, "qty": 2}
-    assert pipeline.state.skipped == ["examples.pricing.mark_bulk_filter.MarkBulkFilter"]
+    assert pipeline.state.skipped == ["MarkBulkFilter"]
 
 
 def test_a_hook_sees_each_step(capsys):
@@ -65,7 +65,7 @@ def test_a_hook_sees_each_step(capsys):
     pipeline.use_hook(PrintStepsHook())
     pipeline.run(Payload({"price": 100.0, "qty": 12}))
     lines = capsys.readouterr().out.splitlines()
-    assert lines == ["  discount_filter.DiscountFilter", "  mark_bulk_filter.MarkBulkFilter"]
+    assert lines == ["  DiscountFilter", "  MarkBulkFilter"]
 
 
 def test_the_example_runs_as_a_module():

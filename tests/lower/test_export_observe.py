@@ -15,15 +15,15 @@ from codeupipe import Hook, Payload, Pipeline
 from codeupipe.lower import build_export_pipeline_v2
 
 
-ADD = f"{__name__}._Add"
-BOOM = f"{__name__}._Boom"
-FAILING_TAP = f"{__name__}._FailingTap"
-TAP = f"{__name__}._Tap"
-SUB = f"{__name__}.SubPipeline"
+ADD = "_Add"
+BOOM = "_Boom"
+FAILING_TAP = "_FailingTap"
+TAP = "_Tap"
+SUB = "SubPipeline"
 
 
 class SubPipeline(Pipeline):
-    """A named pipeline type, so it can be nested (conformance/API.md, step identity)."""
+    """A named pipeline type, so it can be nested (conformance/API.md, step labels)."""
 
 
 class _Add:
@@ -317,8 +317,8 @@ class TestFastExportIsUnchanged:
             _export(p, tmp_path, lowering="inline")
 
 
-def test_identities_are_labels_not_code_names(tmp_path):
-    """Generated code names steps step_01_... itself; the identity (which is
+def test_labels_are_not_code_names(tmp_path):
+    """Generated code names steps step_01_... itself; the label (which is
     not an identifier) is only ever a string in State and Hooks."""
     p = Pipeline()
     p.add_filter(_Add())

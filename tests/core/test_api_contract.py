@@ -21,8 +21,8 @@ class AsyncInc:
         return payload.insert("n", payload.get("n", 0) + 1)
 
 
-INC = f"{__name__}.Inc"
-BOOM = f"{__name__}.Boom"
+INC = "Inc"
+BOOM = "Boom"
 
 
 class _SetsX:
@@ -75,11 +75,11 @@ class TestPipelineEntryPoints:
         outer.add_filter(Inc())
         outer.add_pipeline(IncTwice())
         assert outer.run(Payload({})).get("n") == 2
-        assert outer.state.executed == [INC, f"{__name__}.IncTwice"]
+        assert outer.state.executed == [INC, "IncTwice"]
 
 
 class TestStepsHaveNoNames:
-    """Identity is derived from the filter (tests/core/test_step_identity.py)."""
+    """The label is derived from the step (tests/core/test_step_labels.py)."""
 
     @pytest.mark.parametrize("add", ["add_filter", "add_tap"])
     def test_a_name_argument_is_rejected(self, add):
@@ -93,8 +93,8 @@ class Boom:
         raise RuntimeError('boom')
 
 
-class TestHooksReceiveStepIdentities:
-    def test_before_after_and_on_error_get_identities(self):
+class TestHooksReceiveStepLabels:
+    def test_before_after_and_on_error_get_labels(self):
         events = []
 
         class Record(Hook):

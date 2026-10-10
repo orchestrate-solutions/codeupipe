@@ -13,10 +13,10 @@ __all__ = ["State"]
 class State:
     """The record of one run. A run starts with a new State.
 
-    - ``executed``: step identities, in order
+    - ``executed``: step labels, in order
     - ``skipped``: steps a Valve did not run
-    - ``errors``: (identity, error) pairs
-    - ``timings``: identity -> seconds, when timing is on
+    - ``errors``: (label, error) pairs
+    - ``timings``: label -> seconds, when timing is on
     """
 
     def __init__(self):

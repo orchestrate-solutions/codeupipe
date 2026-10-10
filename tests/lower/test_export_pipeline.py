@@ -15,7 +15,7 @@ from codeupipe.lower import build_export_pipeline_v2
 
 
 class SubPipeline(Pipeline):
-    """A named pipeline type, so it can be nested (conformance/API.md, step identity)."""
+    """A named pipeline type, so it can be nested (conformance/API.md, step labels)."""
 
 
 class _CleanText:
@@ -141,10 +141,8 @@ class TestValvePredicateExport:
         assert package.run({"text": "a", "price": 10, "member": False})["price"] == 10
 
     def test_lambda_predicate_is_refused_before_export(self):
-        """Anonymous predicates never reach export: the Valve refuses them."""
-        from codeupipe import AnonymousStep
-
-        with pytest.raises(AnonymousStep, match="lambda"):
+        """A lambda is not a Predicate: it has no test method."""
+        with pytest.raises(TypeError, match=r"test\(payload\)"):
             self._pipeline(lambda payload: payload.get("member") is True)
 
 
@@ -182,7 +180,7 @@ class TestExportedTapIsolation:
 class TestNestedPipelineExport:
     """A nested Pipeline lowers by flattening its steps into the parent
     (conformance: pipeline/nested-pipeline-is-a-step). Generated modules are
-    numbered in flattened order; identities stay labels."""
+    numbered in flattened order; labels stay as they are."""
 
     def test_nested_pipeline_exports_and_matches_dynamic(self, tmp_path):
         inner = SubPipeline()

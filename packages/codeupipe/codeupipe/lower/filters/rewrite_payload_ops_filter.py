@@ -77,7 +77,7 @@ class _PayloadToDictTransformer(ast.NodeTransformer):
     """
 
     def __init__(self, filter_name: str, method_name: str, fn_name: str = ""):
-        self.filter_name = filter_name  # the step's identity: for messages
+        self.filter_name = filter_name  # the step's label: for messages
         self.method_name = method_name
         self.fn_name = fn_name or filter_name  # the generated function's name
         # source name bound to a Payload -> the dict variable it becomes

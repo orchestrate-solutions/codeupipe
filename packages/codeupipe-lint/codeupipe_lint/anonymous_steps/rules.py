@@ -1,7 +1,7 @@
 """Rule ids, and the messages that name the fix (packages/codeupipe-lint/README.md).
 
-The wording mirrors the runtime's AnonymousStep refusals
-(packages/codeupipe/codeupipe/core/step_identity.py).
+The runtime reports a step by the name of its class
+(packages/codeupipe/codeupipe/core/step_label.py).
 """
 
 from typing import Optional
@@ -9,13 +9,12 @@ from typing import Optional
 from .finding import Finding
 
 __all__ = ["RULES", "LAMBDA", "LOCAL_FUNCTION", "LOCAL_TYPE", "UNNAMED_PIPELINE",
-           "ENTRY_SCRIPT", "FUNCTION_PREDICATE", "PARSE_ERROR", "make_finding"]
+           "FUNCTION_PREDICATE", "PARSE_ERROR", "make_finding"]
 
 LAMBDA = "CUP-A001"
 LOCAL_FUNCTION = "CUP-A002"
 LOCAL_TYPE = "CUP-A003"
 UNNAMED_PIPELINE = "CUP-A005"
-ENTRY_SCRIPT = "CUP-A006"
 FUNCTION_PREDICATE = "CUP-A008"
 PARSE_ERROR = "CUP-A000"
 
@@ -25,11 +24,10 @@ RULES = {
     LOCAL_FUNCTION: "local-function-step",
     LOCAL_TYPE: "local-type-step",
     UNNAMED_PIPELINE: "unnamed-pipeline-step",
-    ENTRY_SCRIPT: "entry-script-step",
     FUNCTION_PREDICATE: "function-predicate",
 }
 
-_TAIL = " so it has a stable identity and can be tested on its own."
+_TAIL = " so it has a name in State and can be tested on its own."
 
 # Steps and Valve predicates are named types (predicates are objects with
 # test(payload), conformance/API.md, "Valve").
@@ -44,11 +42,8 @@ _PIPELINE_EXAMPLE = {
 
 def _fix(lang: str, rule: str) -> str:
     if rule == UNNAMED_PIPELINE:
-        return ("A nested pipeline must be a named pipeline type (%s), identified like a filter. "
+        return ("A nested pipeline must be a named pipeline type (%s), named like a filter. "
                 "A plain Pipeline can only run at the top level." % _PIPELINE_EXAMPLE[lang])
-    if rule == ENTRY_SCRIPT:
-        return ("Its identity would be __main__.X, which changes with how the program is started, "
-                "and tests cannot import it. Move it into a module.")
     if rule == FUNCTION_PREDICATE:
         return ("Valve predicates are objects (conformance/API.md, \"Valve\"): wrap the condition in a "
                 "named class with test(payload), configuration on the instance, and pass an instance.")

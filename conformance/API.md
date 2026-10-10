@@ -94,7 +94,7 @@ A Valve is added with one call, the condition first:
 - When `predicate.test(payload)` is true, the Filter runs. When it is false,
   the Payload passes through unchanged and the step is recorded in
   `state.skipped`, not `state.executed`.
-- The step is identified by its Filter (see "Step identity").
+- The step has the label of its Filter (see "Step labels").
 - `add_valve` is the one way to add a Valve. There is no Valve class for a
   user to make, and `add_filter` does not accept one.
 
@@ -102,7 +102,7 @@ A Valve is added with one call, the condition first:
 
 `observe(payload)`, no return value. A Tap reads the Payload and does not
 write to it. **A Tap failure never halts the pipeline:** the error is
-recorded in `state.errors` under the Tap's identity, the Tap still counts as
+recorded in `state.errors` under the Tap's label, the Tap still counts as
 executed, and hooks are not notified.
 
 ## Hook — sees the lifecycle
@@ -110,7 +110,7 @@ executed, and hooks are not notified.
 `before(step, payload)`, `after(step, payload)`, `on_error(step, error, payload)`.
 A Hook reads the Payload and does not write to it.
 
-- `step` is the **step's identity** (see "Step identity"). Pipeline-level
+- `step` is the **step's label** (see "Step labels"). Pipeline-level
   events pass absent (`None`).
 - `error` is the error itself (never just its message).
 - Order on success: `before(pipeline)`, then for each filter or Valve
@@ -121,8 +121,8 @@ A Hook reads the Payload and does not write to it.
 
 ## State — what happened in the last run
 
-`executed` (identities, in order), `skipped` (identities), `errors`
-(identity + error), `timings` (identity → seconds, when timing is on). A run
+`executed` (labels, in order), `skipped` (labels), `errors`
+(label + error), `timings` (label → seconds, when timing is on). A run
 starts with a new State. **A failed run keeps the steps that completed
 before the failure.**
 
@@ -140,66 +140,57 @@ before the failure.**
 | run (async, opt-in) | `run_async(p)` |
 | last run | `state` |
 | timing and lineage | `observe(timing=True, lineage=False)` |
-| each step's identity, in order | `identities` |
-| where each step was added (`file:line`) | `step_sites` |
+| each step's label, in order | `labels` |
 
-- **Steps have no names.** State and Hooks report each step's identity.
+- **Steps are not named by hand.** State and Hooks report each step's label.
 - **`run` is synchronous** and never starts an event loop. If it meets an
   async step it raises `AsyncStepInSyncRun` rather than silently paying for
   a loop.
-- A nested pipeline is one step: its identity appears once in the parent's
+- A nested pipeline is one step: its label appears once in the parent's
   State.
 - **Timing and lineage are off by default.**
 
-## Step identity: the filter, not a name
+## Step labels
 
-A step's identity is a pointer to the code that runs it, derived
-automatically: `add_filter(f)`, not `add_filter(f, name)`. State, Hooks and
-exported code all report this identity.
+A step is reported by a label. The label is the name of the step's class:
+`add_filter(ValidateFilter())` gives the label `ValidateFilter`. State and
+Hooks report this label. A step is not given a name by hand:
+`add_filter(f)`, not `add_filter(f, name)`.
 
-Why: in a codebase maintained by agents and reviewed by humans, an identity
-taken from the code cannot drift from it. A hand-written name is an
-unchecked label that can describe code which no longer matches it; a pointer
-to the filter is always true, more specific, and needs no one to maintain
-it.
+- **A second use gets a number.** When the same label is in one pipeline
+  more than once, the second is `ValidateFilter#2`, the third
+  `ValidateFilter#3`.
+- **A Valve** has the label of its Filter.
+- **A nested pipeline** has the label of its class. Make it a named type
+  (`class UserOnboarding(Pipeline)`), so that the label says what it is. A
+  plain `Pipeline` that is nested has the label `Pipeline`.
+- A label is for people and for records. It does not say where the class is
+  defined, and two classes with the same name in different modules have the
+  same label.
 
-### The identity
+### What is refused when a step is added
 
-- **The filter's fully qualified symbol** (`app.filters.Validate`), plus an
-  **occurrence number only when the same identity appears more than once**
-  in one pipeline: the second is `...Validate#2`. Stable across unrelated
-  edits.
-- **Extra detail, not identity**: the source location of the `add_*` call
-  (`file:line`), for agents and reviewers.
-- **Valves**: the Filter's identity; the predicate's symbol is extra detail.
-- **Pipelines used as a step are named types**: `class UserOnboarding(Pipeline)`,
-  identified by that type's symbol exactly as a filter is. A plain, unnamed
-  `Pipeline` can run at the top level but cannot be nested.
-- Renames and moves change the identity. That is honest (it is different
-  code); cross-version comparisons follow renames from version control.
-- A filter defined in the entry script (`__main__.X`) is refused like an
-  anonymous one: its identity changes with how the program is started, and
-  tests cannot import it.
+A step must have the method of its role. `add_filter` needs `call(payload)`,
+`add_tap` needs `observe(payload)`, `add_valve` needs a predicate with
+`test(payload)` and a Filter with `call(payload)`, and `add_pipeline` needs a
+Pipeline. A value without that method (a lambda, a plain function) is
+refused with a `TypeError` that names the method.
 
-### Anonymous filters are unsupported
+### What the linter flags
 
-Lambdas, closures, classes defined inside a function, inline functions: as
-filters, taps, valve predicates or nested pipelines. They are not
-independently testable and have no stable identity. Enforced in two layers:
-
-1. **The runtime refuses them** at `add_*` time (`AnonymousStep`), with a
-   message naming the fix.
-2. **The linter flags them** at authoring time:
-   `python -m codeupipe_lint.anonymous_steps <paths...>`. One line per
-   anonymous step, `path:line:col  CUP-A00N slug  message`; exit 1 when it
-   finds any. An intentional one (a test of the refusal) is suppressed with
-   a `cup: allow-anonymous` comment. Rules and limits:
-   [packages/codeupipe-lint/README.md](../packages/codeupipe-lint/README.md).
+A step that is a lambda, a function, a class defined inside a function, or a
+plain nested `Pipeline` cannot be imported and tested alone, and its label
+says little. The linter flags these when the code is written:
+`python -m codeupipe_lint.anonymous_steps <paths...>`. One line per finding,
+`path:line:col  CUP-A00N slug  message`; exit 1 when it finds any. An
+intentional one is suppressed with a `cup: allow-anonymous` comment. Rules
+and limits:
+[packages/codeupipe-lint/README.md](../packages/codeupipe-lint/README.md).
 
 **Conformance.** The shared cases name their steps; the runner builds every
-step, so it maps each reported identity back to the case's step name. An
-identity that is wrong, or differs between the dynamic run and an export,
-does not map and fails the comparison.
+step, so it maps each reported label back to the case's step name. A label
+that is wrong, or differs between the dynamic run and an export, does not
+map and fails the comparison.
 
 ## Not in the contract yet
 

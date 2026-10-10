@@ -22,11 +22,11 @@ class LoggingHook(Hook):
         self.log = []
 
     async def before(self, step: Optional[str], payload: Payload) -> None:
-        # hooks receive the step's identity (API contract), None for the pipeline
+        # hooks receive the step's label (API contract), None for the pipeline
         self.log.append(f"before_{step if step is not None else 'pipeline_start'}")
 
     async def after(self, step: Optional[str], payload: Payload) -> None:
-        # hooks receive the step's identity (API contract), None for the pipeline
+        # hooks receive the step's label (API contract), None for the pipeline
         self.log.append(f"after_{step if step is not None else 'pipeline_end'}")
 
     async def on_error(self, step: Optional[str], error: Exception, payload: Payload) -> None:
@@ -117,7 +117,7 @@ class TestSimplePipeline:
 
         async def run_test():
             await pipeline.run_async(Payload())
-            assert pipeline.state.executed == [f"{__name__}.TestFilter2", f"{__name__}.TestFilter2#2"]
+            assert pipeline.state.executed == ["TestFilter2", "TestFilter2#2"]
 
         asyncio.run(run_test())
 
@@ -222,8 +222,8 @@ class TestValveInPipeline:
 
         async def run_test():
             result = await pipeline.run_async(Payload())
-            assert pipeline.state.executed == [f"{__name__}.MarkFirst"]
-            assert pipeline.state.skipped == [f"{__name__}.MarkGated"]
+            assert pipeline.state.executed == ["MarkFirst"]
+            assert pipeline.state.skipped == ["MarkGated"]
             assert result.get("first_ran") is True
             assert result.get("gated_ran") is None
 
@@ -289,7 +289,7 @@ class TestTapInPipeline:
 
         async def run_test():
             await pipeline.run_async(Payload())
-            assert f"{__name__}.NoopTap" in pipeline.state.executed
+            assert "NoopTap" in pipeline.state.executed
 
         asyncio.run(run_test())
 
@@ -326,9 +326,9 @@ class TestPipelineWithHook:
             await pipeline.run_async(Payload())
 
             assert "before_pipeline_start" in hook.log
-            # hooks receive the step's identity (API contract)
-            assert f"before_{__name__}.NamedFilter3" in hook.log
-            assert f"after_{__name__}.NamedFilter3" in hook.log
+            # hooks receive the step's label (API contract)
+            assert "before_NamedFilter3" in hook.log
+            assert "after_NamedFilter3" in hook.log
             assert "after_pipeline_end" in hook.log
 
         asyncio.run(run_test())
@@ -436,7 +436,7 @@ class TestRunSyncWithValves:
         result = p.run(Payload({}))
 
         assert result.get("marked") is None
-        assert p.state.skipped == [f"{__name__}.TestRunSyncWithValves._Mark"]
+        assert p.state.skipped == ["_Mark"]
         assert p.state.executed == []
 
     @pytest.mark.unit
@@ -450,7 +450,7 @@ class TestRunSyncWithValves:
             p.run(Payload({}))
         result = asyncio.run(p.run_async(Payload({})))
         assert result.get("marked") is True
-        assert p.state.executed == [f"{__name__}.TestRunSyncWithValves._AsyncMark"]
+        assert p.state.executed == ["_AsyncMark"]
 
 
 class _Predicate5:
@@ -503,11 +503,11 @@ class TestTapFailureIsolation:
 
     def _assert_contained(self, p, result):
         assert result.get("score") == 2
-        tap = next(i for i in p.identities if i.endswith(("._Boom", "._AsyncBoom")))
+        tap = next(i for i in p.labels if i in ("_Boom", "_AsyncBoom"))
         assert p.state.errors[-1][0] == tap
         assert isinstance(p.state.errors[-1][1], ConnectionError)
         assert tap in p.state.executed
-        assert f"{__name__}.TestTapFailureIsolation._Score#2" in p.state.executed
+        assert "_Score#2" in p.state.executed
 
     @pytest.mark.unit
     @pytest.mark.core

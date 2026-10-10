@@ -16,14 +16,13 @@ library only.
   `add_valve`, `add_tap`, `add_pipeline`, `use_hook`, `run`, `run_async`,
   `state`. `run()` is
   synchronous and never starts an event loop; `run_async()` is the opt-in
-  entry point for async steps. Steps have no
-  names: each is identified by its filter (`step_identity.py`), `#n` from
-  the second use; State and Hooks report that identity. Nested pipelines are
-  named `Pipeline` subclasses. See conformance/API.md, "Step identity".
-- `step_identity.py` — derives a step's identity (`module.QualName`) and the
-  `file:line` it was added at; refuses anonymous steps.
-- `anonymous_step.py` — `AnonymousStep` (a `TypeError`): lambdas, closures,
-  classes defined in a function, `__main__` filters, unnamed nested pipelines.
+  entry point for async steps. Steps are not named by
+  hand: each has a label, the name of its class (`step_label.py`), `#n` from
+  the second use; State and Hooks report that label. A step without the
+  method of its role is refused with a `TypeError` when it is added. See
+  conformance/API.md, "Step labels".
+- `step_label.py` — `label_of(step)`: the class name of a step; for a Valve,
+  of its Filter.
 - `async_step_in_sync_run.py` — `AsyncStepInSyncRun`: raised when the sync
   `Pipeline.run()` meets async work (it never starts an event loop).
 - `predicate.py` — `Predicate`: a yes-or-no question about the payload, an

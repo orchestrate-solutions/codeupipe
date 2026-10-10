@@ -12,10 +12,7 @@ anonymous when it is (or, through a simple local name, is bound to):
 - as a Valve predicate, a named function (CUP-A008): predicates are
   objects with ``test(payload)``;
 - the result of calling a function in this module that returns one of the
-  above (a closure factory), reported with the same rule;
-- a module-level class or function of a script, added from its
-  ``if __name__ == "__main__":`` block or a function that block calls
-  (CUP-A006). Only then: a module that is merely importable is fine.
+  above (a closure factory), reported with the same rule.
 
 Names are resolved lexically: innermost function scope outwards to the
 module, stopping at the first scope that binds the name. A name bound more
@@ -28,7 +25,7 @@ import ast
 from typing import Dict, List, Optional, Set, Tuple
 
 from .finding import Finding
-from .rules import (ENTRY_SCRIPT, FUNCTION_PREDICATE, LAMBDA, LOCAL_FUNCTION, LOCAL_TYPE, UNNAMED_PIPELINE,
+from .rules import (FUNCTION_PREDICATE, LAMBDA, LOCAL_FUNCTION, LOCAL_TYPE, UNNAMED_PIPELINE,
                     make_finding)
 
 _STEP_METHODS = {
@@ -54,18 +51,6 @@ def _is_plain_pipeline_call(node: ast.AST) -> bool:
     func = node.func
     return (isinstance(func, ast.Name) and func.id == "Pipeline") or (
         isinstance(func, ast.Attribute) and func.attr == "Pipeline")
-
-
-def _is_main_guard(node: ast.AST) -> bool:
-    if not isinstance(node, ast.If) or not isinstance(node.test, ast.Compare):
-        return False
-    test = node.test
-    if len(test.ops) != 1 or not isinstance(test.ops[0], ast.Eq):
-        return False
-    sides = [test.left, test.comparators[0]]
-    names = [s for s in sides if isinstance(s, ast.Name) and s.id == "__name__"]
-    consts = [s for s in sides if isinstance(s, ast.Constant) and s.value == "__main__"]
-    return bool(names) and bool(consts)
 
 
 def _own_nodes(body: List[ast.stmt]):
@@ -103,13 +88,6 @@ class PythonStepVisitor:
         self._findings: List[Finding] = []
         self._seen: Set[Tuple[int, int, str]] = set()
         self._module_scope = self._scope(tree.body, None, is_module=True)
-        self._main_functions: Set[str] = set()
-        self._main_block: Optional[ast.If] = None
-        for stmt in tree.body:
-            if _is_main_guard(stmt):
-                self._main_block = stmt
-        if self._main_block is not None:
-            self._main_functions = self._reached_from_main()
 
     # -- scopes ---------------------------------------------------------
 
@@ -191,40 +169,24 @@ class PythonStepVisitor:
                 return scope[name]
         return _OTHER
 
-    # -- __main__ -------------------------------------------------------
-
-    def _reached_from_main(self) -> Set[str]:
-        defs = {s.name: s for s in self._tree.body if isinstance(s, _FUNCS)}
-        reached: Set[str] = set()
-        frontier = [self._main_block]
-        while frontier:
-            node = frontier.pop()
-            for sub in ast.walk(node):
-                if isinstance(sub, ast.Call) and isinstance(sub.func, ast.Name):
-                    name = sub.func.id
-                    if name in defs and name not in reached:
-                        reached.add(name)
-                        frontier.append(defs[name])
-        return reached
-
     # -- classification -------------------------------------------------
 
-    def _classify(self, expr: ast.AST, chain: List[Dict[str, Binding]], in_main: bool,
+    def _classify(self, expr: ast.AST, chain: List[Dict[str, Binding]],
                   visiting: Set[int]) -> Optional[Tuple[str, str]]:
         """(rule, what) when ``expr`` is an anonymous step, else None. ``what`` starts with a verb."""
-        got = self._describe(expr, chain, in_main, visiting)
+        got = self._describe(expr, chain, visiting)
         if got is None:
             return None
         rule, subject, noun = got
         return rule, ("`%s` is %s" % (subject, noun)) if subject else ("is " + noun)
 
-    def _describe(self, expr: ast.AST, chain: List[Dict[str, Binding]], in_main: bool,
+    def _describe(self, expr: ast.AST, chain: List[Dict[str, Binding]],
                   visiting: Set[int]) -> Optional[Tuple[str, Optional[str], str]]:
         """(rule, subject name or None, noun phrase)."""
         if isinstance(expr, ast.Lambda):
             return LAMBDA, None, "a lambda"
         if isinstance(expr, ast.Name):
-            got = self._describe_binding(self._resolve(expr.id, chain), in_main)
+            got = self._describe_binding(self._resolve(expr.id, chain))
             return None if got is None else (got[0], expr.id, got[1])
         if _is_plain_pipeline_call(expr):
             return UNNAMED_PIPELINE, None, "a plain Pipeline()"
@@ -234,8 +196,6 @@ class PythonStepVisitor:
             kind = binding[0]
             if kind == "local_class":
                 return LOCAL_TYPE, None, "an instance of %s, a class defined inside %s()" % (name, binding[2])
-            if kind == "module_class" and in_main:
-                return ENTRY_SCRIPT, None, "an instance of %s, defined in the entry script" % name
             if kind in ("local_def", "module_def"):
                 parent = chain if kind == "local_def" else [self._module_scope]
                 returned = self._returned(binding[3], parent, visiting)
@@ -246,7 +206,7 @@ class PythonStepVisitor:
         return None
 
     @staticmethod
-    def _describe_binding(binding: Binding, in_main: bool) -> Optional[Tuple[str, str]]:
+    def _describe_binding(binding: Binding) -> Optional[Tuple[str, str]]:
         kind, name, owner = binding[0], binding[1], binding[2]
         if kind == "lambda":
             return LAMBDA, "a lambda"
@@ -258,10 +218,6 @@ class PythonStepVisitor:
             return LOCAL_TYPE, "an instance of %s, a class defined inside %s()" % (name, owner)
         if kind == "plain_pipeline":
             return UNNAMED_PIPELINE, "a plain Pipeline()"
-        if kind == "module_def" and in_main:
-            return ENTRY_SCRIPT, "a function defined in the entry script"
-        if kind == "module_class" and in_main:
-            return ENTRY_SCRIPT, "a class defined in the entry script"
         return None
 
     def _returned(self, func: ast.AST, parent_chain: List[Dict[str, Binding]],
@@ -273,7 +229,7 @@ class PythonStepVisitor:
         chain = self._chain_for(func, parent_chain)
         for node in _own_nodes(func.body):
             if isinstance(node, ast.Return) and node.value is not None:
-                got = self._describe(node.value, chain, False, visiting)
+                got = self._describe(node.value, chain, visiting)
                 if got is not None:
                     return got
         return None
@@ -281,41 +237,35 @@ class PythonStepVisitor:
     # -- walk -----------------------------------------------------------
 
     def findings(self) -> List[Finding]:
-        self._walk(self._tree, [self._module_scope], False)
+        self._walk(self._tree, [self._module_scope])
         return self._findings
 
-    def _walk(self, node: ast.AST, chain: List[Dict[str, Binding]], in_main: bool) -> None:
+    def _walk(self, node: ast.AST, chain: List[Dict[str, Binding]]) -> None:
         for child in ast.iter_child_nodes(node):
-            child_main = in_main
-            if child is self._main_block:
-                child_main = True
             if isinstance(child, _FUNCS):
-                if chain[0] is self._module_scope and child.name in self._main_functions:
-                    child_main = True
-                self._walk(child, self._chain_for(child, chain), child_main)
+                self._walk(child, self._chain_for(child, chain))
                 continue
             if isinstance(child, ast.Call):
-                self._check_call(child, chain, child_main)
-            self._walk(child, chain, child_main)
+                self._check_call(child, chain)
+            self._walk(child, chain)
 
-    def _check_call(self, call: ast.Call, chain: List[Dict[str, Binding]], in_main: bool) -> None:
+    def _check_call(self, call: ast.Call, chain: List[Dict[str, Binding]]) -> None:
         func = call.func
         if isinstance(func, ast.Attribute) and func.attr in _STEP_METHODS:
             role = _STEP_METHODS[func.attr]
             for arg in list(call.args) + [k.value for k in call.keywords]:
                 elements = arg.elts if isinstance(arg, (ast.List, ast.Tuple, ast.Set)) else [arg]
                 for element in elements:
-                    self._report(element, role, call, chain, in_main)
+                    self._report(element, role, call, chain)
         elif isinstance(func, ast.Attribute) and func.attr == "add_valve":
             for index, arg in enumerate(call.args):
-                self._report(arg, _VALVE_ROLES[min(index, 1)], call, chain, in_main)
+                self._report(arg, _VALVE_ROLES[min(index, 1)], call, chain)
             for keyword in call.keywords:
                 if keyword.arg in _VALVE_KEYWORDS:
-                    self._report(keyword.value, _VALVE_KEYWORDS[keyword.arg], call, chain, in_main)
+                    self._report(keyword.value, _VALVE_KEYWORDS[keyword.arg], call, chain)
 
-    def _report(self, expr: ast.AST, role: str, call: ast.Call, chain: List[Dict[str, Binding]],
-                in_main: bool) -> None:
-        got = self._classify(expr, chain, in_main, set())
+    def _report(self, expr: ast.AST, role: str, call: ast.Call, chain: List[Dict[str, Binding]]) -> None:
+        got = self._classify(expr, chain, set())
         if got is None and role == "Valve predicate" and isinstance(expr, ast.Name) \
                 and self._resolve(expr.id, chain)[0] == "module_def":
             got = FUNCTION_PREDICATE, "`%s` is a function, not a predicate object" % expr.id
