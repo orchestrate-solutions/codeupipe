@@ -74,10 +74,11 @@ TARGETS = {
     "typescript:static": _typescript("static"),
 }
 
-# The static target runs the compile package, which must be installed, and
-# that package uses the built core package.
+# The static target runs the compile package. Its dependencies must be
+# installed (npm ci at the repository root), and it uses the built core
+# package.
 _TYPESCRIPT_NEEDS = {
-    "typescript:static": [REPO / "packages/codeupipe-compile-ts/node_modules",
+    "typescript:static": [REPO / "node_modules/typescript",
                           REPO / "packages/codeupipe-ts/dist/index.js"],
 }
 

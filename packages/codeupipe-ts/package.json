@@ -1,7 +1,6 @@
 {
   "name": "codeupipe",
   "version": "1.0.0-beta.1",
-  "private": true,
   "description": "A TypeScript library for writing a program as a pipeline of small steps.",
   "license": "Apache-2.0",
   "repository": {
@@ -24,18 +23,26 @@
     "NOTICE",
     "README.md"
   ],
-  "sideEffects": false,
-  "engines": {
-    "node": ">=22.18"
+  "publishConfig": {
+    "access": "public",
+    "tag": "beta"
   },
+  "sideEffects": false,
   "scripts": {
     "test": "node --test \"tests/*.test.ts\"",
     "typecheck": "tsc --noEmit",
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "esbuild": "^0.28.2",
     "typescript": "^5.9.0"
-  }
+  },
+  "keywords": [
+    "pipeline",
+    "filter",
+    "payload",
+    "composition"
+  ]
 }

@@ -4,9 +4,16 @@ codeupipe is a library for writing a program as a pipeline of small steps.
 This is the TypeScript runtime. It has no dependencies. The built JavaScript
 runs in a browser and in Node.
 
-It is a beta, version `1.0.0-beta.1`, and it is not on npm yet. It implements the same contract as the Python
+It is a beta. It implements the same contract as the Python
 package, and the same 27 conformance cases judge it:
 [conformance/API.md](../../conformance/API.md).
+
+```bash
+npm install codeupipe@beta
+```
+
+A beta can change in a way that is not compatible, from one beta to the
+next.
 
 ## The eight primitives
 
@@ -92,8 +99,7 @@ result.toDict();
 // { price: 90, qty: 12, bulk: true }
 ```
 
-In this repository the example imports from `../../src/index.ts`, because
-the package is not installed.
+In this repository the example imports from `../../src/index.ts`.
 
 ## Names
 
@@ -143,8 +149,10 @@ that keeps names, and the labels change only in the second.
 
 Node 22.18 or later runs the `.ts` files as they are.
 
+The three TypeScript packages are one npm workspace. Run `npm ci` once, at
+the root of the repository. Then, in this directory:
+
 ```bash
-npm install          # the TypeScript compiler, the Node types and esbuild, for development only
 npm test             # the tests
 npm run typecheck    # the type check of the source, tests and example
 npm run build        # JavaScript and type files in dist/

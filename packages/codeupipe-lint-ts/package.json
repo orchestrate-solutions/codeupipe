@@ -1,7 +1,6 @@
 {
   "name": "codeupipe-lint",
   "version": "1.0.0-beta.1",
-  "private": true,
   "description": "A linter for TypeScript code that uses codeupipe.",
   "license": "Apache-2.0",
   "repository": {
@@ -15,9 +14,18 @@
   "bin": {
     "codeupipe-lint": "./dist/cli.js"
   },
-  "files": ["dist", "LICENSE", "NOTICE", "README.md"],
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "tag": "beta"
+  },
   "engines": {
-    "node": ">=22.18"
+    "node": ">=20"
   },
   "scripts": {
     "core": "npm --prefix ../codeupipe-ts run build",
@@ -27,13 +35,20 @@
     "typecheck": "tsc --noEmit",
     "prebuild": "npm run core",
     "build": "tsc -p tsconfig.build.json",
-    "lint": "node src/cli.ts src ../codeupipe-ts/src ../codeupipe-ts/examples ../codeupipe-compile-ts/src ../../conformance/runners/typescript"
+    "lint": "node src/cli.ts src ../codeupipe-ts/src ../codeupipe-ts/examples ../codeupipe-compile-ts/src ../../conformance/runners/typescript",
+    "prepack": "npm run build"
   },
   "dependencies": {
-    "codeupipe": "file:../codeupipe-ts",
+    "codeupipe": "1.0.0-beta.1",
     "typescript": "^5.9.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.0"
-  }
+  },
+  "keywords": [
+    "pipeline",
+    "filter",
+    "payload",
+    "composition"
+  ]
 }
