@@ -33,7 +33,7 @@ This repository has five packages.
 
 | Package | Contents | Reference |
 |---|---|---|
-| `codeupipe` | The eight primitives. An export command that writes a pipeline as plain Python with no import of codeupipe. A config file reader. No dependencies | [conformance/API.md](conformance/API.md), [docs/static-export.md](docs/static-export.md), [docs/config.md](docs/config.md) |
+| `codeupipe` | The eight primitives. A compile command that writes a pipeline as plain Python with no import of codeupipe. A config file reader. No dependencies | [conformance/API.md](conformance/API.md), [docs/compile.md](docs/compile.md), [docs/config.md](docs/config.md) |
 | `codeupipe-lint` | Two linters for pipeline code. Depends on `codeupipe` only | [packages/codeupipe-lint/README.md](packages/codeupipe-lint/README.md) |
 | `codeupipe` for TypeScript | The eight primitives. No dependencies | [packages/codeupipe-ts/README.md](packages/codeupipe-ts/README.md) |
 | `codeupipe-lint` for TypeScript | A linter for pipeline code in TypeScript | [packages/codeupipe-lint-ts/README.md](packages/codeupipe-lint-ts/README.md) |
@@ -154,18 +154,18 @@ An editable install needs pip 21.3 or later.
 | Command | What it does |
 |---|---|
 | `python -m pytest tests -q` | Runs the tests |
-| `python conformance/run.py` | Runs the 27 conformance cases against the Python dynamic run and the three exports, and against the TypeScript targets that the machine can run |
+| `python conformance/run.py` | Runs the 27 conformance cases against the Python dynamic run and the three compiled forms, and against the TypeScript targets that the machine can run |
 | `python -m codeupipe_lint.anonymous_steps` | Runs the anonymous-step linter. Paths come from `cup.config.json` |
 | `python -m codeupipe_lint.invariants` | Runs the invariant linter. Paths come from `cup.config.json` |
-| `python -m codeupipe.lower examples.pricing.pricing_pipeline:PricingPipeline --out build/pricing` | Exports the example to `build/pricing/src/steps/` |
+| `python -m codeupipe.compile examples.pricing.pricing_pipeline:PricingPipeline --out build/pricing` | Compiles the example to `build/pricing/src/steps/` |
 | `python conformance/bench.py --check` | Compares benchmark numbers with the recorded baseline. Fails outside 25% |
-| `python -m scorecard.differential` | Compares the export with the dynamic run on random pipelines |
+| `python -m scorecard.differential` | Compares the compiled code with the dynamic run on random pipelines |
 
 ## Layout
 
 | Path | Contents |
 |---|---|
-| `packages/codeupipe/` | The `codeupipe` package: `core/`, `lower/` (the export), `config.py` |
+| `packages/codeupipe/` | The `codeupipe` package: `core/`, `compile/` (the compiler), `config.py` |
 | `packages/codeupipe-lint/` | The `codeupipe-lint` package: `anonymous_steps/`, `invariants/` |
 | `packages/codeupipe-ts/` | The TypeScript runtime, with its tests and its example |
 | `packages/codeupipe-lint-ts/` | The TypeScript linter, with its tests |
@@ -173,8 +173,8 @@ An editable install needs pip 21.3 or later.
 | `conformance/` | The contract ([API.md](conformance/API.md)), the cases, the runners, the benchmark |
 | `tests/` | The tests for the two Python packages |
 | `examples/pricing/` | The example, with its test in `tests/examples/` |
-| `scorecard/` | The comparison of the export with the dynamic run on random pipelines |
-| `docs/` | Reference for the export and the config file |
+| `scorecard/` | The comparison of the compiled code with the dynamic run on random pipelines |
+| `docs/` | Reference for the compiler and the config file |
 
 The root `pyproject.toml` is not a package. It holds the test settings.
 

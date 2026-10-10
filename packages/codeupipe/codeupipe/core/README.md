@@ -2,7 +2,7 @@
 
 This package holds the eight primitives: `Payload`, `Filter`, `Predicate`,
 `Valve`, `Tap`, `Hook`, `State`, `Pipeline`. The contract is
-[conformance/API.md](../../../../conformance/API.md). The export (`codeupipe.lower`) and the linter
+[conformance/API.md](../../../../conformance/API.md). The compiler (`codeupipe.compile`) and the linter
 (`codeupipe-lint`) are built on this package. No dependencies: standard
 library only.
 
@@ -42,7 +42,7 @@ library only.
 
 ## How it fits in
 
-`core` imports nothing else from codeupipe. `codeupipe.lower` and
+`core` imports nothing else from codeupipe. `codeupipe.compile` and
 `codeupipe-lint` import from it, never the reverse. The data flow the
 framework is built around is `Payload → Pipeline.run(payload)
 → Filter.call(payload) → Payload`.

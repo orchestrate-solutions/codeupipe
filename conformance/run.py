@@ -15,7 +15,7 @@ Result per case and target:
     partial      every expectation the target can observe matched, but some
                  (State, Hooks) it does not expose at all (fast static code)
     FAIL         something observable differed (details in the JSON report)
-    unsupported  the target cannot express the case (e.g. static export of a
+    unsupported  the target cannot express the case (e.g. compiled form of a
                  nested pipeline); reported, never counted as a pass
 """
 
@@ -221,7 +221,7 @@ def _markdown(cases, names, matrix, report):
                          f"{t['unsupported']} unsupported")
     lines.append("")
     lines.append("✅* passed everything the target can observe; it does not expose State or Hooks "
-                 "(the fast static export). ➖ the target cannot express the case.")
+                 "(the fast mode). ➖ the target cannot express the case.")
     return "\n".join(lines) + "\n"
 
 

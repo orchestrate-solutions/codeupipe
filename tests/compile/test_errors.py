@@ -2,7 +2,7 @@
 
 import pytest
 
-from codeupipe.lower.errors import UnsupportedFilterShape
+from codeupipe.compile.errors import UnsupportedFilterShape
 
 
 class TestUnsupportedFilterShape:

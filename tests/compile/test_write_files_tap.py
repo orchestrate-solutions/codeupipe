@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from codeupipe import Payload
-from codeupipe.lower.taps.write_files_tap import WriteFilesTap
+from codeupipe.compile.taps.write_files_tap import WriteFilesTap
 
 
 class TestWriteFilesTap:

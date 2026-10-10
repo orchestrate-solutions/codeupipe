@@ -4,7 +4,7 @@ The rules are in **[API.md](API.md)**, the CUP API contract. This suite
 checks them.
 
 One set of language-neutral cases, a runner, and **one judge** (`run.py`).
-The dynamic run and each static export are held to exactly the same
+The dynamic run and each compiled form are held to exactly the same
 comparison.
 
 ```bash
@@ -40,8 +40,8 @@ load a number can leave the band.
 | Target | How it runs (all offline) |
 |---|---|
 | `python:run`, `python:run_async` | `codeupipe.core` Pipeline, sync and async entry points |
-| `python:static-steps`, `python:static-inline` | `codeupipe.lower` fast export, loaded from disk (no State or Hooks: ✅\*) |
-| `python:static-observe` | `codeupipe.lower` export with `observe=True`: State and Hooks judged too |
+| `python:static-steps`, `python:static-inline` | `codeupipe.compile` fast mode, loaded from disk (no State or Hooks: ✅\*) |
+| `python:static-observe` | `codeupipe.compile` with `observe=True`: State and Hooks judged too |
 | `typescript:run` | `packages/codeupipe-ts` Pipeline. Node runs the `.ts` runner as it is (Node 22.18 or later). With no arguments, `run.py` leaves this target out when the machine has no such Node |
 | `typescript:static` | `packages/codeupipe-compile-ts`: the pipeline as plain code, written to a file and imported (no State or Hooks: ✅\*). Needs `npm ci` in that package and a built core package; `run.py` leaves it out when they are not there |
 
@@ -52,7 +52,7 @@ load a number can leave the band.
 | ✅ | every expectation matched |
 | ✅* | everything the target *can observe* matched. Static code has no State or Hooks, so those checks cannot run |
 | ❌ | something observable differed |
-| ➖ | the target cannot express the case (e.g. export refuses a nested pipeline). Never counted as a pass |
+| ➖ | the target cannot express the case (e.g. the compiler refuses a nested pipeline). Never counted as a pass |
 
 ## Case format (`cases/*.json`)
 

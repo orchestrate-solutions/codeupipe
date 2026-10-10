@@ -5,7 +5,7 @@ import textwrap
 
 import pytest
 
-from codeupipe.lower.ir import (
+from codeupipe.compile.ir import (
     HookIR,
     PipelineIR,
     PipelineMeta,

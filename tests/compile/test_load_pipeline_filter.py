@@ -3,9 +3,9 @@
 import pytest
 
 from codeupipe import Payload, Pipeline
-from codeupipe.lower.errors import UnsupportedFilterShape
-from codeupipe.lower.filters.load_pipeline_filter import LoadPipelineFilter
-from codeupipe.lower.ir import PipelineIR
+from codeupipe.compile.errors import UnsupportedFilterShape
+from codeupipe.compile.filters.load_pipeline_filter import LoadPipelineFilter
+from codeupipe.compile.ir import PipelineIR
 
 
 class _ExFilter:

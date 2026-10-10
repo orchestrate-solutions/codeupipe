@@ -5,11 +5,11 @@ import json
 import pytest
 
 from codeupipe.config import ConfigError, load_config
-from codeupipe.lower.__main__ import main as compile_main
+from codeupipe.compile.__main__ import main as compile_main
 from codeupipe_lint.anonymous_steps.__main__ import main as anonymous_main
 from codeupipe_lint.invariants.__main__ import main as invariants_main
 
-TARGETS = "tests.lower.fixtures.cli_targets"
+TARGETS = "tests.compile.fixtures.cli_targets"
 
 
 def write(directory, config, name="cup.config.json"):

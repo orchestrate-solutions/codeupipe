@@ -5,14 +5,14 @@ live copy is `results/latest.md` (not committed). The command exits non-zero
 if any target has a ❌.
 
 **Every target passes every case, and nothing is unsupported.** The targets
-are the Python dynamic run, async run and three static exports, and the
+are the Python dynamic run, async run and three compiled forms, and the
 TypeScript run and its compiled form.
 
-The fast exports (`python:static-steps`, `python:static-inline`,
+The fast modes (`python:static-steps`, `python:static-inline`,
 `typescript:static`) expose no State or Hooks, so they pass those cases as
-✅\*. `static-observe` (export with
+✅\*. `static-observe` (compile with
 `observe=True`) records both and passes every case outright. See
-[docs/static-export.md](../docs/static-export.md).
+[docs/compile.md](../docs/compile.md).
 
 | case | python:run | python:run_async | python:static-steps | python:static-inline | python:static-observe | typescript:run | typescript:static |
 |---|---|---|---|---|---|---|---|
@@ -52,4 +52,4 @@ The fast exports (`python:static-steps`, `python:static-inline`,
 - **typescript:run**: 27 pass, 0 pass*, 0 fail, 0 unsupported
 - **typescript:static**: 11 pass, 16 pass*, 0 fail, 0 unsupported
 
-✅* passed everything the target can observe; it does not expose State or Hooks (the fast static export). ➖ the target cannot express the case.
+✅* passed everything the target can observe; it does not expose State or Hooks (the fast mode). ➖ the target cannot express the case.

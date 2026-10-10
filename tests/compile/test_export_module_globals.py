@@ -9,8 +9,8 @@ import asyncio
 import pytest
 
 from codeupipe import Payload, Pipeline
-from codeupipe.lower import build_export_pipeline_v2
-from codeupipe.lower.errors import UnsupportedFilterShape
+from codeupipe.compile import build_export_pipeline_v2
+from codeupipe.compile.errors import UnsupportedFilterShape
 
 from .fixtures import export_module_globals as g
 from .test_export_pipeline import _write_and_import

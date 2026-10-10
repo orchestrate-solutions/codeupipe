@@ -5,9 +5,9 @@
 Targets
     run            codeupipe Pipeline.run (sync, the default)
     run_async      codeupipe Pipeline.run_async (inside asyncio.run)
-    static-steps   codeupipe.lower export, per-step layout, loaded from disk
-    static-inline  codeupipe.lower export, lowering="inline", loaded from disk
-    static-observe codeupipe.lower export, observe=True: State and Hooks too
+    static-steps   codeupipe.compile export, per-step layout, loaded from disk
+    static-inline  codeupipe.compile export, lowering="inline", loaded from disk
+    static-observe codeupipe.compile export, observe=True: State and Hooks too
 
 The runner never judges; conformance/run.py compares every target's results
 against the same expectations. The fast static targets have no State or
@@ -183,7 +183,7 @@ def _dynamic(case, predicates, run_async=False):
 
 def _load_export(p, lowering, observe, workdir):
     """Export ``p`` and import the package from disk, as a customer would."""
-    from codeupipe.lower import build_export_pipeline_v2
+    from codeupipe.compile import build_export_pipeline_v2
 
     out = build_export_pipeline_v2(write=False).run(
         Payload({"pipeline": p, "pattern": "flat", "lowering": lowering, "observe": observe}))

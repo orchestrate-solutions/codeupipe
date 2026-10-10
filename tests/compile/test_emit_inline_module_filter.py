@@ -13,7 +13,7 @@ import asyncio
 import pytest
 
 from codeupipe import Payload, Pipeline
-from codeupipe.lower import build_export_pipeline_v2
+from codeupipe.compile import build_export_pipeline_v2
 
 from .fixtures import export_module_globals as g
 from .fixtures import inline_shapes as s

@@ -162,7 +162,7 @@ Suppress with `cup: allow-name`.
 **Why CUP-I003.** A Filter's result and a Valve's decision must depend only
 on the Payload. A step is never handed State, so the only way to read it is
 to hold a pipeline or a State, and that makes the step's behaviour depend on
-what ran before it, which the static export cannot reproduce. Taps and Hooks
+what ran before it, which the compiled form cannot reproduce. Taps and Hooks
 only watch, so `observe` and Hook methods are not checked.
 
 `self.state` is not flagged when it is the step's own attribute. `<x>.state`

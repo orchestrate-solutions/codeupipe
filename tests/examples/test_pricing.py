@@ -77,7 +77,7 @@ def test_the_example_runs_as_a_module():
 
 def test_export_matches_and_has_no_framework_import(tmp_path):
     done = subprocess.run(
-        [sys.executable, "-m", "codeupipe.lower", "examples.pricing.pricing_pipeline:PricingPipeline", "--out", str(tmp_path)],
+        [sys.executable, "-m", "codeupipe.compile", "examples.pricing.pricing_pipeline:PricingPipeline", "--out", str(tmp_path)],
         capture_output=True, text=True, cwd=EXAMPLE.parents[1],
     )
     assert done.returncode == 0, done.stderr
