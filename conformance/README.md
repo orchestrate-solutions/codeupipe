@@ -43,6 +43,7 @@ load a number can leave the band.
 | `python:static-steps`, `python:static-inline` | `codeupipe.lower` fast export, loaded from disk (no State or Hooks: ✅\*) |
 | `python:static-observe` | `codeupipe.lower` export with `observe=True`: State and Hooks judged too |
 | `typescript:run` | `packages/codeupipe-ts` Pipeline. Node runs the `.ts` runner as it is (Node 22.18 or later). With no arguments, `run.py` leaves this target out when the machine has no such Node |
+| `typescript:static` | `packages/codeupipe-compile-ts`: the pipeline as plain code, written to a file and imported (no State or Hooks: ✅\*). Needs `npm ci` in that package and a built core package; `run.py` leaves it out when they are not there |
 
 ## Statuses
 

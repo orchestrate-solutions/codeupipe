@@ -213,7 +213,7 @@ map and fails the comparison.
 | Run | `run` is sync. `run_async` is opt-in | One `run`. It returns a Promise. A step can be sync or async |
 | Absent | `None` | `null` |
 | Label of a step | `type(step).__name__` | `step.constructor.name` |
-| Export | `codeupipe.lower` | none |
+| Export | `codeupipe.lower` | `packages/codeupipe-compile-ts` |
 | Linter | `packages/codeupipe-lint` | `packages/codeupipe-lint-ts` |
 
 Notes on TypeScript:

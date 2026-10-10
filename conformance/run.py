@@ -71,12 +71,25 @@ TARGETS = {
     "python:static-inline": _python("static-inline"),
     "python:static-observe": _python("static-observe"),
     "typescript:run": _typescript("run"),
+    "typescript:static": _typescript("static"),
+}
+
+# The static target runs the compile package, which must be installed, and
+# that package uses the built core package.
+_TYPESCRIPT_NEEDS = {
+    "typescript:static": [REPO / "packages/codeupipe-compile-ts/node_modules",
+                          REPO / "packages/codeupipe-ts/dist/index.js"],
 }
 
 
 def default_targets():
-    """Every target that this machine can run. TypeScript needs Node."""
-    return [name for name in TARGETS if not name.startswith("typescript:") or _node_runs_typescript()]
+    """Every target that this machine can run. TypeScript needs Node, and the
+    static TypeScript target needs its package to be installed."""
+    def can_run(name):
+        if not name.startswith("typescript:"):
+            return True
+        return _node_runs_typescript() and all(path.exists() for path in _TYPESCRIPT_NEEDS.get(name, []))
+    return [name for name in TARGETS if can_run(name)]
 
 
 def load_cases():

@@ -73,9 +73,10 @@ test("node_modules and dist are not read", async () => {
   assert.deepEqual(out.found, []);
 });
 
-test("the linter is clean on its own source and on the core package", () => {
+test("the linter is clean on the TypeScript code of this repository", () => {
   const here = join(import.meta.dirname, "..");
-  const done = run(here, "src", "../codeupipe-ts/src", "../codeupipe-ts/examples", "../../conformance/runners/typescript");
+  const done = run(here, "src", "../codeupipe-ts/src", "../codeupipe-ts/examples", "../codeupipe-compile-ts/src",
+    "../../conformance/runners/typescript");
   assert.equal(done.out.trim(), "No findings.");
   assert.equal(done.code, 0);
 });

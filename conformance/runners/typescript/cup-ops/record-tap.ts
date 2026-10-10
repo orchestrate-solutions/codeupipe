@@ -1,16 +1,15 @@
 import type { Payload, Tap } from "../../../../packages/codeupipe-ts/src/index.ts";
+import { TAPS } from "./sink.ts";
 
 /** append get(key) to the runner's tap log */
 export class RecordTap implements Tap {
   readonly key: string;
-  readonly log: unknown[];
 
-  constructor(key: string, log: unknown[]) {
+  constructor(key: string) {
     this.key = key;
-    this.log = log;
   }
 
   observe(payload: Payload): void {
-    this.log.push(payload.get(this.key));
+    TAPS.push(payload.get(this.key));
   }
 }

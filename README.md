@@ -29,7 +29,7 @@ If you know Unix, these are close to things you know.
 | Hook | A git hook: code that runs before and after a step |
 | State | `$?` and `PIPESTATUS` |
 
-This repository has four packages.
+This repository has five packages.
 
 | Package | Contents | Reference |
 |---|---|---|
@@ -37,6 +37,7 @@ This repository has four packages.
 | `codeupipe-lint` | Two linters for pipeline code. Depends on `codeupipe` only | [packages/codeupipe-lint/README.md](packages/codeupipe-lint/README.md) |
 | `codeupipe` for TypeScript | The eight primitives. No dependencies | [packages/codeupipe-ts/README.md](packages/codeupipe-ts/README.md) |
 | `codeupipe-lint` for TypeScript | A linter for pipeline code in TypeScript | [packages/codeupipe-lint-ts/README.md](packages/codeupipe-lint-ts/README.md) |
+| `codeupipe-compile` for TypeScript | Writes a pipeline as plain TypeScript with no import of codeupipe | [packages/codeupipe-compile-ts/README.md](packages/codeupipe-compile-ts/README.md) |
 
 ## Install
 
@@ -153,7 +154,7 @@ An editable install needs pip 21.3 or later.
 | Command | What it does |
 |---|---|
 | `python -m pytest tests -q` | Runs the tests |
-| `python conformance/run.py` | Runs the 27 conformance cases against the Python dynamic run and the three exports, and against the TypeScript run when the machine has Node 22.18 or later |
+| `python conformance/run.py` | Runs the 27 conformance cases against the Python dynamic run and the three exports, and against the TypeScript targets that the machine can run |
 | `python -m codeupipe_lint.anonymous_steps` | Runs the anonymous-step linter. Paths come from `cup.config.json` |
 | `python -m codeupipe_lint.invariants` | Runs the invariant linter. Paths come from `cup.config.json` |
 | `python -m codeupipe.lower examples.pricing.pricing_pipeline:PricingPipeline --out build/pricing` | Exports the example to `build/pricing/src/steps/` |
@@ -168,6 +169,7 @@ An editable install needs pip 21.3 or later.
 | `packages/codeupipe-lint/` | The `codeupipe-lint` package: `anonymous_steps/`, `invariants/` |
 | `packages/codeupipe-ts/` | The TypeScript runtime, with its tests and its example |
 | `packages/codeupipe-lint-ts/` | The TypeScript linter, with its tests |
+| `packages/codeupipe-compile-ts/` | The TypeScript compiler, with its tests |
 | `conformance/` | The contract ([API.md](conformance/API.md)), the cases, the runners, the benchmark |
 | `tests/` | The tests for the two Python packages |
 | `examples/pricing/` | The example, with its test in `tests/examples/` |
@@ -180,8 +182,8 @@ The root `pyproject.toml` is not a package. It holds the test settings.
 
 The contract and the conformance cases do not depend on a language. Python
 is the first runtime and TypeScript is the second
-([packages/codeupipe-ts/](packages/codeupipe-ts/)), with its own linter. The
-export is for Python only. A runtime in another language must implement
+([packages/codeupipe-ts/](packages/codeupipe-ts/)), with its own linter and
+its own compiler. A runtime in another language must implement
 the contract and add a conformance runner.
 
 ## License

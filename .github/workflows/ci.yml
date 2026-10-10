@@ -93,6 +93,35 @@ jobs:
         working-directory: packages/codeupipe-lint-ts
         run: npm run lint
 
+  typescript-compile:
+    name: TypeScript compiler
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - name: Install the core package
+        working-directory: packages/codeupipe-ts
+        run: npm ci
+      - name: Install
+        working-directory: packages/codeupipe-compile-ts
+        run: npm ci
+      - name: Type check
+        working-directory: packages/codeupipe-compile-ts
+        run: npm run typecheck
+      - name: Tests
+        working-directory: packages/codeupipe-compile-ts
+        run: npm test
+      - name: Build
+        working-directory: packages/codeupipe-compile-ts
+        run: npm run build
+      - name: Conformance
+        run: python conformance/run.py typescript:static
+
   export:
     name: Export against dynamic run
     runs-on: ubuntu-latest
