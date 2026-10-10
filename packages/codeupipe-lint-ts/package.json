@@ -27,7 +27,7 @@
     "typecheck": "tsc --noEmit",
     "prebuild": "npm run core",
     "build": "tsc -p tsconfig.build.json",
-    "lint": "node src/cli.ts src ../codeupipe-ts/src ../codeupipe-ts/examples ../../conformance/runners/typescript"
+    "lint": "node src/cli.ts src ../codeupipe-ts/src ../codeupipe-ts/examples ../codeupipe-compile-ts/src ../../conformance/runners/typescript"
   },
   "dependencies": {
     "codeupipe": "file:../codeupipe-ts",

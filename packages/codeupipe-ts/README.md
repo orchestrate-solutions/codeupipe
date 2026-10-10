@@ -121,8 +121,10 @@ override the methods that you need.
   method, so `addFilter` refuses a function by its type.
 - **Two runs of one pipeline at the same time** each write to their own
   State. `pipeline.state` is the State of the run that started last.
-- **There is no export command.** Python has one. The linter is the
-  package [codeupipe-lint-ts](../codeupipe-lint-ts/).
+- **The linter and the compiler are separate packages**, because they
+  need a parser: [codeupipe-lint-ts](../codeupipe-lint-ts/) and
+  [codeupipe-compile-ts](../codeupipe-compile-ts/). In Python the export is
+  in the core package.
 
 ## Labels and minified code
 
@@ -144,7 +146,7 @@ Node 22.18 or later runs the `.ts` files as they are.
 ```bash
 npm install          # the TypeScript compiler, the Node types and esbuild, for development only
 npm test             # the tests
-npm run typecheck    # the type check of the source, tests, example and conformance runner
+npm run typecheck    # the type check of the source, tests and example
 npm run build        # JavaScript and type files in dist/
 node examples/pricing/main.ts
 python ../../conformance/run.py typescript:run
