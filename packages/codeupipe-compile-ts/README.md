@@ -1,8 +1,7 @@
 # codeupipe-compile for TypeScript
 
 Writes a codeupipe pipeline as one plain TypeScript module with no import
-of codeupipe. It reads the source and does not run it. It is not on npm
-yet.
+of codeupipe. It reads the source and does not run it. It is a beta, version `1.0.0-beta.1`, and it is not on npm yet.
 
 **The rule: code that compiles gives the same output as the pipeline. A
 pipeline for which the compiler cannot keep that rule is refused, with the

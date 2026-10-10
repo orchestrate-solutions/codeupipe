@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "codeupipe"
-version = "1.0.0"
+version = "2.0.0b1"
 description = "A Python library for writing a program as a pipeline of small steps."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -13,6 +13,7 @@ license-files = ["LICENSE", "NOTICE"]
 authors = [{name = "Joshua Wink"}]
 keywords = ["pipeline", "filter", "payload", "composition"]
 classifiers = [
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",

@@ -4,7 +4,7 @@ codeupipe is a library for writing a program as a pipeline of small steps.
 This is the TypeScript runtime. It has no dependencies. The built JavaScript
 runs in a browser and in Node.
 
-It is not on npm yet. It implements the same contract as the Python
+It is a beta, version `1.0.0-beta.1`, and it is not on npm yet. It implements the same contract as the Python
 package, and the same 27 conformance cases judge it:
 [conformance/API.md](../../conformance/API.md).
 
