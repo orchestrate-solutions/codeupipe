@@ -41,14 +41,26 @@ This repository has five packages.
 
 ## Install
 
-Version 1.0.0 is on PyPI. Python 3.9 or later. No dependencies.
+Python 3.9 or later. No dependencies.
+
+| Version | State | Install |
+|---|---|---|
+| 1.0.0 | Stable. On PyPI | `pip install codeupipe` |
+| 2.0.0b1 | Beta. The `main` branch of this repository. Not on PyPI yet | From this repository, see below |
+
+This README describes version 2, the beta. A beta can change in a way that
+is not compatible, from one beta to the next. `pip install codeupipe` does
+not install a beta: pip installs one only when you ask for it, with
+`pip install --pre codeupipe` or with the exact version.
+
+Until the beta is on PyPI, install it from this repository:
 
 ```bash
-pip install codeupipe
+pip install "codeupipe @ git+https://github.com/orchestrate-solutions/codeupipe#subdirectory=packages/codeupipe"
+pip install "codeupipe-lint @ git+https://github.com/orchestrate-solutions/codeupipe#subdirectory=packages/codeupipe-lint"
 ```
 
-`codeupipe-lint` 1.0.0 is not on PyPI yet. Until it is, install it from this
-repository:
+`codeupipe-lint` 1.0.0 is not on PyPI. Install it from the tag `v1.0.0`:
 
 ```bash
 pip install "codeupipe-lint @ git+https://github.com/orchestrate-solutions/codeupipe@v1.0.0#subdirectory=packages/codeupipe-lint"
@@ -56,6 +68,20 @@ pip install "codeupipe-lint @ git+https://github.com/orchestrate-solutions/codeu
 
 Version 1.0.0 is not compatible with `codeupipe` 0.10.0. It is a new
 library with the same name.
+
+### Changes from 1.0.0 to 2.0.0b1
+
+These changes are not compatible with 1.0.0.
+
+- **A step is reported by a label, the name of its class.** State and Hooks
+  give `DiscountFilter`, where 1.0.0 gave the full path
+  `examples.pricing.discount_filter.DiscountFilter`.
+- **Removed:** `AnonymousStep`, `Pipeline.identities` (use
+  `Pipeline.labels`), `Pipeline.step_sites`, and lint rule CUP-A006.
+- **`codeupipe.lower` is now `codeupipe.compile`.** The command is
+  `python -m codeupipe.compile`.
+
+The TypeScript packages are new and are not on npm.
 
 ## Example
 

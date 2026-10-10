@@ -1,6 +1,7 @@
 name: Release
 
-# Runs when a version tag is pushed: v1.0.0, v1.0.1, ...
+# Runs when a version tag is pushed: v1.0.0, v1.0.1, and a beta such as v2.0.0b1.
+# PyPI keeps a beta apart: pip installs it only when it is asked for.
 # Publishes the two packages to PyPI with trusted publishing: PyPI accepts
 # the upload because it comes from this workflow in this repository. No
 # token is stored anywhere.
