@@ -82,7 +82,8 @@ identified by its type, and State, Hooks and the export use that identity.
   import of codeupipe.
 - `codeupipe.config`: reads `cup.config.json`.
 
-The linter is a separate package: `pip install codeupipe-lint`.
+The linter is a separate package, `codeupipe-lint`. Its install command is
+in the repository README.
 
 ## Documentation
 

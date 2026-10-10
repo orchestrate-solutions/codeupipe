@@ -35,9 +35,23 @@ This repository has two packages.
 | `codeupipe` | The eight primitives. An export command that writes a pipeline as plain Python with no import of codeupipe. A config file reader. No dependencies | [conformance/API.md](conformance/API.md), [docs/static-export.md](docs/static-export.md), [docs/config.md](docs/config.md) |
 | `codeupipe-lint` | Two linters for pipeline code. Depends on `codeupipe` only | [packages/codeupipe-lint/README.md](packages/codeupipe-lint/README.md) |
 
-## Status
+## Install
 
-Not released. The repository is in review. Python 3.9 or later.
+Version 1.0.0 is on PyPI. Python 3.9 or later. No dependencies.
+
+```bash
+pip install codeupipe
+```
+
+`codeupipe-lint` 1.0.0 is not on PyPI yet. Until it is, install it from this
+repository:
+
+```bash
+pip install "codeupipe-lint @ git+https://github.com/orchestrate-solutions/codeupipe@v1.0.0#subdirectory=packages/codeupipe-lint"
+```
+
+Version 1.0.0 is not compatible with `codeupipe` 0.10.0. It is a new
+library with the same name.
 
 ## Example
 
