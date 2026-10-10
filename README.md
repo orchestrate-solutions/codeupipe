@@ -46,7 +46,7 @@ Python 3.9 or later. No dependencies.
 | Version | State | Install |
 |---|---|---|
 | 1.0.0 | Stable. On PyPI | `pip install codeupipe` |
-| 2.0.0b1 | Beta. The `main` branch of this repository. Not on PyPI yet | From this repository, see below |
+| 2.0.0b1 | Beta. The `beta` branch of this repository. Not on PyPI yet | From this repository, see below |
 
 This README describes version 2, the beta. A beta can change in a way that
 is not compatible, from one beta to the next. `pip install codeupipe` does
@@ -56,8 +56,8 @@ not install a beta: pip installs one only when you ask for it, with
 Until the beta is on PyPI, install it from this repository:
 
 ```bash
-pip install "codeupipe @ git+https://github.com/orchestrate-solutions/codeupipe#subdirectory=packages/codeupipe"
-pip install "codeupipe-lint @ git+https://github.com/orchestrate-solutions/codeupipe#subdirectory=packages/codeupipe-lint"
+pip install "codeupipe @ git+https://github.com/orchestrate-solutions/codeupipe@beta#subdirectory=packages/codeupipe"
+pip install "codeupipe-lint @ git+https://github.com/orchestrate-solutions/codeupipe@beta#subdirectory=packages/codeupipe-lint"
 ```
 
 `codeupipe-lint` 1.0.0 is not on PyPI. Install it from the tag `v1.0.0`:
@@ -81,7 +81,8 @@ These changes are not compatible with 1.0.0.
 - **`codeupipe.lower` is now `codeupipe.compile`.** The command is
   `python -m codeupipe.compile`.
 
-The TypeScript packages are new and are not on npm.
+The TypeScript packages are new. They are version `0.1.0-beta.1` and are not on
+npm.
 
 ## Example
 
