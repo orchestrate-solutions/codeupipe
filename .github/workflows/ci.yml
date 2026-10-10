@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Tests, Python ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e packages/codeupipe -e packages/codeupipe-lint -r requirements-dev.txt
+      - name: Tests
+        run: python -m pytest tests -q
+      - name: Lint, anonymous steps
+        run: python -m codeupipe_lint.anonymous_steps
+      - name: Lint, invariants
+        run: python -m codeupipe_lint.invariants
+      - name: Conformance
+        run: python conformance/run.py
+
+  export:
+    name: Export against dynamic run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e packages/codeupipe -e packages/codeupipe-lint -r requirements-dev.txt
+      - name: 2,000 random pipelines
+        run: python -m scorecard.differential --count 2000
+
+  packages:
+    name: Build and install the packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Build the wheels
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip wheel --no-deps -w dist packages/codeupipe packages/codeupipe-lint
+      - name: Install the wheels in a new environment
+        run: |
+          python -m venv /tmp/installed
+          /tmp/installed/bin/python -m pip install dist/*.whl
+      - name: Use the installed packages, outside the repository
+        working-directory: /tmp
+        run: |
+          /tmp/installed/bin/python -c "import codeupipe, codeupipe_lint; print(sorted(codeupipe.__all__))"
+          /tmp/installed/bin/python -m codeupipe_lint.invariants --rules
+          /tmp/installed/bin/python -m codeupipe_lint.anonymous_steps --rules
+
+  speed:
+    name: Speed check (does not block)
+    runs-on: ubuntu-latest
+    # The baseline was recorded on a different machine. This job shows how
+    # far a CI machine is from it; it does not fail the run until that is known.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e packages/codeupipe -e packages/codeupipe-lint -r requirements-dev.txt
+      - name: Compare with the recorded baseline
+        run: python conformance/bench.py --check
