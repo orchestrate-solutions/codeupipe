@@ -4,8 +4,8 @@ import ast
 import textwrap
 
 from codeupipe import Payload
-from codeupipe.lower.filters.lower_control_flow_filter import LowerControlFlowFilter
-from codeupipe.lower.ir import PipelineIR, StepIR
+from codeupipe.compile.filters.lower_control_flow_filter import LowerControlFlowFilter
+from codeupipe.compile.ir import PipelineIR, StepIR
 
 
 def _fn(src: str) -> ast.FunctionDef:
@@ -30,7 +30,7 @@ class TestLowerControlFlow:
         assert "data.get" in pred_src
 
     def test_hooks_produce_warning_but_do_not_fail(self):
-        from codeupipe.lower.ir import HookIR
+        from codeupipe.compile.ir import HookIR
         ir = PipelineIR(
             steps=[],
             hooks=[HookIR(name="metrics")],

@@ -6,9 +6,9 @@ import textwrap
 import pytest
 
 from codeupipe import Payload
-from codeupipe.lower.errors import UnsupportedFilterShape
-from codeupipe.lower.filters.rewrite_payload_ops_filter import RewritePayloadOpsFilter
-from codeupipe.lower.ir import PipelineIR, StepIR, PipelineMeta
+from codeupipe.compile.errors import UnsupportedFilterShape
+from codeupipe.compile.filters.rewrite_payload_ops_filter import RewritePayloadOpsFilter
+from codeupipe.compile.ir import PipelineIR, StepIR, PipelineMeta
 
 
 def _fn(src: str) -> ast.FunctionDef:

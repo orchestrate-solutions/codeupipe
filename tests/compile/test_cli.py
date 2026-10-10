@@ -1,4 +1,4 @@
-"""`python -m codeupipe.lower module:name --out DIR`: the export as a command."""
+"""`python -m codeupipe.compile module:name --out DIR`: the export as a command."""
 
 import importlib
 import sys
@@ -6,10 +6,10 @@ import sys
 import pytest
 
 from codeupipe.core import Payload
-from codeupipe.lower.__main__ import main
-from tests.lower.fixtures import cli_targets
+from codeupipe.compile.__main__ import main
+from tests.compile.fixtures import cli_targets
 
-TARGETS = "tests.lower.fixtures.cli_targets"
+TARGETS = "tests.compile.fixtures.cli_targets"
 INPUTS = [{"price": 100, "qty": 12}, {"price": 80, "qty": 2}, {}]
 
 
@@ -147,7 +147,7 @@ def test_runs_as_a_module(tmp_path):
 
     out = tmp_path / "out"
     done = subprocess.run(
-        [sys.executable, "-m", "codeupipe.lower", f"{TARGETS}:build_pricing", "--out", str(out)],
+        [sys.executable, "-m", "codeupipe.compile", f"{TARGETS}:build_pricing", "--out", str(out)],
         capture_output=True, text=True,
     )
 

@@ -4,8 +4,8 @@ import ast
 import textwrap
 
 from codeupipe import Payload
-from codeupipe.lower.filters.emit_plain_files_filter import EmitPlainFilesFilter
-from codeupipe.lower.ir import PipelineIR, StepIR
+from codeupipe.compile.filters.emit_plain_files_filter import EmitPlainFilesFilter
+from codeupipe.compile.ir import PipelineIR, StepIR
 
 
 def _plain_fn(name: str) -> ast.FunctionDef:

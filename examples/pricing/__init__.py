@@ -14,5 +14,5 @@ Each part knows nothing about the others, so each can be tested alone and
 used again in another pipeline.
 
 Run it:      python -m examples.pricing
-Export it:   python -m codeupipe.lower examples.pricing.pricing_pipeline:PricingPipeline --out build/pricing
+Compile it:   python -m codeupipe.compile examples.pricing.pricing_pipeline:PricingPipeline --out build/pricing
 """

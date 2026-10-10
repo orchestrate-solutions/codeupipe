@@ -79,7 +79,7 @@ have the method of a step.
 ## What is in the package
 
 - `codeupipe`: the eight primitives.
-- `python -m codeupipe.lower`: writes a pipeline as plain Python with no
+- `python -m codeupipe.compile`: writes a pipeline as plain Python with no
   import of codeupipe.
 - `codeupipe.config`: reads `cup.config.json`.
 
@@ -89,7 +89,7 @@ in the repository README.
 ## Documentation
 
 - The contract: https://github.com/orchestrate-solutions/codeupipe/blob/main/conformance/API.md
-- The export: https://github.com/orchestrate-solutions/codeupipe/blob/main/docs/static-export.md
+- The compiler: https://github.com/orchestrate-solutions/codeupipe/blob/main/docs/compile.md
 - The config file: https://github.com/orchestrate-solutions/codeupipe/blob/main/docs/config.md
 - The repository: https://github.com/orchestrate-solutions/codeupipe
 

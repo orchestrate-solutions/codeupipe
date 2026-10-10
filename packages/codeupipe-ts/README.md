@@ -123,7 +123,7 @@ override the methods that you need.
   State. `pipeline.state` is the State of the run that started last.
 - **The linter and the compiler are separate packages**, because they
   need a parser: [codeupipe-lint-ts](../codeupipe-lint-ts/) and
-  [codeupipe-compile-ts](../codeupipe-compile-ts/). In Python the export is
+  [codeupipe-compile-ts](../codeupipe-compile-ts/). In Python the compiler is
   in the core package.
 
 ## Labels and minified code

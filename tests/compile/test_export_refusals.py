@@ -4,7 +4,7 @@ Each shape here used to export "successfully" and then behave differently
 from the dynamic runtime: Hooks vanished, async steps became broken code,
 ``payload.trace_id`` became ``data.trace_id`` on a dict, and resilience
 wrappers died on an unrelated AttributeError. The contract is in
-docs/static-export.md: anything that exports behaves the same, and anything
+docs/compile.md: anything that exports behaves the same, and anything
 that cannot is refused at export time with the step named.
 """
 
@@ -13,8 +13,8 @@ import asyncio
 import pytest
 
 from codeupipe import Hook, Payload, Pipeline
-from codeupipe.lower import build_export_pipeline_v2
-from codeupipe.lower.errors import UnsupportedFilterShape
+from codeupipe.compile import build_export_pipeline_v2
+from codeupipe.compile.errors import UnsupportedFilterShape
 
 LOWERINGS = ["steps", "inline"]
 

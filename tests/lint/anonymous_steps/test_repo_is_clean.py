@@ -7,9 +7,9 @@ from codeupipe_lint.anonymous_steps.lint_pipeline import lint_paths
 
 from ._support import REPO
 
-CHECKED = ["packages/codeupipe/codeupipe", "conformance/runners/python", "scorecard", "tests/core", "tests/lower",
+CHECKED = ["packages/codeupipe/codeupipe", "conformance/runners/python", "scorecard", "tests/core", "tests/compile",
            "tests/scorecard", "tests/conformance"]
-INTENTIONAL = {"tests/lower/test_export_refusals.py",
+INTENTIONAL = {"tests/compile/test_export_refusals.py",
                "tests/core/test_add_valve.py", "tests/core/test_step_labels.py"}
 
 

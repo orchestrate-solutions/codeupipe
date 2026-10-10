@@ -190,7 +190,7 @@ and limits:
 
 **Conformance.** The shared cases name their steps; the runner builds every
 step, so it maps each reported label back to the case's step name. A label
-that is wrong, or differs between the dynamic run and an export, does not
+that is wrong, or differs between the dynamic run and compiled code, does not
 map and fails the comparison.
 
 ## Not in the contract yet
@@ -213,7 +213,7 @@ map and fails the comparison.
 | Run | `run` is sync. `run_async` is opt-in | One `run`. It returns a Promise. A step can be sync or async |
 | Absent | `None` | `null` |
 | Label of a step | `type(step).__name__` | `step.constructor.name` |
-| Export | `codeupipe.lower` | `packages/codeupipe-compile-ts` |
+| Compile | `codeupipe.compile` | `packages/codeupipe-compile-ts` |
 | Linter | `packages/codeupipe-lint` | `packages/codeupipe-lint-ts` |
 
 Notes on TypeScript:

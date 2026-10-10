@@ -1,9 +1,9 @@
-"""Fixture: things `python -m codeupipe.lower module:name` can be pointed at."""
+"""Fixture: things `python -m codeupipe.compile module:name` can be pointed at."""
 
 from codeupipe.core import Pipeline
 
-from tests.lower.fixtures.instance_config import AtLeast, Discount, HoldsAnObject, SetFlag
-from tests.lower.fixtures.plane_b import ExplodingTap
+from tests.compile.fixtures.instance_config import AtLeast, Discount, HoldsAnObject, SetFlag
+from tests.compile.fixtures.plane_b import ExplodingTap
 
 PRICING = Pipeline()
 PRICING.add_filter(Discount(0.1))

@@ -1,6 +1,6 @@
 """Observable static export: ``observe=True``.
 
-The fast export gives up State and Hooks (docs/static-export.md). With
+The fast export gives up State and Hooks (docs/compile.md). With
 ``observe=True`` the exported ``run`` records the same State the dynamic
 ``run`` does and calls Hooks in the same order, so the two modes can be
 judged by the same conformance cases, State and Hooks included.
@@ -12,7 +12,7 @@ import sys
 import pytest
 
 from codeupipe import Hook, Payload, Pipeline
-from codeupipe.lower import build_export_pipeline_v2
+from codeupipe.compile import build_export_pipeline_v2
 
 
 ADD = "_Add"
@@ -279,7 +279,7 @@ class TestRunArguments:
 
 class TestFastExportIsUnchanged:
     def test_hooks_still_refused_without_observe(self, tmp_path):
-        from codeupipe.lower.errors import UnsupportedFilterShape
+        from codeupipe.compile.errors import UnsupportedFilterShape
 
         p = Pipeline()
         p.add_filter(_Add())
@@ -288,7 +288,7 @@ class TestFastExportIsUnchanged:
             _export(p, tmp_path, observe=False)
 
     def test_nested_pipeline_hooks_refused_even_when_observing(self, tmp_path):
-        from codeupipe.lower.errors import UnsupportedFilterShape
+        from codeupipe.compile.errors import UnsupportedFilterShape
 
         inner = SubPipeline()
         inner.add_filter(_Add())
@@ -301,7 +301,7 @@ class TestFastExportIsUnchanged:
     def test_empty_nested_pipeline_refused_when_observing(self, tmp_path):
         """Scorecard finding F1: it flattens to no steps, so the observable
         export could not report it in State and Hooks as the dynamic run does."""
-        from codeupipe.lower.errors import UnsupportedFilterShape
+        from codeupipe.compile.errors import UnsupportedFilterShape
 
         outer = Pipeline()
         outer.add_filter(_Add())

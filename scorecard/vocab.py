@@ -28,7 +28,7 @@ import conformance_sink as sink  # noqa: E402
 import cup_ops as ops  # noqa: E402
 import runner  # noqa: E402
 from codeupipe import Payload, Pipeline  # noqa: E402
-from codeupipe.lower.errors import UnsupportedFilterShape  # noqa: E402
+from codeupipe.compile.errors import UnsupportedFilterShape  # noqa: E402
 
 __all__ = ["sink", "ops", "runner", "Payload", "Pipeline", "UnsupportedFilterShape",
            "make_predicates", "build_pipeline", "load_export", "new_workdir", "walk_steps"]

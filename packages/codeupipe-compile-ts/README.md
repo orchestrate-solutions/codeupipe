@@ -99,11 +99,11 @@ also check State or Hooks pass on what the code can show.
 The compiled module is like one instance of the pipeline: a setting that is
 a list or an object is one value for every run.
 
-## Differences from the Python export
+## Differences from the Python compiler
 
-Python has `python -m codeupipe.lower`. It reads a pipeline object that is
+Python has `python -m codeupipe.compile`. It reads a pipeline object that is
 in memory. This compiler reads the source of a pipeline class. Python also
-has an inline layout and an observable export (State and Hooks); this
+has an inline layout and an observable mode (State and Hooks); this
 compiler has neither.
 
 ## Development

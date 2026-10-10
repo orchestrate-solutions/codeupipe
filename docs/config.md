@@ -22,7 +22,7 @@ every time.
 ```bash
 python -m codeupipe_lint.invariants          # lint.paths, minus lint.exclude
 python -m codeupipe_lint.anonymous_steps     # the same
-python -m codeupipe.lower          # every pipeline under compile
+python -m codeupipe.compile          # every pipeline under compile
 ```
 
 ## Keys

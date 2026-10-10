@@ -1,6 +1,6 @@
 # Scorecard
 
-The scorecard compares the static export of a Pipeline (`codeupipe.lower`)
+The scorecard compares the compiled form of a Pipeline (`codeupipe.compile`)
 with the dynamic `Pipeline.run` on random pipelines. Each number in this
 document comes from a command in this document.
 
@@ -29,8 +29,8 @@ steps) that cross the Payload's overlay-flattening depth. `--hostile-rate`
 generation (builtins, the generated `run()`'s locals, duplicates,
 non-identifiers).
 
-Each case runs in four modes: dynamic (reference), fast export `steps`,
-fast export `inline`, observable export (`observe=True`).
+Each case runs in four modes: dynamic (reference), fast mode `steps`,
+fast mode `inline`, observable mode (`observe=True`).
 
 | check | steps | inline | observe |
 |---|---|---|---|
@@ -43,16 +43,16 @@ fast export `inline`, observable export (`observe=True`).
 | Hook event sequence, with a deep snapshot of the payload at every event | | | ✓ |
 | `SOURCE_HOOKS` guard: `run()` without `hooks=` raises `TypeError` | | | ✓ |
 
-**Verdicts.** *pass*: agrees on every check. *refused*: export raised
+**Verdicts.** *pass*: agrees on every check. *refused*: the compiler raised
 `UnsupportedFilterShape`, counted separately, never as a pass. *fail*: any
-divergence, or an export that crashed (a `SyntaxError` on load is not a
+divergence, or compiled code that crashed (a `SyntaxError` on load is not a
 refusal). Every distinct failure signature is shrunk (`minimize.py`) to a
 minimal case and printed.
 
 **Isolation (item 4)** is measured inside the same runs: the caller's input
 is deep-compared after every run in every mode, and a second run on a fresh
 copy must give the same result. A `SnapshotHook` (`snapshot_hook.py`) is
-attached to the dynamic run and passed to the observable export's `run()`;
+attached to the dynamic run and passed to the observable mode's `run()`;
 at each event it deep-copies the payload, because a Payload is written in
 place and the object changes later by design.
 

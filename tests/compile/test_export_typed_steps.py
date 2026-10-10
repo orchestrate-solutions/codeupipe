@@ -6,10 +6,10 @@ import sys
 import pytest
 
 from codeupipe.core import Payload
-from codeupipe.lower.__main__ import main
-from tests.lower.fixtures import typed_steps
+from codeupipe.compile.__main__ import main
+from tests.compile.fixtures import typed_steps
 
-TARGET = "tests.lower.fixtures.typed_steps:build"
+TARGET = "tests.compile.fixtures.typed_steps:build"
 INPUTS = [{"price": 2.5, "qty": 2}, {"price": 1.0, "qty": 12}]
 MODES = [[], ["--lowering", "inline"], ["--observe"]]
 
@@ -56,7 +56,7 @@ def test_an_annotated_local_keeps_its_value_and_loses_its_type(tmp_path):
 def test_erasing_hints_never_leaves_an_empty_block():
     import ast
 
-    from codeupipe.lower.filters.parse_filter_source_filter import _erase_annotations
+    from codeupipe.compile.filters.parse_filter_source_filter import _erase_annotations
 
     source = (
         "def call(self, payload: 'P', *rest: int, flag: bool = False, **more: str) -> 'P':\n"

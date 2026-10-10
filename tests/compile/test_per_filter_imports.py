@@ -5,7 +5,7 @@ import math
 import json
 
 from codeupipe import Payload, Pipeline
-from codeupipe.lower import build_export_pipeline_v2
+from codeupipe.compile import build_export_pipeline_v2
 
 
 class _UsesMath:

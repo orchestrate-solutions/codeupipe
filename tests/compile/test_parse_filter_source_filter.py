@@ -5,9 +5,9 @@ import ast
 import pytest
 
 from codeupipe import Payload
-from codeupipe.lower.errors import UnsupportedFilterShape
-from codeupipe.lower.filters.parse_filter_source_filter import ParseFilterSourceFilter
-from codeupipe.lower.ir import HookIR, PipelineIR, StepIR
+from codeupipe.compile.errors import UnsupportedFilterShape
+from codeupipe.compile.filters.parse_filter_source_filter import ParseFilterSourceFilter
+from codeupipe.compile.ir import HookIR, PipelineIR, StepIR
 
 
 class _ExampleFilter:

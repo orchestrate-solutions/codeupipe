@@ -42,7 +42,7 @@ def build_export_pipeline_v2(*, write: bool = True) -> Pipeline:
                                           State or Hooks. True: run() also
                                           records State and calls Hooks as
                                           the dynamic run does; "steps"
-                                          layout only. docs/static-export.md
+                                          layout only. docs/compile.md
 
     Output payload keys:
         ``pipeline_ir``  (PipelineIR)   — the canonical IR.

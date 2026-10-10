@@ -1,6 +1,6 @@
-"""``python -m codeupipe.lower [module:name --out DIR] [--lowering steps|inline] [--observe] [--overwrite] [--config FILE]``
+"""``python -m codeupipe.compile [module:name --out DIR] [--lowering steps|inline] [--observe] [--overwrite] [--config FILE]``
 
-Export a Pipeline to plain Python with no framework import (docs/static-export.md).
+Export a Pipeline to plain Python with no framework import (docs/compile.md).
 With no ``module:name``, every pipeline listed under ``compile`` in
 ``cup.config.json`` is exported (packages/codeupipe/codeupipe/config.py).
 
@@ -59,8 +59,8 @@ def export(target: str, out_dir: str, lowering: str = "steps", observe: bool = F
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(prog="python -m codeupipe.lower",
-                                     description="Export a Pipeline to plain Python (docs/static-export.md).")
+    parser = argparse.ArgumentParser(prog="python -m codeupipe.compile",
+                                     description="Export a Pipeline to plain Python (docs/compile.md).")
     parser.add_argument("target", nargs="?",
                         help="the pipeline, as module:name (a Pipeline, a builder function, or a Pipeline type); "
                              "omit it to export every pipeline in the config")
