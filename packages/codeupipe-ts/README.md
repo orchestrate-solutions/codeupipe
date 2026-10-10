@@ -127,16 +127,21 @@ override the methods that you need.
 
 State and Hooks report a step by its label, which is the name of its class.
 A minifier changes class names, so a label in minified code can be a name
-such as `a`. To keep the names, turn on the option of your tool that keeps
+such as `b`. To keep the names, turn on the option of your tool that keeps
 class names (for example `keepNames` in esbuild, `keep_classnames` in
 terser). A class with no name has the label `anonymous`.
+
+`tests/bundle.test.ts` checks this with esbuild: the pricing example gives
+the same result in a plain bundle, a minified bundle and a minified bundle
+that keeps names, and the labels change only in the second.
+`examples/pricing/browser/entry.ts` is the entry of that bundle.
 
 ## Development
 
 Node 22.18 or later runs the `.ts` files as they are.
 
 ```bash
-npm install          # the TypeScript compiler and the Node types, for development only
+npm install          # the TypeScript compiler, the Node types and esbuild, for development only
 npm test             # the tests
 npm run typecheck    # the type check of the source, tests, example and conformance runner
 npm run build        # JavaScript and type files in dist/
