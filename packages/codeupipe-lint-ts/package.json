@@ -1,6 +1,6 @@
 {
   "name": "codeupipe-lint",
-  "version": "0.1.0-beta.1",
+  "version": "1.0.0-beta.1",
   "private": true,
   "description": "A linter for TypeScript code that uses codeupipe.",
   "license": "Apache-2.0",

@@ -1,6 +1,6 @@
 {
   "name": "codeupipe-compile",
-  "version": "0.1.0-beta.1",
+  "version": "1.0.0-beta.1",
   "private": true,
   "description": "Writes a codeupipe pipeline as plain TypeScript with no import of codeupipe.",
   "license": "Apache-2.0",

@@ -81,7 +81,7 @@ These changes are not compatible with 1.0.0.
 - **`codeupipe.lower` is now `codeupipe.compile`.** The command is
   `python -m codeupipe.compile`.
 
-The TypeScript packages are new. They are version `0.1.0-beta.1` and are not on
+The TypeScript packages are new. They are version `1.0.0-beta.1` and are not on
 npm.
 
 ## Example
