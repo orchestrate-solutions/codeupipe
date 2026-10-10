@@ -38,7 +38,7 @@ def _import_lines(steps) -> List[str]:
     # import it. Relative imports keep step names (``json``, ``truncate``)
     # from shadowing top-level modules on the customer's sys.path.
     # Code uses each step's generated identifier (``step_03_validate``), never
-    # its identity: identities are labels, reported in State and to Hooks.
+    # its label, reported in State and to Hooks.
     lines = []
     for step in steps:
         names = [step.ident]

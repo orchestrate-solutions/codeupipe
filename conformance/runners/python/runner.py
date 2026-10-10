@@ -130,15 +130,15 @@ def build(case, cls, predicates, names):
 
 
 def labels(p, names):
-    """identity -> the case's step name, for the steps of ``p``.
+    """label -> the case's step name, for the steps of ``p``.
 
-    Steps are identified by their filter (conformance/API.md), while the
+    Steps are reported by label (conformance/API.md), while the
     shared cases name them. The runner built every step, so it knows which
-    case step each identity belongs to. An identity reported that is not in
+    case step each label belongs to. A label reported that is not in
     this map (wrong, or inconsistent between modes) stays as is and fails
     the comparison.
     """
-    return {identity: names[id(step)] for identity, step, _type in p._steps}
+    return {label: names[id(step)] for label, step, _type in p._steps}
 
 
 def _named(steps, label):

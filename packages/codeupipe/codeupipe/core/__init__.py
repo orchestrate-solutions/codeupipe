@@ -9,7 +9,6 @@ defines them. Standard library only. A Valve is added with
 from .payload import Payload
 from .filter import AsyncFilter, Filter
 from .async_step_in_sync_run import AsyncStepInSyncRun
-from .anonymous_step import AnonymousStep
 from .pipeline import Pipeline
 from .predicate import Predicate
 from .tap import AsyncTap, Tap
@@ -25,5 +24,5 @@ __all__ = [
     "Tap", "AsyncTap",
     "Hook", "AsyncHook",
     "State",
-    "AnonymousStep", "AsyncStepInSyncRun",
+    "AsyncStepInSyncRun",
 ]

@@ -1,4 +1,4 @@
-"""Step-identity probe cases, with describe(label, f) replaced by
+"""Step probe cases, with describe(label, f) replaced by
 p.add_filter(f): the probe's cases as lint fixtures."""
 
 from codeupipe import Pipeline
@@ -31,4 +31,4 @@ p.add_filter(normalize)
 p.add_filter(lambda payload: payload)  # expect: CUP-A001
 p.add_filter(make_closure("x"))  # expect: CUP-A002
 p.add_filter(make_local_class())  # expect: CUP-A003
-p.add_filter(DefinedInEntryScript())  # not flagged: no __main__ guard, so the linter stays conservative (the runtime refuses it)
+p.add_filter(DefinedInEntryScript())  # not flagged: a module-level class

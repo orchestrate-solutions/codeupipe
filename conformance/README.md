@@ -89,7 +89,7 @@ Numbers compare as JSON numbers (`1 == 1.0`), but `true` is never `1`.
 | tap | `fail` message | raise |
 | valve `when` | `equals` key, value | `get(key) == value` |
 | valve `when` | `truthy` key | `get(key)` is truthy (missing ⇒ false) |
-| hooks | `"hooks": true` | record `before:<step>`, `after:<step>`, `error:<step>`; pipeline-level events use an empty step name. On a filter failure: `error:<step>` then `error:`. The runner maps each reported step identity (API.md) back to the case's step name |
+| hooks | `"hooks": true` | record `before:<step>`, `after:<step>`, `error:<step>`; pipeline-level events use an empty step name. On a filter failure: `error:<step>` then `error:`. The runner maps each reported step label (API.md) back to the case's step name |
 
 ## Runner protocol
 

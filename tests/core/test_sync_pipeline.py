@@ -100,7 +100,7 @@ class TestSyncPipelineBasic:
         sp.add_filter(AddOneFilter())
         sp.add_filter(UpperFilter())
         sp.run(Payload({"x": 1, "name": "alice"}))
-        assert sp.state.executed == [f"{__name__}.AddOneFilter", f"{__name__}.UpperFilter"]
+        assert sp.state.executed == ["AddOneFilter", "UpperFilter"]
 
     def test_returns_payload_type(self):
         sp = Pipeline()
@@ -129,7 +129,7 @@ class TestSyncPipelineTaps:
         sp = Pipeline()
         sp.add_tap(RecordTap())
         sp.run(Payload({"x": 1}))
-        assert f"{__name__}.RecordTap" in sp.state.executed
+        assert "RecordTap" in sp.state.executed
 
 
 # ── Hooks ───────────────────────────────────────────────────────────
@@ -171,8 +171,8 @@ class TestSyncPipelineObserve:
         sp.add_filter(AddOneFilter())
         sp.observe(timing=True)
         sp.run(Payload({"x": 0}))
-        assert f"{__name__}.AddOneFilter" in sp.state.timings
-        assert sp.state.timings[f"{__name__}.AddOneFilter"] > 0
+        assert "AddOneFilter" in sp.state.timings
+        assert sp.state.timings["AddOneFilter"] > 0
 
 
 # ── Govern contracts ────────────────────────────────────────────────
@@ -264,7 +264,7 @@ class TestTapFailureIsolation:
         result = p.run(Payload({}))
 
         assert result.get("score") == 2
-        assert p.state.errors[-1][0] == f"{__name__}.TestTapFailureIsolation._Boom"
-        assert f"{__name__}.TestTapFailureIsolation._Boom" in p.state.executed
+        assert p.state.errors[-1][0] == "_Boom"
+        assert "_Boom" in p.state.executed
         assert hook.errors == []
 

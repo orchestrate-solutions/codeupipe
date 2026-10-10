@@ -72,8 +72,9 @@ PricingPipeline().run(Payload({"price": 100.0, "qty": 12})).to_dict()
 # {'price': 90.0, 'qty': 12, 'bulk': True}
 ```
 
-A step must be a class in a module. A lambda is refused, because a step is
-identified by its type, and State, Hooks and the export use that identity.
+A step is a class. State and Hooks report each step by the name of its
+class, for example `DiscountFilter`. A lambda is refused, because it does not
+have the method of a step.
 
 ## What is in the package
 

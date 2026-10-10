@@ -30,14 +30,14 @@ class _Always:
 
 
 class TestLoadPipeline:
-    def test_extracts_step_identities_idents_and_kinds(self):
+    def test_extracts_step_labels_idents_and_kinds(self):
         p = Pipeline()
         p.add_filter(_ExFilter())
         p.add_tap(_ExTap())
         result = LoadPipelineFilter().call(Payload({"pipeline": p}))
         ir = result.get("pipeline_ir")
         assert isinstance(ir, PipelineIR)
-        assert [s.name for s in ir.steps] == [f"{__name__}._ExFilter", f"{__name__}._ExTap"]
+        assert [s.name for s in ir.steps] == ["_ExFilter", "_ExTap"]
         assert [s.ident for s in ir.steps] == ["step_01_ex_filter", "step_02_ex_tap"]
         assert [s.kind for s in ir.steps] == ["filter", "tap"]
 

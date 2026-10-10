@@ -113,8 +113,8 @@ class StepIR:
             emitted file runs without that module.
         ident: The Python identifier the generated code uses for this step's
             module and function (``step_03_validate``). Generated, never taken
-            from ``name``: ``name`` is the step's identity (a label such as
-            ``app.filters.Validate#2``), which is not an identifier.
+            from ``name``: ``name`` is the step's label (such as
+            ``Validate#2``), which is not an identifier.
         group: For a step flattened out of a nested Pipeline, the name of the
             top-level step that nested it (``inner`` for ``inner__greet``).
             Observable export uses it to report the nested pipeline as one

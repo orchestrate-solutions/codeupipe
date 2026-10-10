@@ -13,7 +13,7 @@ from .filter import AsyncFilter, Filter
 from .tap import AsyncTap, Tap
 from .hook import Hook
 from .state import State
-from .step_identity import add_site, identify
+from .step_label import label_of
 from .async_step_in_sync_run import AsyncStepInSyncRun
 from .valve import Valve
 
@@ -37,11 +37,9 @@ class Pipeline(Generic[TInput, TOutput]):
     def __init__(self):
         self._preflight_key: Any = None
         self._preflight_cache: Any = None
-        self._steps: List[Tuple[str, Any, str]] = []  # (identity, step, type)
-        # Step identity (conformance/API.md): derived from the code, #n from
-        # the second use of the same filter; the add call's file:line as detail.
-        self._occurrences: Dict[str, int] = {}
-        self._step_sites: Dict[str, str] = {}
+        self._steps: List[Tuple[str, Any, str]] = []  # (label, step, type)
+        # A step's label is its class name, with #n from the second use.
+        self._uses: Dict[str, int] = {}
         self._hooks: List[Hook] = []
         self._state: State = State()
         self._observe_timing: bool = False
@@ -53,50 +51,53 @@ class Pipeline(Generic[TInput, TOutput]):
         return self._state
 
     @property
-    def identities(self) -> List[str]:
-        """Each step's identity, in order."""
-        return [identity for identity, _step, _type in self._steps]
+    def labels(self) -> List[str]:
+        """Each step's label, in order."""
+        return [label for label, _step, _type in self._steps]
 
-    @property
-    def step_sites(self) -> Dict[str, str]:
-        """identity -> ``file:line`` of the ``add_*`` call that added it."""
-        return dict(self._step_sites)
-
-    def _identity(self, step: Any, kind: str, base: Optional[str] = None) -> str:
-        """Derive the step's identity; number it from its second use."""
-        base = base or identify(step, kind)
-        count = self._occurrences.get(base, 0) + 1
-        self._occurrences[base] = count
-        identity = base if count == 1 else f"{base}#{count}"
-        self._step_sites[identity] = add_site(3)  # the caller of add_*
+    def _label(self, step: Any) -> str:
+        """The step's class name, numbered from its second use in this pipeline."""
+        base = label_of(step)
+        count = self._uses.get(base, 0) + 1
+        self._uses[base] = count
         self._preflight_key = None  # shape changed
-        return identity
+        return base if count == 1 else f"{base}#{count}"
+
+    @staticmethod
+    def _require(step: Any, method: str, what: str) -> None:
+        """Refuse a step that does not have the method of its kind."""
+        if not callable(getattr(step, method, None)):
+            raise TypeError(f"{what} has {method}(payload). {step!r} does not.")
 
     def add_filter(self, filter: Union[Filter[TInput, TOutput], AsyncFilter[TInput, TOutput]]) -> None:
         """Add a Filter. A filter whose ``call`` is a coroutine needs ``run_async()``."""
         if isinstance(filter, Valve):
             raise TypeError("A Valve is added with add_valve(predicate, filter), not with add_filter.")
+        self._require(filter, "call", "A Filter")
         step_type = "async_filter" if self._is_async_method(filter, "call") else "filter"
-        self._steps.append((self._identity(filter, "filter"), filter, step_type))
+        self._steps.append((self._label(filter), filter, step_type))
 
     def add_valve(self, predicate: Any, filter: Union[Filter[TInput, TOutput], AsyncFilter[TInput, TOutput]]) -> None:
         """Add a Valve: ``filter`` runs only when ``predicate.test(payload)`` is true.
 
         The condition comes first, then the Filter that it controls. When the
         test is false the Payload passes through unchanged and the step is
-        recorded as skipped. The step is identified by its Filter.
+        recorded as skipped. The step has the label of its Filter.
         """
         if not callable(getattr(predicate, "test", None)) and callable(getattr(predicate, "call", None)) \
                 and callable(getattr(filter, "test", None)):
             raise TypeError("The arguments are in the wrong order: add_valve(predicate, filter). "
                             "The condition comes first, then the Filter.")
+        self._require(predicate, "test", "A Predicate")
+        self._require(filter, "call", "A Filter")
         valve = Valve(filter, predicate)
-        self._steps.append((self._identity(valve, "filter"), valve, "async_filter"))
+        self._steps.append((self._label(valve), valve, "async_filter"))
 
     def add_tap(self, tap: Union[Tap, AsyncTap]) -> None:
         """Add a Tap. A tap whose ``observe`` is a coroutine needs ``run_async()``."""
+        self._require(tap, "observe", "A Tap")
         step_type = "async_tap" if self._is_async_method(tap, "observe") else "tap"
-        self._steps.append((self._identity(tap, "tap"), tap, step_type))
+        self._steps.append((self._label(tap), tap, step_type))
 
     def use_hook(self, hook: Hook) -> None:
         """Attach a lifecycle hook. A hook with coroutine methods needs ``run_async()``."""
@@ -104,8 +105,10 @@ class Pipeline(Generic[TInput, TOutput]):
         self._hooks.append(hook)
 
     def add_pipeline(self, pipeline: 'Pipeline') -> None:
-        """Nest a named Pipeline type as a single step inside this Pipeline."""
-        self._steps.append((self._identity(pipeline, "pipeline"), pipeline, "pipeline"))
+        """Nest a Pipeline as a single step inside this Pipeline."""
+        if not isinstance(pipeline, Pipeline):
+            raise TypeError(f"add_pipeline takes a Pipeline. {pipeline!r} is not one.")
+        self._steps.append((self._label(pipeline), pipeline, "pipeline"))
 
     def observe(self, *, timing: bool = True, lineage: bool = False) -> None:
         """Enable observation features (timing, lineage tracking)."""

@@ -4,12 +4,12 @@ from codeupipe import Hook
 
 
 class PrintStepsHook(Hook):
-    """Sees the lifecycle. ``step`` is the step's identity; it is None for
-    the pipeline itself."""
+    """Sees the lifecycle. ``step`` is the label of the step, which is the
+    name of its class. It is None for the pipeline itself."""
 
     def before(self, step, payload):
         if step is not None:
-            print("  " + step.replace("examples.pricing.", ""))
+            print("  " + step)
 
     def after(self, step, payload):
         pass

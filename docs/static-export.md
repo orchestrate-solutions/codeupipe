@@ -52,13 +52,13 @@ Exit code: **0** exported, **1** refused (the message names the step and the
 fix), **2** the command could not run. Nothing is written on 1 or 2. Tests:
 [tests/lower/test_cli.py](../tests/lower/test_cli.py).
 
-## Step identity in exported code
+## Step labels in exported code
 
-Steps are identified by their filter (`app.filters.Validate`, `#2` from the
-second use; conformance/API.md). An identity is a label, not an identifier,
-so exported code never uses it as a name: each step gets a generated module
-and function, `step_01_validate`, `step_02_validate`, and the identity
-appears only as a string in State and in Hook calls. That also rules out
+A step has a label, the name of its class (`Validate`, `Validate#2` from the
+second use; conformance/API.md). A label is not an identifier, so exported
+code never uses it as a name: each step gets a generated module and
+function, `step_01_validate`, `step_02_validate`, and the label appears only
+as a string in State and in Hook calls. That also rules out
 every collision between a step and a builtin, a module global or the
 generated `run()` (scorecard findings F3–F8).
 
