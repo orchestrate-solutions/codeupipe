@@ -2,6 +2,10 @@
 
     python conformance/run.py                 # all targets
     python conformance/run.py python:run python:static-inline
+    python conformance/run.py typescript:run
+
+With no arguments, the TypeScript target runs only when the machine has
+Node 22.18 or later. A target that is named and cannot run is a failure.
 
 A runner executes cases and reports what happened. Only this file decides
 pass or fail, so every target is held to exactly the same comparison.
@@ -18,6 +22,7 @@ Result per case and target:
 import json
 import os
 import pathlib
+import shutil
 import subprocess
 import sys
 
@@ -37,13 +42,41 @@ def _python(target):
     }
 
 
+def _typescript(target):
+    # Node runs the .ts file as it is. Nothing is built or downloaded.
+    return {
+        "cmd": ["node", str(HERE / "runners/typescript/runner.ts"), target],
+        "env": {},
+        "cwd": REPO,
+    }
+
+
+def _node_runs_typescript():
+    """Whether there is a Node that runs a .ts file as it is (22.18 or later)."""
+    node = shutil.which("node")
+    if node is None:
+        return False
+    try:
+        version = subprocess.run([node, "--version"], capture_output=True, text=True, timeout=30).stdout
+        major, minor = (int(part) for part in version.strip().lstrip("v").split(".")[:2])
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return False
+    return (major, minor) >= (22, 18)
+
+
 TARGETS = {
     "python:run": _python("run"),
     "python:run_async": _python("run_async"),
     "python:static-steps": _python("static-steps"),
     "python:static-inline": _python("static-inline"),
     "python:static-observe": _python("static-observe"),
+    "typescript:run": _typescript("run"),
 }
+
+
+def default_targets():
+    """Every target that this machine can run. TypeScript needs Node."""
+    return [name for name in TARGETS if not name.startswith("typescript:") or _node_runs_typescript()]
 
 
 def load_cases():
@@ -130,7 +163,7 @@ def judge(case, result):
 
 def main(argv):
     cases = load_cases()
-    names = argv or list(TARGETS)
+    names = argv or default_targets()
     report = {"cases": len(cases), "targets": {}}
     matrix = {c["id"]: {} for c in cases}
 
@@ -156,7 +189,7 @@ def main(argv):
     (RESULTS / "latest.json").write_text(json.dumps(report, indent=2))
     (RESULTS / "latest.md").write_text(_markdown(cases, names, matrix, report))
     print(_markdown(cases, names, matrix, report))
-    failed = any(t.get("FAIL") for t in report["targets"].values())
+    failed = any(t.get("FAIL") or "error" in t for t in report["targets"].values())
     return 1 if failed else 0
 
 
