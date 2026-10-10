@@ -121,7 +121,8 @@ override the methods that you need.
   method, so `addFilter` refuses a function by its type.
 - **Two runs of one pipeline at the same time** each write to their own
   State. `pipeline.state` is the State of the run that started last.
-- **This package has no export command and no linter.** Python has both.
+- **There is no export command.** Python has one. The linter is the
+  package [codeupipe-lint-ts](../codeupipe-lint-ts/).
 
 ## Labels and minified code
 

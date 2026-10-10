@@ -214,7 +214,7 @@ map and fails the comparison.
 | Absent | `None` | `null` |
 | Label of a step | `type(step).__name__` | `step.constructor.name` |
 | Export | `codeupipe.lower` | none |
-| Linter | `codeupipe-lint` | none |
+| Linter | `packages/codeupipe-lint` | `packages/codeupipe-lint-ts` |
 
 Notes on TypeScript:
 
