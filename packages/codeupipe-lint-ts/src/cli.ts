@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /**
- * codeupipe-lint [--exclude GLOB] [--disable RULE] [--config FILE] [--rules] [paths...]
+ * codeupipe-lint [--exclude GLOB] [--disable RULE] [--strict] [--config FILE] [--rules] [paths...]
  *
  * With no paths, they come from cup.config.json. Exit code: 0 no findings,
  * 1 findings, 2 a path could not be read or the arguments cannot be used.
+ * A warning does not make the exit code 1, unless --strict is given.
  */
 import { parseArgs } from "node:util";
 
@@ -21,6 +22,7 @@ async function main(argv: string[]): Promise<number> {
         disable: { type: "string", multiple: true },
         config: { type: "string" },
         rules: { type: "boolean" },
+        strict: { type: "boolean" },
       },
     });
   } catch (error) {
@@ -58,7 +60,7 @@ async function main(argv: string[]): Promise<number> {
     return 2;
   }
 
-  const out = await lintPaths(paths, { exclude, disable });
+  const out = await lintPaths(paths, { exclude, disable, strict: args.values.strict === true });
   console.log(out.get<string>("report"));
   const errorReport = out.get<string>("errorReport");
   if (errorReport) console.error(errorReport);

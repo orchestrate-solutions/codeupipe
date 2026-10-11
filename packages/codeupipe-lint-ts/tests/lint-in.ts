@@ -10,7 +10,7 @@ export type Linted = { found: string[]; findings: Finding[]; suppressed: number;
 
 /** `found` holds one string for each finding: `file:line rule`. */
 export async function lintIn(files: Record<string, string>,
-                             options: { exclude?: string[]; disable?: string[] } = {}): Promise<Linted> {
+                             options: { exclude?: string[]; disable?: string[]; strict?: boolean } = {}): Promise<Linted> {
   const root = mkdtempSync(join(tmpdir(), "cup-lint-"));
   for (const [name, text] of Object.entries(files)) {
     mkdirSync(dirname(join(root, name)), { recursive: true });

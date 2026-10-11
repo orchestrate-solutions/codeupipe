@@ -12,8 +12,11 @@ export type Finding = {
   slug: string;
   message: string;
   callLine?: number;
+  /** A warning is reported and does not fail the run, unless the run is strict. */
+  severity?: "warning";
 };
 
 export function formatFinding(finding: Finding): string {
-  return `${finding.path}:${finding.line}:${finding.col}  ${finding.rule} ${finding.slug}  ${finding.message}`;
+  const warning = finding.severity === "warning" ? "warning: " : "";
+  return `${finding.path}:${finding.line}:${finding.col}  ${finding.rule} ${finding.slug}  ${warning}${finding.message}`;
 }

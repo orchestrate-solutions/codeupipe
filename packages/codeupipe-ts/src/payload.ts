@@ -5,7 +5,7 @@
  * step can write and return in one line. `copy()` gives a separate Payload
  * when you want to keep the one you have.
  */
-export class Payload {
+export class Payload { // cup: allow-plain the framework itself: a primitive is made of this
   #data: Map<string, unknown>;
   #traceId: string | null = null;
   #lineage: string[] = [];

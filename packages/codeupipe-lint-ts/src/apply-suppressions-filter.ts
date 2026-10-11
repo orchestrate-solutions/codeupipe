@@ -4,15 +4,15 @@ import type { Finding } from "./finding.ts";
 import type { Source } from "./source.ts";
 
 const ANONYMOUS = /cup:\s*allow-anonymous\b/;
-const INVARIANT = /cup:\s*allow-(state-read|outside-write|shared-file|name)\b/;
+const INVARIANT = /cup:\s*allow-(state-read|outside-write|shared-file|name|plain)\b/;
 const COMMENT_ONLY = /^\s*(\/\/|\/\*|\*)/;
 
 /**
  * Drops the findings that a comment allows.
  *
  * `// cup: allow-anonymous` allows a CUP-A finding. `// cup: allow-state-read`,
- * `allow-outside-write`, `allow-shared-file` and `allow-name` allow a CUP-I
- * finding. The comment is on the line of the finding, on the line of the
+ * `allow-outside-write`, `allow-shared-file`, `allow-name` and `allow-plain`
+ * allow a CUP-I finding. The comment is on the line of the finding, on the line of the
  * `add...` call around it, or alone on the line directly above. Any text can
  * follow the marker.
  *

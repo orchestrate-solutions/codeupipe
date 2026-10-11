@@ -16,6 +16,7 @@ from this repository.
 npx codeupipe-lint src                  # files or directories
 npx codeupipe-lint --exclude '*/generated/*' src
 npx codeupipe-lint --disable CUP-I005 src
+npx codeupipe-lint --strict src         # a warning fails the run too
 npx codeupipe-lint --rules              # list the rule ids
 npx codeupipe-lint                      # paths come from cup.config.json
 ```
@@ -50,6 +51,7 @@ The ids are those of the Python linter, where it has the rule.
 | CUP-I005 | one-primitive-per-file | a second primitive class at the top level of a file |
 | CUP-I006 | primitive-file-name | the file name is not the class name in kebab-case |
 | CUP-I007 | primitive-role-suffix | the class name does not end with its role |
+| CUP-I008 | logic-outside-primitive | **a warning.** A function, a class or the code at the top of a file has logic (`if`, `? :`, `switch`, a loop, `try`) and is not a primitive |
 
 A step is the argument of `addFilter`, `addTap` or `addPipeline` (on any
 receiver), and the two arguments of `addValve(predicate, filter)`.
@@ -57,6 +59,30 @@ receiver), and the two arguments of `addValve(predicate, filter)`.
 A class is a primitive by its shape: `extends Pipeline`, `extends Hook`,
 `implements Filter`, `implements Tap`, `implements Predicate`, or a method
 `call`, `observe` or `test` with exactly one required parameter.
+
+## Logic that is not in a primitive (CUP-I008)
+
+A project that uses codeupipe writes its logic as Filters, Predicates, Taps,
+Hooks and Pipelines. Logic in a plain function or a plain class works as
+well, so nothing else shows the mistake. This rule shows it.
+
+```
+path:line:col  CUP-I008 logic-outside-primitive  warning: Function `whoIsDue` has logic and is not a Filter, ...
+```
+
+- **It is a warning.** It is in the report and it is counted apart
+  (`No findings. 3 warnings.`). It does not make the exit code 1. With
+  `--strict`, a warning fails the run as a finding does.
+- **Flagged, once each:** a function at the top of a file, a class at the
+  top of a file that is not a primitive, and the code at the top of a file.
+- **Not flagged:** a primitive, a function or a class with no logic, a type,
+  and a test file.
+- **Not seen:** a loop that is a method call (`map`, `filter`, `forEach`),
+  and `&&` / `||`.
+- For logic that must be plain code (the edge to a model server, the entry
+  of a program), say why in a comment: `// cup: allow-plain <reason>`.
+
+The Python linter does not have this rule yet.
 
 ## Rules of the Python linter that are not here
 
@@ -69,8 +95,8 @@ A class is a primitive by its shape: `extends Pipeline`, `extends Hook`,
 - **One line.** A comment on the line of the finding, on the line of the
   `add...` call around it, or alone on the line directly above:
   `// cup: allow-anonymous` for a CUP-A finding;
-  `// cup: allow-state-read`, `allow-outside-write`, `allow-shared-file` or
-  `allow-name` for a CUP-I finding. Any text can follow the marker.
+  `// cup: allow-state-read`, `allow-outside-write`, `allow-shared-file`,
+  `allow-name` or `allow-plain` for a CUP-I finding. Any text can follow the marker.
 - **Files.** `--exclude GLOB`, or `lint.exclude` in the config file. In a
   glob, `*` is any text, a `/` too.
 - **A rule, for the project.** `--disable RULE`, or `lint.disable` in the

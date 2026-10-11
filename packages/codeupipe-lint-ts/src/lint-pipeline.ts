@@ -1,6 +1,7 @@
 import { Pipeline } from "codeupipe";
 
 import { AnalyzeOutsideWritesFilter } from "./analyze-outside-writes-filter.ts";
+import { AnalyzePlainLogicFilter } from "./analyze-plain-logic-filter.ts";
 import { AnalyzePrimitiveNamesFilter } from "./analyze-primitive-names-filter.ts";
 import { AnalyzePrimitivesPerFileFilter } from "./analyze-primitives-per-file-filter.ts";
 import { AnalyzeStateReadsFilter } from "./analyze-state-reads-filter.ts";
@@ -22,6 +23,7 @@ export class LintPipeline extends Pipeline {
     this.addFilter(new AnalyzeOutsideWritesFilter()); // CUP-I004
     this.addFilter(new AnalyzePrimitivesPerFileFilter()); // CUP-I005
     this.addFilter(new AnalyzePrimitiveNamesFilter()); // CUP-I006, CUP-I007
+    this.addFilter(new AnalyzePlainLogicFilter()); // CUP-I008, a warning
     this.addFilter(new DropDisabledFilter());
     this.addFilter(new ApplySuppressionsFilter());
     this.addFilter(new FormatReportFilter());
