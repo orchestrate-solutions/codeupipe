@@ -3,6 +3,7 @@ import { Pipeline } from "codeupipe";
 import { AnalyzeOutsideWritesFilter } from "./analyze-outside-writes-filter.ts";
 import { AnalyzePlainLogicFilter } from "./analyze-plain-logic-filter.ts";
 import { AnalyzePrimitiveNamesFilter } from "./analyze-primitive-names-filter.ts";
+import { AnalyzeStaleMarkersFilter } from "./analyze-stale-markers-filter.ts";
 import { AnalyzePrimitivesPerFileFilter } from "./analyze-primitives-per-file-filter.ts";
 import { AnalyzeStateReadsFilter } from "./analyze-state-reads-filter.ts";
 import { AnalyzeStepsFilter } from "./analyze-steps-filter.ts";
@@ -24,8 +25,9 @@ export class LintPipeline extends Pipeline {
     this.addFilter(new AnalyzePrimitivesPerFileFilter()); // CUP-I005
     this.addFilter(new AnalyzePrimitiveNamesFilter()); // CUP-I006, CUP-I007
     this.addFilter(new AnalyzePlainLogicFilter()); // CUP-I008, a warning
-    this.addFilter(new DropDisabledFilter());
     this.addFilter(new ApplySuppressionsFilter());
+    this.addFilter(new AnalyzeStaleMarkersFilter()); // CUP-I009, a warning
+    this.addFilter(new DropDisabledFilter()); // last, so that a comment for a rule that is off is not stale
     this.addFilter(new FormatReportFilter());
   }
 }

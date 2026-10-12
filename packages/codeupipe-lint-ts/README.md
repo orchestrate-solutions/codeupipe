@@ -52,6 +52,7 @@ The ids are those of the Python linter, where it has the rule.
 | CUP-I006 | primitive-file-name | the file name is not the class name in kebab-case |
 | CUP-I007 | primitive-role-suffix | the class name does not end with its role |
 | CUP-I008 | logic-outside-primitive | **a warning.** A function, a class or the code at the top of a file has logic (`if`, `? :`, `switch`, a loop, `try`) and is not a primitive |
+| CUP-I009 | marker-allows-nothing | **a warning.** A `cup: allow-...` comment that allowed no finding: the code that it was for is gone or has moved, or its kind has a spelling error |
 
 A step is the argument of `addFilter`, `addTap` or `addPipeline` (on any
 receiver), and the two arguments of `addValve(predicate, filter)`.
@@ -97,6 +98,7 @@ The Python linter does not have this rule yet.
   `// cup: allow-anonymous` for a CUP-A finding;
   `// cup: allow-state-read`, `allow-outside-write`, `allow-shared-file`,
   `allow-name` or `allow-plain` for a CUP-I finding. Any text can follow the marker.
+  A comment that allows no finding is itself a finding (CUP-I009), so an old one does not stay.
 - **Files.** `--exclude GLOB`, or `lint.exclude` in the config file. In a
   glob, `*` is any text, a `/` too.
 - **A rule, for the project.** `--disable RULE`, or `lint.disable` in the

@@ -17,7 +17,8 @@ const COMMENT_ONLY = /^\s*(\/\/|\/\*|\*)/;
  * follow the marker.
  *
  * Input keys: `findings`, `sources`.
- * Output keys: `findings` (kept), `suppressed` (dropped).
+ * Output keys: `findings` (kept), `suppressed` (dropped), `usedMarkers` (the
+ * place of each comment that allowed a finding, as `path:line`).
  */
 export class ApplySuppressionsFilter implements Filter {
   call(payload: Payload): Payload {
@@ -27,15 +28,17 @@ export class ApplySuppressionsFilter implements Filter {
     }
     const kept: Finding[] = [];
     const suppressed: Finding[] = [];
+    const used = new Set<string>();
     for (const finding of payload.get<Finding[]>("findings") ?? []) {
       const marker = finding.rule.startsWith("CUP-A") ? ANONYMOUS : INVARIANT;
       const text = lines.get(finding.path) ?? [];
       const line = (number: number | undefined) => (number === undefined ? "" : text[number - 1] ?? "");
       const above = line(finding.line - 1);
-      const allowed = marker.test(line(finding.line)) || marker.test(line(finding.callLine))
-        || (COMMENT_ONLY.test(above) && marker.test(above));
-      (allowed ? suppressed : kept).push(finding);
+      const places = [finding.line, finding.callLine].filter((number) => marker.test(line(number)));
+      if (COMMENT_ONLY.test(above) && marker.test(above)) places.push(finding.line - 1);
+      for (const place of places) used.add(`${finding.path}:${place}`);
+      (places.length > 0 ? suppressed : kept).push(finding);
     }
-    return payload.insert("findings", kept).insert("suppressed", suppressed);
+    return payload.insert("findings", kept).insert("suppressed", suppressed).insert("usedMarkers", [...used]);
   }
 }
