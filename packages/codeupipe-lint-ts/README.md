@@ -83,7 +83,7 @@ path:line:col  CUP-I008 logic-outside-primitive  warning: Function `whoIsDue` ha
 - For logic that must be plain code (the edge to a model server, the entry
   of a program), say why in a comment: `// cup: allow-plain <reason>`.
 
-The Python linter does not have this rule yet.
+The Python linter has this rule too.
 
 ## Rules of the Python linter that are not here
 

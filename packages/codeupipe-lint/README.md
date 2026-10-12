@@ -13,7 +13,7 @@ Each rule can be switched off. There are three ways.
 
 | For | How |
 |---|---|
-| One line | A comment on the line: `# cup: allow-anonymous`, `# cup: allow-mutation`, `# cup: allow-state-read`, `# cup: allow-outside-write`, `# cup: allow-shared-file`, `# cup: allow-name` |
+| One line | A comment on the line: `# cup: allow-anonymous`, `# cup: allow-mutation`, `# cup: allow-state-read`, `# cup: allow-outside-write`, `# cup: allow-shared-file`, `# cup: allow-name`, `# cup: allow-plain`. A comment that allows no finding is itself a finding (CUP-I009) |
 | Some files | `--exclude GLOB`, or `lint.exclude` in `cup.config.json` |
 | The whole project | `--disable RULE`, or `lint.disable` in `cup.config.json` |
 
@@ -124,6 +124,8 @@ a path could not be read. From Python:
 | CUP-I005 | one-primitive-per-file | a second Filter, Predicate, Tap, Hook or named Pipeline class at module level in one file |
 | CUP-I006 | primitive-file-name | the file of a primitive is not its class name in snake_case (`DiscountFilter` is in `discount_filter.py`) |
 | CUP-I007 | primitive-role-suffix | the class name of a primitive does not end with its role: `Filter`, `Tap`, `Hook`, `Predicate` or `Pipeline` |
+| CUP-I008 | logic-outside-primitive | **a warning.** A function, a class or the code at module level has logic (`if`, `a if c else b`, `match`, a loop, `try`) and is not a primitive |
+| CUP-I009 | marker-allows-nothing | **a warning.** A `# cup: allow-...` comment that allowed no finding: the code that it was for is gone or has moved, or its kind has a spelling error |
 
 **Why CUP-I002.** A Payload owns its keys, not its values.
 `payload.get("items")` returns the live list, shared with every copy of the
@@ -158,6 +160,26 @@ the class is: `DiscountFilter`, `AuditTap`, `PrintStepsHook`,
 the standard style for a Python module, so one name gives the other. A
 subclass of `Valve` can end with `Valve`. Test files are not checked.
 Suppress with `cup: allow-name`.
+
+**Why CUP-I008.** A project that uses codeupipe writes its logic as Filters,
+Predicates, Taps, Hooks and Pipelines. Logic in a plain function or a plain
+class works as well, so nothing else shows the mistake. Flagged, once each:
+a function at module level, a class at module level that is not a primitive,
+and the code at module level. Not flagged: a primitive, a function or a class
+with no logic, a test file, and the guards `if __name__ == "__main__":` and
+`if TYPE_CHECKING:`. Not seen: a comprehension, and `and` / `or`. For logic
+that must be plain code (the edge to another program, the entry of a
+program), say why: `# cup: allow-plain <reason>`.
+
+**Warnings.** CUP-I008 and CUP-I009 are warnings. A warning is in the report
+and is counted apart (`No invariant violations. 3 warnings.`). It does not
+make the exit code 1. With `--strict`, a warning fails the run as a finding
+does.
+
+**Why CUP-I009.** A comment that allows nothing says that the code has an
+exception that it does not have. Only a comment that starts with the marker
+counts. A `cup: allow-anonymous` comment is for the anonymous-step linter and
+is not looked at.
 
 **Why CUP-I003.** A Filter's result and a Valve's decision must depend only
 on the Payload. A step is never handed State, so the only way to read it is

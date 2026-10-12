@@ -7,12 +7,15 @@ Steps:
     4. AnalyzeStateReadsFilter        CUP-I003
     5. AnalyzeOutsideWritesFilter     CUP-I004
     6. AnalyzePrimitivesPerFileFilter CUP-I005
-    7. AnalyzePrimitiveNamesFilter CUP-I006, CUP-I007
-    8. DropDisabledFilter       rules switched off for the project
+    7. AnalyzePrimitiveNamesFilter    CUP-I006, CUP-I007
+    8. AnalyzePlainLogicFilter        CUP-I008, a warning
     9. ApplySuppressionsFilter        ``cup: allow-mutation``, ``cup: allow-state-read``,
-                                ``cup: allow-outside-write``, ``cup: allow-shared-file``,
-                                ``cup: allow-name``
-   10. FormatReportFilter             report lines + exit code
+                                      ``cup: allow-outside-write``, ``cup: allow-shared-file``,
+                                      ``cup: allow-name``, ``cup: allow-plain``
+   10. AnalyzeStaleMarkersFilter      CUP-I009, a warning
+   11. DropDisabledFilter             rules switched off for the project. Last, so that a
+                                      comment for a rule that is off is not stale
+   12. FormatReportFilter             report lines + exit code
 """
 
 import re
@@ -27,11 +30,13 @@ from codeupipe_lint.anonymous_steps.format_report_filter import FormatReportFilt
 from .analyze_outside_writes_filter import AnalyzeOutsideWritesFilter
 from .analyze_primitive_names_filter import AnalyzePrimitiveNamesFilter
 from .analyze_payload_mutation_filter import AnalyzePayloadMutationFilter
+from .analyze_plain_logic_filter import AnalyzePlainLogicFilter
+from .analyze_stale_markers_filter import AnalyzeStaleMarkersFilter
 from .analyze_primitives_per_file_filter import AnalyzePrimitivesPerFileFilter
 from .analyze_state_reads_filter import AnalyzeStateReadsFilter
 from .parse_python_filter import ParsePythonFilter
 
-MARKER = re.compile(r"cup:\s*allow-(mutation|state-read|outside-write|shared-file|name)\b")
+MARKER = re.compile(r"cup:\s*allow-(mutation|state-read|outside-write|shared-file|name|plain)\b")
 
 
 def build_lint_pipeline() -> Pipeline:
@@ -43,14 +48,16 @@ def build_lint_pipeline() -> Pipeline:
     pipeline.add_filter(AnalyzeOutsideWritesFilter())
     pipeline.add_filter(AnalyzePrimitivesPerFileFilter())
     pipeline.add_filter(AnalyzePrimitiveNamesFilter())
-    pipeline.add_filter(DropDisabledFilter())
+    pipeline.add_filter(AnalyzePlainLogicFilter())
     pipeline.add_filter(ApplySuppressionsFilter(MARKER))
+    pipeline.add_filter(AnalyzeStaleMarkersFilter())
+    pipeline.add_filter(DropDisabledFilter())
     pipeline.add_filter(FormatReportFilter("invariant violation", "invariant violations"))
     return pipeline
 
 
 def lint_paths(paths: Iterable[str], exclude: Optional[Iterable[str]] = None,
-               disable: Optional[Iterable[str]] = None) -> Payload:
+               disable: Optional[Iterable[str]] = None, strict: bool = False) -> Payload:
     """Run the linter over ``paths``; the result Payload holds ``findings``,
     ``suppressed``, ``errors``, ``report``, ``error_report`` and ``exit_code``."""
     data = {"paths": list(paths), "findings": [], "errors": []}
@@ -58,4 +65,6 @@ def lint_paths(paths: Iterable[str], exclude: Optional[Iterable[str]] = None,
         data["exclude"] = list(exclude)
     if disable:
         data["disable"] = list(disable)
+    if strict:
+        data["strict"] = True
     return build_lint_pipeline().run(Payload(data))
