@@ -4,6 +4,9 @@ The rules are in **[API.md](API.md)**, the CUP API contract. This suite
 checks them.
 
 One set of language-neutral cases, a runner, and **one judge** (`run.py`).
+The judge is itself a codeupipe pipeline, in [judging/](judging/): one step
+reads the cases, one runs each target, one compares, and one writes the
+matrix. Each step is tested alone in `tests/conformance/test_judge_pipeline.py`.
 The dynamic run and each compiled form are held to exactly the same
 comparison.
 
