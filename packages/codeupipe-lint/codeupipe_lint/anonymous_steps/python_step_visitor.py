@@ -45,39 +45,7 @@ _OTHER: Binding = ("other", "", None, None)
 _FUNCS = (ast.FunctionDef, ast.AsyncFunctionDef)
 
 
-def _is_plain_pipeline_call(node: ast.AST) -> bool:
-    if not isinstance(node, ast.Call) or node.args or node.keywords:
-        return False
-    func = node.func
-    return (isinstance(func, ast.Name) and func.id == "Pipeline") or (
-        isinstance(func, ast.Attribute) and func.attr == "Pipeline")
-
-
-def _own_nodes(body: List[ast.stmt]):
-    """Every node in ``body``, not descending into nested functions, classes or lambdas."""
-    stack = list(reversed(body))
-    while stack:
-        node = stack.pop()
-        yield node
-        for child in reversed(list(ast.iter_child_nodes(node))):
-            if isinstance(child, _FUNCS + (ast.ClassDef, ast.Lambda)):
-                yield child  # the definition itself binds a name; its body is its own scope
-                continue
-            stack.append(child)
-
-
-def _target_names(target: ast.AST):
-    if isinstance(target, ast.Name):
-        yield target.id
-    elif isinstance(target, (ast.Tuple, ast.List)):
-        for element in target.elts:
-            for name in _target_names(element):
-                yield name
-    elif isinstance(target, ast.Starred):
-        for name in _target_names(target.value):
-            yield name
-
-
+# cup: allow-plain a visitor of a syntax tree: the tool that a Filter uses to read or change source code
 class PythonStepVisitor:
     """Collects Findings for one module (see the module docstring)."""
 
@@ -104,7 +72,7 @@ class PythonStepVisitor:
             for arg in (args.vararg, args.kwarg):
                 if arg is not None:
                     bind(arg.arg, _OTHER)
-        nodes = list(_own_nodes(body))
+        nodes = list(PythonStepVisitor._own_nodes(body))
         local_classes = set()
         for node in nodes:
             if isinstance(node, _FUNCS):
@@ -118,16 +86,16 @@ class PythonStepVisitor:
                 targets = node.targets if isinstance(node, ast.Assign) else [node.target]
                 binding = self._value_binding(node.value, local_classes, owner)
                 for target in targets:
-                    names = list(_target_names(target))
+                    names = list(PythonStepVisitor._target_names(target))
                     for name in names:
                         bind(name, binding if isinstance(target, ast.Name) else _OTHER)
             elif isinstance(node, (ast.AugAssign, ast.For, ast.AsyncFor, ast.comprehension, ast.NamedExpr)):
-                for name in _target_names(node.target):
+                for name in PythonStepVisitor._target_names(node.target):
                     bind(name, _OTHER)
             elif isinstance(node, (ast.With, ast.AsyncWith)):
                 for item in node.items:
                     if item.optional_vars is not None:
-                        for name in _target_names(item.optional_vars):
+                        for name in PythonStepVisitor._target_names(item.optional_vars):
                             bind(name, _OTHER)
             elif isinstance(node, (ast.Import, ast.ImportFrom)):
                 for alias in node.names:
@@ -148,7 +116,7 @@ class PythonStepVisitor:
     def _value_binding(value: Optional[ast.AST], local_classes: Set[str], owner: Optional[str]) -> Binding:
         if isinstance(value, ast.Lambda):
             return ("lambda", "", owner, value)
-        if _is_plain_pipeline_call(value):
+        if PythonStepVisitor._is_plain_pipeline_call(value):
             return ("plain_pipeline", "", owner, value)
         if isinstance(value, ast.Call) and isinstance(value.func, ast.Name) and value.func.id in local_classes:
             return ("local_instance", value.func.id, owner, value)
@@ -188,7 +156,7 @@ class PythonStepVisitor:
         if isinstance(expr, ast.Name):
             got = self._describe_binding(self._resolve(expr.id, chain))
             return None if got is None else (got[0], expr.id, got[1])
-        if _is_plain_pipeline_call(expr):
+        if PythonStepVisitor._is_plain_pipeline_call(expr):
             return UNNAMED_PIPELINE, None, "a plain Pipeline()"
         if isinstance(expr, ast.Call) and isinstance(expr.func, ast.Name):
             name = expr.func.id
@@ -227,7 +195,7 @@ class PythonStepVisitor:
             return None
         visiting = visiting | {id(func)}
         chain = self._chain_for(func, parent_chain)
-        for node in _own_nodes(func.body):
+        for node in PythonStepVisitor._own_nodes(func.body):
             if isinstance(node, ast.Return) and node.value is not None:
                 got = self._describe(node.value, chain, visiting)
                 if got is not None:
@@ -278,3 +246,36 @@ class PythonStepVisitor:
         self._seen.add(key)
         self._findings.append(make_finding("python", self._path, expr.lineno, expr.col_offset + 1, rule,
                                            role, what, call.lineno))
+
+    @staticmethod
+    def _is_plain_pipeline_call(node: ast.AST) -> bool:
+        if not isinstance(node, ast.Call) or node.args or node.keywords:
+            return False
+        func = node.func
+        return (isinstance(func, ast.Name) and func.id == "Pipeline") or (
+            isinstance(func, ast.Attribute) and func.attr == "Pipeline")
+
+    @staticmethod
+    def _own_nodes(body: List[ast.stmt]):
+        """Every node in ``body``, not descending into nested functions, classes or lambdas."""
+        stack = list(reversed(body))
+        while stack:
+            node = stack.pop()
+            yield node
+            for child in reversed(list(ast.iter_child_nodes(node))):
+                if isinstance(child, _FUNCS + (ast.ClassDef, ast.Lambda)):
+                    yield child  # the definition itself binds a name; its body is its own scope
+                    continue
+                stack.append(child)
+
+    @staticmethod
+    def _target_names(target: ast.AST):
+        if isinstance(target, ast.Name):
+            yield target.id
+        elif isinstance(target, (ast.Tuple, ast.List)):
+            for element in target.elts:
+                for name in PythonStepVisitor._target_names(element):
+                    yield name
+        elif isinstance(target, ast.Starred):
+            for name in PythonStepVisitor._target_names(target.value):
+                yield name

@@ -27,13 +27,7 @@ MUTATORS = {"append", "extend", "insert", "remove", "pop", "clear", "sort", "rev
             "symmetric_difference_update", "appendleft", "extendleft", "popleft"}
 
 
-def _base(node):
-    """The name or call an attribute/subscript chain hangs off."""
-    while isinstance(node, (ast.Subscript, ast.Attribute)):
-        node = node.value
-    return node
-
-
+# cup: allow-plain a visitor of a syntax tree: the tool that a Filter uses to read or change source code
 class PayloadMutationVisitor(ast.NodeVisitor):
     def __init__(self, path, method):
         self.path = path
@@ -90,7 +84,7 @@ class PayloadMutationVisitor(ast.NodeVisitor):
         if self._is_internals(chain):
             self._report(statement, PAYLOAD_INTERNALS, "Writes a Payload's internals (`_data`)")
             return
-        base = _base(target)
+        base = PayloadMutationVisitor._base(target)
         if isinstance(target, ast.Subscript) and (self._is_get(base) or
                                                   (isinstance(base, ast.Name) and base.id in self.shared)):
             self._report(statement, SHARED_VALUE_MUTATION, self._describe(base))
@@ -146,7 +140,7 @@ class PayloadMutationVisitor(ast.NodeVisitor):
             if self._is_internals(receiver):
                 self._report(node, PAYLOAD_INTERNALS, "Writes a Payload's internals (`_data`)")
             else:
-                base = _base(receiver)
+                base = PayloadMutationVisitor._base(receiver)
                 if self._is_get(base) or (isinstance(base, ast.Name) and base.id in self.shared):
                     self._report(node, SHARED_VALUE_MUTATION, self._describe(base))
         self.generic_visit(node)
@@ -155,3 +149,10 @@ class PayloadMutationVisitor(ast.NodeVisitor):
         """A nested function or class is its own scope; step methods are found from the module."""
 
     visit_FunctionDef = visit_AsyncFunctionDef = visit_ClassDef = visit_Lambda = _skip
+
+    @staticmethod
+    def _base(node):
+        """The name or call an attribute/subscript chain hangs off."""
+        while isinstance(node, (ast.Subscript, ast.Attribute)):
+            node = node.value
+        return node

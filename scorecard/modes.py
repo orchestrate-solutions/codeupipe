@@ -35,6 +35,7 @@ def describe_error(error):
     return f"{type(error).__name__}: {error}"
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def _call(fn, data):
     vocab.sink.reset()
     try:
@@ -55,6 +56,7 @@ def _run_twice(fn, case):
     return record
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def _export(pipeline, lowering, observe):
     try:
         return vocab.load_export(pipeline, lowering, observe, vocab.new_workdir()), None
@@ -90,6 +92,7 @@ def run_dynamic(case, predicates):
     return record
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def run_fast(case, predicates, lowering):
     """Fast export. A case with Hooks must be *refused* (documented); the
     same pipeline without Hooks is then exported and compared on output,
@@ -110,6 +113,7 @@ def run_fast(case, predicates, lowering):
     return record
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def run_observe(case, predicates):
     """Observable export. The pipeline carries the case's Hooks (so
     SOURCE_HOOKS is exercised); a SnapshotHook is passed at run time

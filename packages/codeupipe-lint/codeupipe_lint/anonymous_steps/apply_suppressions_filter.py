@@ -37,25 +37,25 @@ class ApplySuppressionsFilter:
                 except OSError:
                     lines = []
                 cache[finding.path] = lines
-            places = _marker_lines(finding, lines, self.marker)
+            places = ApplySuppressionsFilter._marker_lines(finding, lines, self.marker)
             used.update((finding.path, place) for place in places)
             (suppressed if places else kept).append(finding)
         return (payload.insert("findings", kept).insert("suppressed", suppressed)
                 .insert("used_markers", sorted(used)))
 
+    @staticmethod
+    def _line(lines, number):
+        return lines[number - 1] if number and 0 < number <= len(lines) else ""
 
-def _line(lines, number):
-    return lines[number - 1] if number and 0 < number <= len(lines) else ""
-
-
-def _marker_lines(finding, lines, marker=MARKER):
-    """The lines of the comments that allow this finding. Empty when none does."""
-    places = [number for number in (finding.line, finding.call_line) if marker.search(_line(lines, number))]
-    above = _line(lines, finding.line - 1)
-    if _COMMENT_ONLY.match(above) and marker.search(above):
-        places.append(finding.line - 1)
-    return places
+    @staticmethod
+    def _marker_lines(finding, lines, marker=MARKER):
+        """The lines of the comments that allow this finding. Empty when none does."""
+        places = [number for number in (finding.line, finding.call_line) if marker.search(ApplySuppressionsFilter._line(lines, number))]
+        above = ApplySuppressionsFilter._line(lines, finding.line - 1)
+        if _COMMENT_ONLY.match(above) and marker.search(above):
+            places.append(finding.line - 1)
+        return places
 
 
 def _is_suppressed(finding, lines, marker=MARKER) -> bool:
-    return bool(_marker_lines(finding, lines, marker))
+    return bool(ApplySuppressionsFilter._marker_lines(finding, lines, marker))

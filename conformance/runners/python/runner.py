@@ -36,6 +36,7 @@ class Unsupported(Exception):
     pass
 
 
+# cup: allow-plain the conformance harness: it builds each case, runs it on a target and reports; it never judges
 def _filter(spec, run_async=False):
     op = spec["op"]
     if op == "run_again":
@@ -61,6 +62,7 @@ def _filter(spec, run_async=False):
     raise Unsupported(f"unknown filter op {op!r}")
 
 
+# cup: allow-plain the conformance harness: it builds each case, runs it on a target and reports; it never judges
 def _tap(spec):
     if spec["op"] == "record":
         return ops.RecordTap(spec["key"])
@@ -71,6 +73,7 @@ def _tap(spec):
     raise Unsupported(f"unknown tap op {spec['op']!r}")
 
 
+# cup: allow-plain the conformance harness: it builds each case, runs it on a target and reports; it never judges
 def _predicate_source(name, when):
     """Valve predicates are generated as real predicate classes so static
     lowering can recover their source (it refuses anything else)."""
@@ -87,6 +90,7 @@ def _predicate_source(name, when):
             f"when_{name} = When_{name}()\n")
 
 
+# cup: allow-plain the conformance harness: it builds each case, runs it on a target and reports; it never judges
 def _predicates(steps, module_dir, module_name):
     sources = []
 
@@ -107,6 +111,7 @@ def _predicates(steps, module_dir, module_name):
         sys.path.remove(str(module_dir))
 
 
+# cup: allow-plain the conformance harness: it builds each case, runs it on a target and reports; it never judges
 def build(case, cls, predicates, names, run_async=False):
     p = cls()
     for step in case["steps"]:
@@ -147,6 +152,7 @@ def _named(steps, label):
     return [label.get(step, step) for step in steps]
 
 
+# cup: allow-plain the conformance harness: it builds each case, runs it on a target and reports; it never judges
 def _named_hooks(events, label):
     out = []
     for event in events:
@@ -155,6 +161,7 @@ def _named_hooks(events, label):
     return out
 
 
+# cup: allow-plain the conformance harness: it builds each case, runs it on a target and reports; it never judges
 def _dynamic(case, predicates, run_async=False):
     names = {}
     p = build(case, Pipeline, predicates, names, run_async)
@@ -197,6 +204,7 @@ def _dynamic(case, predicates, run_async=False):
     return result
 
 
+# cup: allow-plain the conformance harness: it builds each case, runs it on a target and reports; it never judges
 def _load_export(p, lowering, observe, workdir):
     """Export ``p`` and import the package from disk, as a customer would."""
     from codeupipe.compile import build_export_pipeline_v2
@@ -217,6 +225,7 @@ def _load_export(p, lowering, observe, workdir):
         sys.path.remove(package_parent)
 
 
+# cup: allow-plain the conformance harness: it builds each case, runs it on a target and reports; it never judges
 def _static(case, predicates, lowering, workdir, observe=False):
     # The compiled form always gets its State from the caller, so "given_state" needs nothing more.
     names = {}
@@ -263,6 +272,7 @@ def _static(case, predicates, lowering, workdir, observe=False):
     return result
 
 
+# cup: allow-plain the conformance harness: it builds each case, runs it on a target and reports; it never judges
 def run_case(case, target, index):
     sink.reset()
     tmp = pathlib.Path(tempfile.mkdtemp(prefix="cup_conf_"))
@@ -300,6 +310,7 @@ def _reference_write(data, key):
     return data
 
 
+# cup: allow-plain the conformance harness: it builds each case, runs it on a target and reports; it never judges
 def _reference():
     """The reference workload: ten dict writes behind ten function calls,
     with no framework. A pipeline's time is reported relative to it."""
@@ -309,6 +320,7 @@ def _reference():
     return data
 
 
+# cup: allow-plain the conformance harness: it builds each case, runs it on a target and reports; it never judges
 def _timed(fn):
     import time
     t0 = time.perf_counter()
@@ -317,6 +329,7 @@ def _timed(fn):
     return time.perf_counter() - t0
 
 
+# cup: allow-plain the conformance harness: it builds each case, runs it on a target and reports; it never judges
 def _measure(fn):
     """(µs per run, time relative to the reference workload).
 
@@ -339,6 +352,7 @@ def _measure(fn):
     return best / BENCH_RUNS * 1e6, statistics.median(ratios)
 
 
+# cup: allow-plain the conformance harness: it builds each case, runs it on a target and reports; it never judges
 def bench(target, scenarios):
     results = []
     for index, case in enumerate(scenarios):
@@ -372,6 +386,7 @@ def bench(target, scenarios):
     return results
 
 
+# cup: allow-plain the conformance harness: it builds each case, runs it on a target and reports; it never judges
 def main():
     target = sys.argv[1]
     if target.startswith("bench:"):

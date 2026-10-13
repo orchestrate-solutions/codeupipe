@@ -31,6 +31,7 @@ MODES = ("steps", "inline", "observe")
 RESULTS = pathlib.Path(__file__).resolve().parent / "results"
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def check_case(case):
     """{"dynamic": [self-check failures], "modes": {mode: {verdict, divergences, reason}}}"""
     predicates = vocab.make_predicates(case["steps"], vocab.new_workdir())
@@ -44,6 +45,7 @@ def check_case(case):
     return result
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def failure_signature(result):
     """What a reproducer must keep failing on: (mode, check) pairs."""
     sig = {("dynamic", d["check"]) for d in result["dynamic"]}
@@ -52,6 +54,7 @@ def failure_signature(result):
     return sig
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def _refusal_kind(reason):
     """'<node kind>' from 'name.call at line 0:0 — cannot lower <kind>. Hint: ...'"""
     if reason and "cannot lower " in reason:
@@ -59,6 +62,7 @@ def _refusal_kind(reason):
     return reason or "?"
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def run_campaign(seed, count, hostile_rate=0.15, max_repros=12, max_steps=8, max_depth=2):
     started = time.time()
     cases = case_gen.generate_cases(seed, count, max_steps=max_steps, max_depth=max_depth,
@@ -120,6 +124,7 @@ def run_campaign(seed, count, hostile_rate=0.15, max_repros=12, max_steps=8, max
     }
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def markdown(report):
     lines = [f"# Differential run: seed {report['seed']}, {report['count']} cases",
              "", f"{report['seconds']} s. Corpus: " + ", ".join(f"{k} {v}" for k, v in report["corpus"].items()) + ".",
@@ -152,6 +157,7 @@ def markdown(report):
     return "\n".join(lines) + "\n"
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--seed", type=int, default=20260927)

@@ -92,7 +92,7 @@ class SymbolFlowShapeIR:
 
 
 @dataclass(frozen=True)
-class StepIR:
+class StepIR:  # cup: allow-plain a record of data: it checks its own fields when it is made
     """A single pipeline step in canonical form.
 
     Attributes:

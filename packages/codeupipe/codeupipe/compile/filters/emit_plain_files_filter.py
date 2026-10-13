@@ -46,10 +46,10 @@ class EmitPlainFilesFilter:
                 # predicate of exactly that name), and the Valve predicate
                 # would then call itself. Move the helper aside instead.
                 wanted = f"{step.ident}_predicate"
-                if any(wanted in _bound_names(tree) for tree in definitions):
-                    moved = _unused_name(f"{wanted}_impl", definitions)
+                if any(wanted in EmitPlainFilesFilter._bound_names(tree) for tree in definitions):
+                    moved = EmitPlainFilesFilter._unused_name(f"{wanted}_impl", definitions)
                     for tree in [*definitions, call_ast, predicate]:
-                        _rename(tree, wanted, moved)
+                        EmitPlainFilesFilter._rename(tree, wanted, moved)
                 if isinstance(predicate, ast.FunctionDef):
                     predicate.name = wanted
 
@@ -69,28 +69,28 @@ class EmitPlainFilesFilter:
 
         return payload.insert("files", files)
 
+    @staticmethod
+    def _bound_names(tree: ast.AST) -> set:
+        names = set()
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                names.add(node.name)
+            elif isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
+                names.add(node.id)
+        return names
 
-def _bound_names(tree: ast.AST) -> set:
-    names = set()
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            names.add(node.name)
-        elif isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
-            names.add(node.id)
-    return names
+    @staticmethod
+    def _unused_name(candidate: str, trees) -> str:
+        taken = set().union(*(EmitPlainFilesFilter._bound_names(t) for t in trees)) if trees else set()
+        name, n = candidate, 2
+        while name in taken:
+            name, n = f"{candidate}{n}", n + 1
+        return name
 
-
-def _unused_name(candidate: str, trees) -> str:
-    taken = set().union(*(_bound_names(t) for t in trees)) if trees else set()
-    name, n = candidate, 2
-    while name in taken:
-        name, n = f"{candidate}{n}", n + 1
-    return name
-
-
-def _rename(tree: ast.AST, old: str, new: str) -> None:
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Name) and node.id == old:
-            node.id = new
-        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name == old:
-            node.name = new
+    @staticmethod
+    def _rename(tree: ast.AST, old: str, new: str) -> None:
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Name) and node.id == old:
+                node.id = new
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name == old:
+                node.name = new

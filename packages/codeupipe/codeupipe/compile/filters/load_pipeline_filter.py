@@ -29,22 +29,6 @@ def _refuse(name: str, node_kind: str, suggestion: str) -> UnsupportedFilterShap
                                   node_kind=node_kind, suggestion=suggestion)
 
 
-def _check_pipeline(pipeline, name: str, allow_hooks: bool = False) -> None:
-    """Refuse a pipeline whose behaviour static code cannot reproduce.
-
-    ``allow_hooks``: observable export (``observe=True``) calls the top-level
-    pipeline's Hooks. Hooks on a nested pipeline stay refused: its hooks are
-    objects owned by that inner run, which the flattened code does not have.
-    """
-    if not hasattr(pipeline, "_steps"):
-        raise _refuse(name, type(pipeline).__name__,
-                      "Export takes a Pipeline. This object wraps one or is not one.")
-    if getattr(pipeline, "_hooks", None) and not allow_hooks:
-        raise _refuse(name, "Hook",
-                      "Hooks do not run in the fast static export. Export with observe=True "
-                      "(top-level Hooks only), or remove them.")
-
-
 def _ident(index: int, label: str) -> str:
     """A safe, readable Python identifier for a step: ``step_03_validate``.
 
@@ -62,35 +46,6 @@ def _is_async(fn) -> bool:
     return inspect.iscoroutinefunction(fn) or inspect.isasyncgenfunction(fn)
 
 
-def _flatten(steps, prefix="", group=None):
-    """Expand nested pipelines into their steps, in order.
-
-    A nested pipeline runs its steps in sequence on the parent's payload, so
-    lowering it as those steps inline is the same computation. Names get the
-    nesting step's name as a prefix (``inner__greet``) so they stay unique
-    and remain unique. Each step also carries ``group``, the
-    top-level step it came from, so observable export can still report the
-    nested pipeline as one step.
-    """
-    for name, instance, step_type in steps:
-        if step_type == "pipeline":
-            _check_pipeline(instance, f"{prefix}{name}")
-            yield from _flatten(instance._steps, f"{prefix}{name}/", group or name)
-        else:
-            yield f"{prefix}{name}", instance, step_type, group
-
-
-def _refuse_empty_nested(steps) -> None:
-    """A nested pipeline that flattens to no steps leaves nothing for the
-    observable export to hang its State entry and Hook calls on, while the
-    dynamic run still reports it as executed. Refuse rather than drop it."""
-    for name, instance, step_type in steps:
-        if step_type == "pipeline" and not any(True for _ in _flatten(instance._steps)):
-            raise _refuse(name, "EmptyPipeline",
-                          "A nested pipeline with no steps cannot be reported in State and Hooks "
-                          "by observable export. Remove it, or export without observe=True.")
-
-
 class LoadPipelineFilter:
     """Introspect ``Pipeline._steps`` / ``._hooks`` into a skeleton IR."""
 
@@ -102,14 +57,14 @@ class LoadPipelineFilter:
             raise ValueError("observe=True needs the per-step layout: the inline layout writes the "
                              "payload in place, so Hooks would see later steps' writes. Use "
                              "lowering='steps' (the default) to observe.")
-        _check_pipeline(pipeline, "<pipeline>", allow_hooks=observe)
+        LoadPipelineFilter._check_pipeline(pipeline, "<pipeline>", allow_hooks=observe)
         if observe:
-            _refuse_empty_nested(pipeline._steps)
+            LoadPipelineFilter._refuse_empty_nested(pipeline._steps)
         steps = []
         step_instances = []
         step_predicates = []
 
-        for name, instance, step_type, group in _flatten(pipeline._steps):
+        for name, instance, step_type, group in LoadPipelineFilter._flatten(pipeline._steps):
             kind = None
             source_instance = instance
             predicate = None
@@ -158,3 +113,48 @@ class LoadPipelineFilter:
             .insert("source_hooks", tuple(type(h).__name__ for h in getattr(pipeline, "_hooks", ())))
         )
         return result
+
+    @staticmethod
+    def _check_pipeline(pipeline, name: str, allow_hooks: bool = False) -> None:
+        """Refuse a pipeline whose behaviour static code cannot reproduce.
+
+        ``allow_hooks``: observable export (``observe=True``) calls the top-level
+        pipeline's Hooks. Hooks on a nested pipeline stay refused: its hooks are
+        objects owned by that inner run, which the flattened code does not have.
+        """
+        if not hasattr(pipeline, "_steps"):
+            raise _refuse(name, type(pipeline).__name__,
+                          "Export takes a Pipeline. This object wraps one or is not one.")
+        if getattr(pipeline, "_hooks", None) and not allow_hooks:
+            raise _refuse(name, "Hook",
+                          "Hooks do not run in the fast static export. Export with observe=True "
+                          "(top-level Hooks only), or remove them.")
+
+    @staticmethod
+    def _flatten(steps, prefix="", group=None):
+        """Expand nested pipelines into their steps, in order.
+
+        A nested pipeline runs its steps in sequence on the parent's payload, so
+        lowering it as those steps inline is the same computation. Names get the
+        nesting step's name as a prefix (``inner__greet``) so they stay unique
+        and remain unique. Each step also carries ``group``, the
+        top-level step it came from, so observable export can still report the
+        nested pipeline as one step.
+        """
+        for name, instance, step_type in steps:
+            if step_type == "pipeline":
+                LoadPipelineFilter._check_pipeline(instance, f"{prefix}{name}")
+                yield from LoadPipelineFilter._flatten(instance._steps, f"{prefix}{name}/", group or name)
+            else:
+                yield f"{prefix}{name}", instance, step_type, group
+
+    @staticmethod
+    def _refuse_empty_nested(steps) -> None:
+        """A nested pipeline that flattens to no steps leaves nothing for the
+        observable export to hang its State entry and Hook calls on, while the
+        dynamic run still reports it as executed. Refuse rather than drop it."""
+        for name, instance, step_type in steps:
+            if step_type == "pipeline" and not any(True for _ in LoadPipelineFilter._flatten(instance._steps)):
+                raise _refuse(name, "EmptyPipeline",
+                              "A nested pipeline with no steps cannot be reported in State and Hooks "
+                              "by observable export. Remove it, or export without observe=True.")

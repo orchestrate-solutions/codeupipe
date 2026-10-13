@@ -24,6 +24,7 @@ TInput = TypeVar('TInput')
 TOutput = TypeVar('TOutput')
 
 
+# cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 class Pipeline(Generic[TInput, TOutput]):
     """
     Orchestrator — runs filters in sequence with hooks, taps, and state tracking.

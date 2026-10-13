@@ -13,6 +13,7 @@ __all__ = ["Payload"]
 T = TypeVar('T')
 
 
+# cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 class Payload(Generic[T]):
     """Keyed data. Keys are strings; values are JSON-shaped.
 

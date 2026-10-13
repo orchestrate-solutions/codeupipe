@@ -8,6 +8,7 @@ scorecard compares types as well as values, and top-level key order.
 __all__ = ["strict_equal", "first_difference"]
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def first_difference(a, b, path="$"):
     """None if ``a`` and ``b`` are strictly equal, else a description of the
     first place they differ."""

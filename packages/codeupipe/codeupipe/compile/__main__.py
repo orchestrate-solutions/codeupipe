@@ -26,6 +26,7 @@ def _usage_error(message: str) -> int:
     return 2
 
 
+# cup: allow-plain the entry of the program: it reads the arguments, runs the pipeline and prints the result
 def export(target: str, out_dir: str, lowering: str = "steps", observe: bool = False, overwrite: bool = False) -> int:
     """Export one pipeline; the exit code for it."""
     if observe and lowering == "inline":
@@ -58,6 +59,7 @@ def export(target: str, out_dir: str, lowering: str = "steps", observe: bool = F
     return 0
 
 
+# cup: allow-plain the entry of the program: it reads the arguments, runs the pipeline and prints the result
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="python -m codeupipe.compile",
                                      description="Export a Pipeline to plain Python (docs/compile.md).")

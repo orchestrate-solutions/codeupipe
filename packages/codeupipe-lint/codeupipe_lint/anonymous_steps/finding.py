@@ -3,6 +3,10 @@
 from typing import NamedTuple, Optional
 
 
+# What a report line has in front of the message, for each severity.
+_PREFIX = {"warning": "warning: "}
+
+
 class Finding(NamedTuple):
     """An anonymous step at ``path:line:col`` (1-based line and column).
 
@@ -23,5 +27,5 @@ class Finding(NamedTuple):
     severity: Optional[str] = None
 
     def format(self) -> str:
-        warning = "warning: " if self.severity == "warning" else ""
-        return "%s:%d:%d  %s %s  %s%s" % (self.path, self.line, self.col, self.rule, self.slug, warning, self.message)
+        prefix = _PREFIX.get(self.severity, "")
+        return "%s:%d:%d  %s %s  %s%s" % (self.path, self.line, self.col, self.rule, self.slug, prefix, self.message)

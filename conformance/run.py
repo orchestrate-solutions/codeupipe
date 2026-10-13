@@ -51,6 +51,7 @@ def _typescript(target):
     }
 
 
+# cup: allow-plain the judge of the conformance suite: it runs each target and compares each result with what the case expects
 def _node_runs_typescript():
     """Whether there is a Node that runs a .ts file as it is (22.18 or later)."""
     node = shutil.which("node")
@@ -83,6 +84,7 @@ _TYPESCRIPT_NEEDS = {
 }
 
 
+# cup: allow-plain the judge of the conformance suite: it runs each target and compares each result with what the case expects
 def default_targets():
     """Every target that this machine can run. TypeScript needs Node, and the
     static TypeScript target needs its package to be installed."""
@@ -93,6 +95,7 @@ def default_targets():
     return [name for name in TARGETS if can_run(name)]
 
 
+# cup: allow-plain the judge of the conformance suite: it runs each target and compares each result with what the case expects
 def load_cases():
     cases = []
     for path in sorted(CASES.glob("*.json")):
@@ -104,6 +107,7 @@ def load_cases():
     return cases
 
 
+# cup: allow-plain the judge of the conformance suite: it runs each target and compares each result with what the case expects
 def run_target(name, spec, cases):
     env = dict(os.environ)
     env.update(spec["env"])
@@ -119,6 +123,7 @@ def run_target(name, spec, cases):
         return None, f"unreadable runner output ({error}): {proc.stdout[:500]}"
 
 
+# cup: allow-plain the judge of the conformance suite: it runs each target and compares each result with what the case expects
 def _norm(value):
     """JSON equality: 1 == 1.0, but true is not 1."""
     if isinstance(value, bool) or value is None or isinstance(value, str):
@@ -132,6 +137,7 @@ def _norm(value):
     return value
 
 
+# cup: allow-plain the judge of the conformance suite: it runs each target and compares each result with what the case expects
 def judge(case, result):
     """Return (status, problems)."""
     if result is None:
@@ -179,6 +185,7 @@ def judge(case, result):
     return "pass", []
 
 
+# cup: allow-plain the judge of the conformance suite: it runs each target and compares each result with what the case expects
 def main(argv):
     cases = load_cases()
     names = argv or default_targets()
@@ -211,6 +218,7 @@ def main(argv):
     return 1 if failed else 0
 
 
+# cup: allow-plain the judge of the conformance suite: it runs each target and compares each result with what the case expects
 def _markdown(cases, names, matrix, report):
     mark = {"pass": "✅", "partial": "✅*", "FAIL": "❌", "unsupported": "➖", "—": "—"}
     lines = ["| case | " + " | ".join(names) + " |", "|---|" + "---|" * len(names)]

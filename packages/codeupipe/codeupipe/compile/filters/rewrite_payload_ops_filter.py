@@ -36,21 +36,6 @@ def _name(identifier: str, ctx=None) -> ast.Name:
 _FRAMEWORK_MODULES = ("codeupipe", "codeupipe")
 
 
-def _drop_unused_framework_imports(imports: tuple, *trees: ast.AST) -> tuple:
-    """Lowering removes ``Payload`` uses; drop their imports
-    so no framework import survives into the emitted package."""
-    used = {n.id for tree in trees if tree is not None for n in ast.walk(tree) if isinstance(n, ast.Name)}
-    kept = []
-    for line in imports:
-        stmt = ast.parse(line).body[0]
-        module = getattr(stmt, "module", None) or (stmt.names[0].name if isinstance(stmt, ast.Import) else "")
-        bound = {a.asname or a.name.split(".")[0] for a in stmt.names}
-        if module.split(".")[0] in _FRAMEWORK_MODULES and not (bound & used):
-            continue
-        kept.append(line)
-    return tuple(kept)
-
-
 # Payload members this rewriter lowers. Anything else read off the payload
 # (``trace_id``, ``lineage``, ``with_trace``, ``_data``) has no plain-dict
 # counterpart and would otherwise pass through as ``data.<attr>`` on a dict,
@@ -67,6 +52,7 @@ _WRITE_SITE = ("A Payload write (insert, remove, merge) exports as a statement o
                "of a return, or as the value assigned to a name. Move it out of the larger expression.")
 
 
+# cup: allow-plain a visitor of a syntax tree: the tool that a Filter uses to read or change source code
 class _PayloadToDictTransformer(ast.NodeTransformer):
     """Lower a step's Payload operations to operations on a plain dict.
 
@@ -281,7 +267,22 @@ class RewritePayloadOpsFilter:
                 predicate_ast = ast.fix_missing_locations(
                     predicate_transformer.visit(ast.parse(ast.unparse(predicate_ast)).body[0])
                 )
-            imports = _drop_unused_framework_imports(tuple(step.imports or ()), call_ast, predicate_ast)
+            imports = RewritePayloadOpsFilter._drop_unused_framework_imports(tuple(step.imports or ()), call_ast, predicate_ast)
             rewritten_steps.append(replace(step, call_ast=call_ast, predicate_ast=predicate_ast, imports=imports))
 
         return payload.insert("pipeline_ir", replace(pipeline_ir, steps=rewritten_steps))
+
+    @staticmethod
+    def _drop_unused_framework_imports(imports: tuple, *trees: ast.AST) -> tuple:
+        """Lowering removes ``Payload`` uses; drop their imports
+        so no framework import survives into the emitted package."""
+        used = {n.id for tree in trees if tree is not None for n in ast.walk(tree) if isinstance(n, ast.Name)}
+        kept = []
+        for line in imports:
+            stmt = ast.parse(line).body[0]
+            module = getattr(stmt, "module", None) or (stmt.names[0].name if isinstance(stmt, ast.Import) else "")
+            bound = {a.asname or a.name.split(".")[0] for a in stmt.names}
+            if module.split(".")[0] in _FRAMEWORK_MODULES and not (bound & used):
+                continue
+            kept.append(line)
+        return tuple(kept)

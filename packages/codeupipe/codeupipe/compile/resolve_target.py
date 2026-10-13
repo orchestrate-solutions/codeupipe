@@ -14,6 +14,7 @@ class TargetError(Exception):
     """The ``module:name`` given does not lead to a Pipeline."""
 
 
+# cup: allow-plain used by the entry of the program: it finds the pipeline that an argument names
 def resolve_target(spec: str) -> Pipeline:
     """``name`` may be a Pipeline, or anything callable with no arguments that
     returns one: a builder function or a named Pipeline type."""
