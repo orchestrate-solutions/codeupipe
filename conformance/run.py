@@ -173,7 +173,7 @@ def judge(case, result):
 
     if problems:
         return "FAIL", problems
-    unchecked = [k for k in ("state", "hooks") if k in expect and k not in result]
+    unchecked = [k for k in ("state", "hooks", "inner_states", "pipeline_state") if k in expect and k not in result]
     if unchecked:
         return "partial", [f"target cannot observe {', '.join(unchecked)}"]
     return "pass", []

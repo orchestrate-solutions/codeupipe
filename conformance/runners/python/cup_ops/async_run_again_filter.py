@@ -1,8 +1,6 @@
 """AsyncRunAgainFilter: the reference `run_again` step for ``run_async`` (conformance/README.md)."""
 
-from codeupipe import Payload, State
-
-from conformance_sink import INNER_STATES
+from conformance_sink import RUN_AGAIN
 
 
 class AsyncRunAgainFilter:
@@ -10,11 +8,8 @@ class AsyncRunAgainFilter:
 
     def __init__(self, data):
         self.data = data
-        self.pipeline = None
 
     async def call(self, payload):
         if payload.get("inner") is not True:
-            state = State()
-            INNER_STATES.append(state)
-            await self.pipeline.run_async(Payload(dict(self.data)), state)
+            await RUN_AGAIN[0](dict(self.data))
         return payload

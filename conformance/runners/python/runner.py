@@ -113,8 +113,6 @@ def build(case, cls, predicates, names, run_async=False):
         kind, name = step["kind"], step["name"]
         if kind == "filter":
             obj = _filter(step, run_async)
-            if step["op"] == "run_again":
-                obj.pipeline = p
             p.add_filter(obj)
         elif kind == "tap":
             obj = _tap(step)
@@ -167,6 +165,13 @@ def _dynamic(case, predicates, run_async=False):
     # With "given_state", the caller gives the State of the run. If not, the run makes one.
     given = [State()] if case.get("given_state") else []
     result = {}
+
+    def again(inner):
+        state = State()
+        sink.INNER_STATES.append(state)
+        return p.run_async(Payload(inner), state) if run_async else p.run(Payload(inner), state)
+
+    sink.RUN_AGAIN[0] = again
     try:
         if run_async:
             out = asyncio.run(p.run_async(Payload(data), *given))
@@ -214,8 +219,6 @@ def _load_export(p, lowering, observe, workdir):
 
 def _static(case, predicates, lowering, workdir, observe=False):
     # The compiled form always gets its State from the caller, so "given_state" needs nothing more.
-    if any(step.get("op") == "run_again" for step in case["steps"]):
-        raise Unsupported("the compiled form is one function: it has no Pipeline that a step can run again")
     names = {}
     p = build(case, Pipeline, predicates, names)
     label = labels(p, names)
@@ -226,6 +229,17 @@ def _static(case, predicates, lowering, workdir, observe=False):
     data = copy.deepcopy(case["input"])
     result = {}
     state = {}
+    inner_states = []
+
+    def again(inner):
+        # The compiled form is a function. To run the pipeline again is to call that function again,
+        # and the caller gives each call its own State.
+        if not observe:
+            return package.run(inner)
+        inner_states.append({})
+        return package.run(inner, state=inner_states[-1], hooks=None)
+
+    sink.RUN_AGAIN[0] = again
     try:
         if observe:
             result["output"] = package.run(data, state=state, hooks=hooks)
@@ -234,11 +248,15 @@ def _static(case, predicates, lowering, workdir, observe=False):
     except Exception as error:  # noqa: BLE001
         result["error"] = f"{type(error).__name__}: {error}"
     if observe:
-        result["state"] = {
-            "executed": _named(state["executed"], label),
-            "skipped": _named(state["skipped"], label),
-            "errors": _named([step for step, _ in state["errors"]], label),
-        }
+        def report(one):
+            return {
+                "executed": _named(one["executed"], label),
+                "skipped": _named(one["skipped"], label),
+                "errors": _named([step for step, _ in one["errors"]], label),
+            }
+
+        result["state"] = report(state)
+        result["inner_states"] = [report(one) for one in inner_states]
         if case.get("hooks"):
             result["hooks"] = _named_hooks(sink.HOOKS, label)
     result["input_after"] = data

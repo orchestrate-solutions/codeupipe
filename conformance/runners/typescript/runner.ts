@@ -37,7 +37,7 @@ import { RecordTap } from "./cup-ops/record-tap.ts";
 import { RemoveFilter } from "./cup-ops/remove-filter.ts";
 import { SetFilter } from "./cup-ops/set-filter.ts";
 import { RunAgainFilter } from "./cup-ops/run-again-filter.ts";
-import { INNER_STATES, TAPS } from "./cup-ops/sink.ts";
+import { INNER_STATES, RUN_AGAIN, TAPS } from "./cup-ops/sink.ts";
 import { TruthyPredicate } from "./cup-ops/truthy-predicate.ts";
 
 type Spec = Record<string, any>;
@@ -81,9 +81,7 @@ function makePredicate(when: Spec): Predicate {
 function build(steps: Spec[], pipeline: Pipeline): Pipeline {
   for (const step of steps) {
     if (step.kind === "filter") {
-      const filter = makeFilter(step);
-      if (filter instanceof RunAgainFilter) filter.pipeline = pipeline;
-      pipeline.addFilter(filter);
+      pipeline.addFilter(makeFilter(step));
     } else if (step.kind === "tap") {
       pipeline.addTap(makeTap(step));
     } else if (step.kind === "valve") {
@@ -119,6 +117,11 @@ async function runCase(spec: Case): Promise<Record<string, unknown>> {
   const result: Record<string, unknown> = { id: spec.id };
   // With "given_state", the caller gives the State of the run. If not, the run makes one.
   const given = spec.given_state ? new State() : undefined;
+  RUN_AGAIN.run = (input) => {
+    const state = new State();
+    INNER_STATES.push(state);
+    return pipeline.run(new Payload(input), state);
+  };
   try {
     result.output = (await (given === undefined ? pipeline.run(new Payload(data)) : pipeline.run(new Payload(data), given))).toDict();
   } catch (error) {
@@ -150,12 +153,12 @@ const CLASS_OF: Record<string, [string, string]> = {
   set: ["SetFilter", "set-filter"], copy: ["CopyFilter", "copy-filter"], add: ["AddFilter", "add-filter"],
   append: ["AppendFilter", "append-filter"], remove: ["RemoveFilter", "remove-filter"],
   merge: ["MergeFilter", "merge-filter"], has: ["HasFilter", "has-filter"], mutate: ["MutateFilter", "mutate-filter"],
-  fail: ["FailFilter", "fail-filter"], record: ["RecordTap", "record-tap"], "tap:fail": ["FailTap", "fail-tap"],
+  fail: ["FailFilter", "fail-filter"], run_again: ["RunAgainFilter", "run-again-filter"], record: ["RecordTap", "record-tap"], "tap:fail": ["FailTap", "fail-tap"],
   noop: ["NoopTap", "noop-tap"], equals: ["EqualsPredicate", "equals-predicate"], truthy: ["TruthyPredicate", "truthy-predicate"],
 };
 const ARGUMENTS: Record<string, string[]> = {
   set: ["key", "value"], copy: ["from", "to"], add: ["key", "by"], append: ["key", "value"], remove: ["key"],
-  merge: ["value"], has: ["key", "to"], mutate: ["key", "value"], fail: ["message"], record: ["key"],
+  merge: ["value"], has: ["key", "to"], mutate: ["key", "value"], fail: ["message"], run_again: ["input"], record: ["key"],
   "tap:fail": ["message"], noop: [], equals: ["key", "value"], truthy: ["key"],
 };
 
@@ -198,9 +201,6 @@ function sourceOf(spec: Case): string {
 type Compile = (file: string, className: string, options: { outFile: string }) => Promise<string>;
 
 async function runStatic(spec: Case, compile: Compile, directory: string, index: number): Promise<Record<string, unknown>> {
-  if (spec.steps.some((step) => step.op === "run_again")) {
-    throw new Unsupported("the compiled form is one function: it has no Pipeline that a step can run again");
-  }
   const sourceFile = join(directory, `case-${index}-pipeline.ts`);
   const outFile = join(directory, `case-${index}-compiled.ts`);
   writeFileSync(sourceFile, sourceOf(spec));
@@ -212,6 +212,8 @@ async function runStatic(spec: Case, compile: Compile, directory: string, index:
   }
   const compiled: { run(input: Record<string, unknown>): Promise<Record<string, unknown>> } = await import(pathToFileURL(outFile).href);
 
+  // The compiled form is a function. To run the pipeline again is to call that function again.
+  RUN_AGAIN.run = (input) => compiled.run(input);
   const data = structuredClone(spec.input);
   const result: Record<string, unknown> = { id: spec.id };
   try {

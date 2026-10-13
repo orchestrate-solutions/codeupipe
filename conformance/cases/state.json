@@ -56,19 +56,6 @@
      "audit"
     ]
    },
-   "pipeline_state": {
-    "executed": [
-     "first",
-     "audit",
-     "last"
-    ],
-    "skipped": [
-     "gate"
-    ],
-    "errors": [
-     "audit"
-    ]
-   },
    "inner_states": []
   }
  },
@@ -140,17 +127,7 @@
      "skipped": [],
      "errors": []
     }
-   ],
-   "pipeline_state": {
-    "executed": [
-     "first",
-     "again",
-     "gate",
-     "last"
-    ],
-    "skipped": [],
-    "errors": []
-   }
+   ]
   }
  },
  {

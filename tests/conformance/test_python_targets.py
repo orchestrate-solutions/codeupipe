@@ -16,9 +16,9 @@ CONFORMANCE = pathlib.Path(__file__).resolve().parents[2] / "conformance"
 PYTHON_TARGETS = ["python:run", "python:run_async", "python:static-steps", "python:static-inline",
                   "python:static-observe"]
 
-# The cases with a step that starts a second run of its own Pipeline.
-RUNS_AGAIN = ["state/a-run-that-starts-inside-another-run-has-its-own-state",
-              "state/with-no-state-from-the-caller-the-pipeline-has-the-state-of-the-run-that-started-last"]
+# `state` on the Pipeline is a part of the Pipeline object. A compiled form is a function and has no
+# such object, so it cannot show what this one case asks for.
+NEEDS_A_PIPELINE_OBJECT = ["state/with-no-state-from-the-caller-the-pipeline-has-the-state-of-the-run-that-started-last"]
 
 
 @pytest.fixture(scope="module")
@@ -36,11 +36,8 @@ def test_target_passes_every_case_it_can_express(report, target):
 
 
 def test_observable_export_is_judged_on_state_and_hooks_too(report):
-    """No partial passes: static-observe exposes everything the dynamic run does.
-
-    The compiled form is one function, so it cannot express a step that runs
-    its Pipeline again. Those cases are the only ones that it leaves out.
-    """
+    """static-observe exposes the State and the Hooks that the dynamic run does, so it passes
+    each case outright, but for the one that asks for the State on the Pipeline object."""
     summary = report["targets"]["python:static-observe"]
-    assert sorted(summary["unsupported_cases"]) == RUNS_AGAIN, summary
-    assert summary["pass"] == report["cases"] - len(RUNS_AGAIN), summary
+    assert summary["unsupported"] == 0, summary
+    assert summary["pass"] == report["cases"] - len(NEEDS_A_PIPELINE_OBJECT), summary

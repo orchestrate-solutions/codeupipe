@@ -11,9 +11,12 @@ TAPS = []
 HOOKS = []
 # The State of each run that a run_again step started, in order.
 INNER_STATES = []
+# How the target runs its pipeline one more time: one function, that the runner sets for each case.
+RUN_AGAIN = [None]
 
 
 def reset():
     del TAPS[:]
     del HOOKS[:]
     del INNER_STATES[:]
+    RUN_AGAIN[0] = None

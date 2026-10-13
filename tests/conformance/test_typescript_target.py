@@ -37,10 +37,7 @@ def test_the_compiled_pipeline_passes_every_case_on_what_it_can_show():
         "typescript:static", conformance_run.TARGETS["typescript:static"], cases)
     assert error is None, error
     verdicts = {case["id"]: conformance_run.judge(case, results.get(case["id"])) for case in cases}
-    # The compiled form is one function: it cannot express a step that runs its Pipeline again.
-    runs_again = sorted(case["id"] for case in cases if any(step.get("op") == "run_again" for step in case["steps"]))
-    assert sorted(case_id for case_id, verdict in verdicts.items() if verdict[0] == "unsupported") == runs_again
-    wrong = {case_id: verdict for case_id, verdict in verdicts.items() if verdict[0] not in ("pass", "partial", "unsupported")}
+    wrong = {case_id: verdict for case_id, verdict in verdicts.items() if verdict[0] not in ("pass", "partial")}
     assert wrong == {}, json.dumps(wrong, indent=2)
     assert sum(1 for verdict in verdicts.values() if verdict[0] == "pass") == 11
 

@@ -74,7 +74,7 @@ generated `run()` (scorecard findings F3–F8).
 | Type hints on a step (`Payload[Reads] -> Payload[Writes]`, hinted locals) | erased: compiled code carries no hints and never imports their names | `test_export_typed_steps` |
 | Payload ops `get insert remove merge has to_dict copy` | dict operations; a write is an in-place statement (`data[k] = v`) | `test_rewrite_payload_ops` |
 
-Evidence: each conformance case that a compiled form can express (28 of 30) on both layouts (`python:static-steps`,
+Evidence: all 30 conformance cases on both layouts (`python:static-steps`,
 `python:static-inline`), and the parity spike at 2400/2400 inputs.
 
 ## What is refused
@@ -116,7 +116,7 @@ state["executed"], state["skipped"], state["errors"], state["timings"], state["t
 ```
 
 It reproduces the dynamic run's observable behaviour exactly, and the
-`python:static-observe` conformance target checks it on the 28 cases that a compiled form can express:
+`python:static-observe` conformance target checks it on all 30 cases:
 
 - **State** is written into the `state` dict you pass (reset each run):
   `executed`, `skipped`, `errors` as `(name, error)`, `timings` (only with
