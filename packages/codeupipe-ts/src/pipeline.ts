@@ -28,7 +28,7 @@ function has(value: unknown, method: string): boolean {
 }
 
 /** Refuse a step that does not have the method of its role. */
-function require(step: unknown, method: string, what: string): void {
+function require(step: unknown, method: string, what: string): void { // cup: allow-plain the framework itself: a primitive is made of this
   if (!has(step, method)) {
     const given = step === null || step === undefined ? String(step)
       : typeof step === "function" ? "a function" : `a ${labelOf(step)}`;
