@@ -164,12 +164,16 @@ def judge(case, result):
             if got != want:
                 problems.append(f"state.{key} {got!r} != {want!r}")
 
+    for key in ("inner_states", "pipeline_state"):
+        if key in expect and key in result and result[key] != expect[key]:
+            problems.append(f"{key} {result[key]!r} != {expect[key]!r}")
+
     if "hooks" in expect and "hooks" in result and result["hooks"] != expect["hooks"]:
         problems.append(f"hooks {result['hooks']!r} != {expect['hooks']!r}")
 
     if problems:
         return "FAIL", problems
-    unchecked = [k for k in ("state", "hooks") if k in expect and k not in result]
+    unchecked = [k for k in ("state", "hooks", "inner_states", "pipeline_state") if k in expect and k not in result]
     if unchecked:
         return "partial", [f"target cannot observe {', '.join(unchecked)}"]
     return "pass", []

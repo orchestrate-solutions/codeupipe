@@ -5,7 +5,7 @@ This is the TypeScript runtime. It has no dependencies. The built JavaScript
 runs in a browser and in Node.
 
 It implements the same contract as the Python
-package, and the same 27 conformance cases judge it:
+package, and the same 30 conformance cases judge it:
 [conformance/API.md](../../conformance/API.md).
 
 The version is below 1.0: the package is not stable yet, and a new version
@@ -140,7 +140,9 @@ override the methods that you need.
 - **A function is not a step.** Every JavaScript function has a `call`
   method, so `addFilter` refuses a function by its type.
 - **Two runs of one pipeline at the same time** each write to their own
-  State. `pipeline.state` is the State of the run that started last.
+  State. A caller with more than one run at a time gives each run its
+  State: `pipeline.run(payload, state)`. `pipeline.state` is the State of
+  the run that started last.
 - **The linter and the compiler are separate packages**, because they
   need a parser: [codeupipe-lint-ts](../codeupipe-lint-ts/) and
   [codeupipe-compile-ts](../codeupipe-compile-ts/). In Python the compiler is

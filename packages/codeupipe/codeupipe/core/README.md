@@ -34,8 +34,9 @@ library only.
 - `tap.py` — `Tap` / `AsyncTap`: read-only observation `Protocol`s
   (`observe(payload) -> None`); must not modify the payload.
 - `state.py` — `State`: pipeline execution metadata — executed/skipped
-  filters, timing, errors, arbitrary metadata. Available as `pipeline.state`
-  after a run.
+  filters, timing, errors, arbitrary metadata. A State belongs to one run.
+  `pipeline.state` is the State of the run that started last. A caller with
+  more than one run at a time gives each run its own: `run(payload, state)`.
 - `hook.py` — `Hook`: lifecycle ABC with `before`/`after`/`on_error`
   callbacks around filter and pipeline execution.
 - `async_hook.py` — `AsyncHook`: a Hook whose methods are coroutines.

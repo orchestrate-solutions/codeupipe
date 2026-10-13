@@ -120,12 +120,23 @@ A Hook reads the Payload and does not write to it.
 - Order on a filter failure: `… before(step)`, `on_error(step)`,
   `on_error(pipeline)`. No `after` events follow.
 
-## State — what happened in the last run
+## State — what happened in one run
 
 `executed` (labels, in order), `skipped` (labels), `errors`
-(label + error), `timings` (label → seconds, when timing is on). A run
-starts with a new State. **A failed run keeps the steps that completed
-before the failure.**
+(label + error), `timings` (label → seconds, when timing is on). **A failed
+run keeps the steps that completed before the failure.**
+
+**A State belongs to one run, not to the Pipeline.**
+
+- Each run writes into a State of its own. Two runs of one Pipeline that
+  are in progress at the same time never write into the same State.
+- The caller can give the State: `run(p, state)`. The run writes into that
+  State. This is how a caller with more than one run at a time gets the
+  State of each run. The caller gives a new State for each run.
+- With no State from the caller, the run makes a new one.
+- `state` on the Pipeline is the State of the run that started last, with
+  a State from the caller or not. It is for a caller that has one run at a
+  time.
 
 ## Pipeline
 
@@ -137,9 +148,9 @@ before the failure.**
 | add a tap | `add_tap(t)` |
 | nest a pipeline | `add_pipeline(p)` |
 | add a hook | `use_hook(h)` |
-| run (sync) | `run(p)` |
-| run (async, opt-in) | `run_async(p)` |
-| last run | `state` |
+| run (sync) | `run(p)`, `run(p, state)` |
+| run (async, opt-in) | `run_async(p)`, `run_async(p, state)` |
+| the State of the run that started last | `state` |
 | timing and lineage | `observe(timing=True, lineage=False)` |
 | each step's label, in order | `labels` |
 

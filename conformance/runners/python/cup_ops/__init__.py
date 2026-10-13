@@ -6,6 +6,7 @@ step in each file.
 """
 
 from .add_filter import AddFilter
+from .async_run_again_filter import AsyncRunAgainFilter
 from .append_filter import AppendFilter
 from .copy_filter import CopyFilter
 from .fail_filter import FailFilter
@@ -19,11 +20,13 @@ from .noop_tap import NoopTap
 from .record_hook import RecordHook
 from .record_tap import RecordTap
 from .remove_filter import RemoveFilter
+from .run_again_filter import RunAgainFilter
 from .set_filter import SetFilter
 
 __all__ = [
     "AddFilter",
     "AppendFilter",
+    "AsyncRunAgainFilter",
     "CopyFilter",
     "FailFilter",
     "FailTap",
@@ -36,5 +39,6 @@ __all__ = [
     "RecordHook",
     "RecordTap",
     "RemoveFilter",
+    "RunAgainFilter",
     "SetFilter",
 ]

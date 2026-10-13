@@ -19,7 +19,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { Payload, Pipeline } from "../../../packages/codeupipe-ts/src/index.ts";
+import { Payload, Pipeline, State } from "../../../packages/codeupipe-ts/src/index.ts";
 import type { Filter, Predicate, Tap } from "../../../packages/codeupipe-ts/src/index.ts";
 import { AddFilter } from "./cup-ops/add-filter.ts";
 import { AppendFilter } from "./cup-ops/append-filter.ts";
@@ -36,11 +36,12 @@ import { RecordHook } from "./cup-ops/record-hook.ts";
 import { RecordTap } from "./cup-ops/record-tap.ts";
 import { RemoveFilter } from "./cup-ops/remove-filter.ts";
 import { SetFilter } from "./cup-ops/set-filter.ts";
-import { TAPS } from "./cup-ops/sink.ts";
+import { RunAgainFilter } from "./cup-ops/run-again-filter.ts";
+import { INNER_STATES, RUN_AGAIN, TAPS } from "./cup-ops/sink.ts";
 import { TruthyPredicate } from "./cup-ops/truthy-predicate.ts";
 
 type Spec = Record<string, any>;
-type Case = { id: string; hooks?: boolean; steps: Spec[]; input: Record<string, unknown> };
+type Case = { id: string; hooks?: boolean; given_state?: boolean; steps: Spec[]; input: Record<string, unknown> };
 
 class Unsupported extends Error {}
 
@@ -55,6 +56,7 @@ function makeFilter(spec: Spec): Filter {
     case "has": return new HasFilter(spec.key, spec.to);
     case "mutate": return new MutateFilter(spec.key, spec.value);
     case "fail": return new FailFilter(spec.message);
+    case "run_again": return new RunAgainFilter(spec.input);
     default: throw new Unsupported(`unknown filter op '${spec.op}'`);
   }
 }
@@ -113,17 +115,26 @@ async function runCase(spec: Case): Promise<Record<string, unknown>> {
 
   const data = structuredClone(spec.input);
   const result: Record<string, unknown> = { id: spec.id };
+  // With "given_state", the caller gives the State of the run. If not, the run makes one.
+  const given = spec.given_state ? new State() : undefined;
+  RUN_AGAIN.run = (input) => {
+    const state = new State();
+    INNER_STATES.push(state);
+    return pipeline.run(new Payload(input), state);
+  };
   try {
-    result.output = (await pipeline.run(new Payload(data))).toDict();
+    result.output = (await (given === undefined ? pipeline.run(new Payload(data)) : pipeline.run(new Payload(data), given))).toDict();
   } catch (error) {
     result.error = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
   }
-  const state = pipeline.state;
-  result.state = {
+  const report = (state: { executed: string[]; skipped: string[]; errors: Array<[string, unknown]> }) => ({
     executed: state.executed.map(named),
     skipped: state.skipped.map(named),
     errors: state.errors.map(([label]) => named(label)),
-  };
+  });
+  result.state = report(given ?? pipeline.state);
+  result.pipeline_state = report(pipeline.state);
+  result.inner_states = INNER_STATES.map(report);
   result.taps = [...TAPS];
   if (spec.hooks) {
     result.hooks = events.map((event) => {
@@ -142,12 +153,12 @@ const CLASS_OF: Record<string, [string, string]> = {
   set: ["SetFilter", "set-filter"], copy: ["CopyFilter", "copy-filter"], add: ["AddFilter", "add-filter"],
   append: ["AppendFilter", "append-filter"], remove: ["RemoveFilter", "remove-filter"],
   merge: ["MergeFilter", "merge-filter"], has: ["HasFilter", "has-filter"], mutate: ["MutateFilter", "mutate-filter"],
-  fail: ["FailFilter", "fail-filter"], record: ["RecordTap", "record-tap"], "tap:fail": ["FailTap", "fail-tap"],
+  fail: ["FailFilter", "fail-filter"], run_again: ["RunAgainFilter", "run-again-filter"], record: ["RecordTap", "record-tap"], "tap:fail": ["FailTap", "fail-tap"],
   noop: ["NoopTap", "noop-tap"], equals: ["EqualsPredicate", "equals-predicate"], truthy: ["TruthyPredicate", "truthy-predicate"],
 };
 const ARGUMENTS: Record<string, string[]> = {
   set: ["key", "value"], copy: ["from", "to"], add: ["key", "by"], append: ["key", "value"], remove: ["key"],
-  merge: ["value"], has: ["key", "to"], mutate: ["key", "value"], fail: ["message"], record: ["key"],
+  merge: ["value"], has: ["key", "to"], mutate: ["key", "value"], fail: ["message"], run_again: ["input"], record: ["key"],
   "tap:fail": ["message"], noop: [], equals: ["key", "value"], truthy: ["key"],
 };
 
@@ -201,6 +212,8 @@ async function runStatic(spec: Case, compile: Compile, directory: string, index:
   }
   const compiled: { run(input: Record<string, unknown>): Promise<Record<string, unknown>> } = await import(pathToFileURL(outFile).href);
 
+  // The compiled form is a function. To run the pipeline again is to call that function again.
+  RUN_AGAIN.run = (input) => compiled.run(input);
   const data = structuredClone(spec.input);
   const result: Record<string, unknown> = { id: spec.id };
   try {
@@ -231,6 +244,7 @@ const cases: Case[] = JSON.parse(readFileSync(0, "utf8"));
 const results: Record<string, unknown>[] = [];
 for (const [index, spec] of cases.entries()) {
   TAPS.length = 0;
+  INNER_STATES.length = 0;
   try {
     results.push(compile === undefined ? await runCase(spec) : await runStatic(spec, compile, directory, index));
   } catch (error) {
