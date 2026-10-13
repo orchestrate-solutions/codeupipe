@@ -1,13 +1,14 @@
 """This repo's own Python keeps the invariants it lints for."""
 
 import os
+import pathlib
 
 from codeupipe_lint.invariants.lint_pipeline import lint_paths
 
 from ._support import REPO
 
 # The places with a `cup: allow-plain` comment.
-PLAIN_BY_DESIGN = 81
+PLAIN_BY_DESIGN = 60
 
 CHECKED = ["packages/codeupipe/codeupipe", "conformance", "scorecard", "packages/codeupipe-lint/codeupipe_lint", "tests", "examples"]
 
@@ -21,5 +22,9 @@ def test_repo_python_has_no_invariant_violations():
     # the comment gives: a primitive itself, a visitor of a syntax tree, the entry of a program, a test
     # harness. The number is here so that a new one is a change that someone sees.
     allowed = out.get("suppressed")
-    assert {f.rule for f in allowed} == {"CUP-I008"}
-    assert len(allowed) == PLAIN_BY_DESIGN, sorted({f.path for f in allowed})
+    plain = [f for f in allowed if f.rule == "CUP-I008"]
+    assert len(plain) == PLAIN_BY_DESIGN, sorted({f.path for f in plain})
+    # One more comment, for another rule: the conformance runner reads the State of the pipeline of a
+    # case, because that State is what it reports.
+    other = [(f.rule, pathlib.Path(f.path).name) for f in allowed if f.rule != "CUP-I008"]
+    assert other == [("CUP-I003", "run_dynamic_filter.py")]
