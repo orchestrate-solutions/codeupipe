@@ -46,6 +46,7 @@ HOSTILE_NAMES = [
 ]
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def generate_value(rng, depth=0):
     """A JSON-shaped value (None, bool, int, float, str, list, dict)."""
     roll = rng.random()
@@ -68,6 +69,7 @@ def _add_operand(rng):
     return rng.choice([1, 1, 2, -3, 0.5, 10 ** 20, True, "s", [1], None])
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def _filter_spec(rng):
     op = rng.choices(FILTER_OPS, weights=[5, 3, 4, 3, 3, 2, 2, 2, 1])[0]
     key = rng.choice(KEYS)
@@ -90,12 +92,14 @@ def _filter_spec(rng):
     return {"op": "fail", "message": rng.choice(["boom", "bad 'input'", "ünïcode"])}
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def _when(rng):
     if rng.random() < 0.5:
         return {"op": "truthy", "key": rng.choice(KEYS)}
     return {"op": "equals", "key": rng.choice(KEYS), "value": rng.choice([0, 1, True, None, "x", "", [1], {"a": 1}])}
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def _namer(rng, hostile):
     """next_name(prefix): unique ``prefix<n>``, or sometimes a hostile name."""
     counter = [0]
@@ -108,6 +112,7 @@ def _namer(rng, hostile):
     return next_name
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def _steps(rng, names, depth, max_steps, max_depth):
     out = []
     for _ in range(rng.randint(0, max_steps)):
@@ -131,6 +136,7 @@ def _steps(rng, names, depth, max_steps, max_depth):
     return out
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def generate_case(rng, index=0, max_steps=8, max_depth=2, hostile_rate=0.0):
     """One random case. ``rng`` is a ``random.Random``; same seed, same case.
 

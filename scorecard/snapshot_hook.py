@@ -15,18 +15,13 @@ import copy
 __all__ = ["SnapshotHook"]
 
 
-def _as_dict(payload):
-    to_dict = getattr(payload, "to_dict", None)
-    return to_dict() if callable(to_dict) else payload
-
-
 class SnapshotHook:
     def __init__(self):
         self.events = []  # (event, step, snapshot, error or None)
 
     def _record(self, event, step, payload, error=None):
         err = None if error is None else f"{type(error).__name__}: {error}"
-        self.events.append((event, step, copy.deepcopy(_as_dict(payload)), err))
+        self.events.append((event, step, copy.deepcopy(SnapshotHook._as_dict(payload)), err))
 
     def before(self, step, payload):
         self._record("before", step, payload)
@@ -41,3 +36,7 @@ class SnapshotHook:
         """[(event, step, snapshot, error)] for parity comparison."""
         return list(self.events)
 
+    @staticmethod
+    def _as_dict(payload):
+        to_dict = getattr(payload, "to_dict", None)
+        return to_dict() if callable(to_dict) else payload

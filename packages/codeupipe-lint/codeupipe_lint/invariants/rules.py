@@ -19,6 +19,7 @@ MARKER_ALLOWS_NOTHING = "CUP-I009"
 
 # The rules whose findings are warnings.
 WARNINGS = frozenset([LOGIC_OUTSIDE_PRIMITIVE, MARKER_ALLOWS_NOTHING])
+_SEVERITY = {rule: "warning" for rule in WARNINGS}
 
 RULES = {
     PARSE_ERROR: "parse-error",
@@ -60,4 +61,4 @@ _FIX = {
 def make_finding(path: str, line: int, col: int, rule: str, what: str) -> Finding:
     """A Finding whose message reads ``<what>. <fix>``."""
     return Finding(path, line, col, rule, RULES[rule], "%s. %s" % (what, _FIX[rule]), "python",
-                   severity="warning" if rule in WARNINGS else None)
+                   severity=_SEVERITY.get(rule))

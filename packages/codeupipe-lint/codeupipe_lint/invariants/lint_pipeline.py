@@ -60,11 +60,6 @@ def lint_paths(paths: Iterable[str], exclude: Optional[Iterable[str]] = None,
                disable: Optional[Iterable[str]] = None, strict: bool = False) -> Payload:
     """Run the linter over ``paths``; the result Payload holds ``findings``,
     ``suppressed``, ``errors``, ``report``, ``error_report`` and ``exit_code``."""
-    data = {"paths": list(paths), "findings": [], "errors": []}
-    if exclude:
-        data["exclude"] = list(exclude)
-    if disable:
-        data["disable"] = list(disable)
-    if strict:
-        data["strict"] = True
+    data = {"paths": list(paths), "findings": [], "errors": [],
+            "exclude": list(exclude or ()), "disable": list(disable or ()), "strict": bool(strict)}
     return build_lint_pipeline().run(Payload(data))

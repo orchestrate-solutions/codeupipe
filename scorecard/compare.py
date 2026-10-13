@@ -10,12 +10,14 @@ from scorecard.strict import first_difference
 __all__ = ["divergences", "self_checks", "verdict"]
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def _diff(check, a, b, out):
     detail = first_difference(a, b)
     if detail:
         out.append({"check": check, "detail": detail})
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def self_checks(record, who):
     """Checks a run makes of itself: input untouched, reruns identical."""
     out = []
@@ -26,6 +28,7 @@ def self_checks(record, who):
     return out
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def divergences(dynamic, record, mode):
     out = []
     if record["status"] == "crash":
@@ -47,6 +50,7 @@ def divergences(dynamic, record, mode):
     return out
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def verdict(record, found):
     if found:
         return "fail"

@@ -40,18 +40,21 @@ _PIPELINE_EXAMPLE = {
 }
 
 
+# The rules that have a fix of their own. {pipeline} is the example of a named pipeline in the language.
+_FIX_OF_RULE = {
+    UNNAMED_PIPELINE: ("A nested pipeline must be a named pipeline type ({pipeline}), named like a filter. "
+                       "A plain Pipeline can only run at the top level."),
+    FUNCTION_PREDICATE: ("Valve predicates are objects (conformance/API.md, \"Valve\"): wrap the condition in a "
+                         "named class with test(payload), configuration on the instance, and pass an instance."),
+    PARSE_ERROR: "Fix the syntax error so the file can be checked.",
+}
+
+
 def _fix(lang: str, rule: str) -> str:
-    if rule == UNNAMED_PIPELINE:
-        return ("A nested pipeline must be a named pipeline type (%s), named like a filter. "
-                "A plain Pipeline can only run at the top level." % _PIPELINE_EXAMPLE[lang])
-    if rule == FUNCTION_PREDICATE:
-        return ("Valve predicates are objects (conformance/API.md, \"Valve\"): wrap the condition in a "
-                "named class with test(payload), configuration on the instance, and pass an instance.")
-    if rule == PARSE_ERROR:
-        return "Fix the syntax error so the file can be checked."
-    return _FIX[lang]
+    return _FIX_OF_RULE.get(rule, _FIX[lang]).replace("{pipeline}", _PIPELINE_EXAMPLE[lang])
 
 
+# cup: allow-plain it makes one Finding from its parts, for each analysis Filter
 def make_finding(lang: str, path: str, line: int, col: int, rule: str, role: str, what: str,
                  call_line: Optional[int] = None) -> Finding:
     """A Finding whose message reads ``<Role> <what>. <fix>``; ``what`` starts with its verb

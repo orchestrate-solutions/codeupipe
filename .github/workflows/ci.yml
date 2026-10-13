@@ -34,7 +34,7 @@ jobs:
       - name: Lint, anonymous steps
         run: python -m codeupipe_lint.anonymous_steps
       - name: Lint, invariants
-        run: python -m codeupipe_lint.invariants
+        run: python -m codeupipe_lint.invariants --strict
       - name: Conformance
         run: python conformance/run.py
 

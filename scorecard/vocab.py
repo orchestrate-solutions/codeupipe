@@ -19,6 +19,7 @@ import types
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 RUNNER_DIR = ROOT / "conformance" / "runners" / "python"
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 if str(RUNNER_DIR) not in sys.path:
@@ -40,6 +41,7 @@ def new_workdir(prefix="cup_scorecard_"):
     return pathlib.Path(tempfile.mkdtemp(prefix=prefix))
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def walk_steps(steps):
     """Every step spec, depth first, nested pipelines included."""
     for step in steps:
@@ -48,6 +50,7 @@ def walk_steps(steps):
             yield from walk_steps(step["steps"])
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def make_predicates(steps, workdir):
     """A namespace with ``when_<step name>`` for every Valve, each a real
     ``def`` in a real file (static lowering needs its source)."""
@@ -66,6 +69,7 @@ def make_predicates(steps, workdir):
     return namespace
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def build_pipeline(case, predicates, hooks=()):
     """The case as a live codeupipe Pipeline (runner.build), with ``hooks``."""
     pipeline = runner.build(case, Pipeline, predicates, {})

@@ -19,10 +19,10 @@ from ..taps.write_files_tap import WriteFilesTap
 from .lowering_mode_predicate import LoweringModePredicate
 
 
-__all__ = ["build_export_pipeline_v2"]
+__all__ = ["ExportPipeline", "build_export_pipeline_v2"]
 
 
-def build_export_pipeline_v2(*, write: bool = True) -> Pipeline:
+class ExportPipeline(Pipeline):
     """Assemble the v2 export pipeline.
 
     Args:
@@ -48,14 +48,20 @@ def build_export_pipeline_v2(*, write: bool = True) -> Pipeline:
         ``pipeline_ir``  (PipelineIR)   — the canonical IR.
         ``files``        (list[dict])   — the emitted files.
     """
-    p = Pipeline()
-    p.add_filter(LoadPipelineFilter())
-    p.add_filter(ParseFilterSourceFilter())
-    p.add_filter(RewritePayloadOpsFilter())
-    p.add_filter(LowerControlFlowFilter())
-    p.add_valve(LoweringModePredicate(inline=False), EmitPlainFilesFilter())
-    p.add_valve(LoweringModePredicate(inline=False), EmitOrchestratorFilter())
-    p.add_valve(LoweringModePredicate(inline=True), EmitInlineModuleFilter())
-    if write:
-        p.add_tap(WriteFilesTap())
-    return p
+
+    def __init__(self, *, write: bool = True):
+        super().__init__()
+        self.add_filter(LoadPipelineFilter())
+        self.add_filter(ParseFilterSourceFilter())
+        self.add_filter(RewritePayloadOpsFilter())
+        self.add_filter(LowerControlFlowFilter())
+        self.add_valve(LoweringModePredicate(inline=False), EmitPlainFilesFilter())
+        self.add_valve(LoweringModePredicate(inline=False), EmitOrchestratorFilter())
+        self.add_valve(LoweringModePredicate(inline=True), EmitInlineModuleFilter())
+        if write:
+            self.add_tap(WriteFilesTap())
+
+
+def build_export_pipeline_v2(*, write: bool = True) -> Pipeline:
+    """The export pipeline. Kept for callers that used this name: see ``ExportPipeline``."""
+    return ExportPipeline(write=write)

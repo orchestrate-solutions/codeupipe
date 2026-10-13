@@ -15,6 +15,7 @@ import itertools
 __all__ = ["minimize", "candidates"]
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def _step_lists(steps, path=()):
     """(path, list) for the top-level list and every nested pipeline's list."""
     yield path, steps
@@ -23,6 +24,7 @@ def _step_lists(steps, path=()):
             yield from _step_lists(step["steps"], path + (i,))
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def _resolve(case, path):
     steps = case["steps"]
     for i in path:
@@ -30,6 +32,7 @@ def _resolve(case, path):
     return steps
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def candidates(case):
     """Smaller variants of ``case``, most aggressive first."""
     for path, steps in list(_step_lists(case["steps"])):
@@ -69,6 +72,7 @@ def candidates(case):
                 yield variant
 
 
+# cup: allow-plain the differential test harness: it makes cases, runs them in each mode and compares the results
 def minimize(case, still_fails, max_attempts=400):
     current = copy.deepcopy(case)
     attempts = 0

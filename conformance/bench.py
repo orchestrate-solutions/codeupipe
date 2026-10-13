@@ -57,10 +57,12 @@ def python_key():
     return "%d.%d" % sys.version_info[:2]
 
 
+# cup: allow-plain the speed check of the conformance suite: it times the scenarios and compares them with the baseline
 def load_baseline():
     return json.loads(BASELINE.read_text()) if BASELINE.exists() else {}
 
 
+# cup: allow-plain the speed check of the conformance suite: it times the scenarios and compares them with the baseline
 def compare(baseline, current, tolerance=DEFAULT_TOLERANCE):
     """Every number that is not within ``tolerance`` percent of its baseline.
 
@@ -84,6 +86,7 @@ def compare(baseline, current, tolerance=DEFAULT_TOLERANCE):
     return problems
 
 
+# cup: allow-plain the speed check of the conformance suite: it times the scenarios and compares them with the baseline
 def _report(problems, tolerance):
     if not problems:
         return "Speed check: every number is within %g%% of its baseline." % tolerance
@@ -101,6 +104,7 @@ def _report(problems, tolerance):
     return "\n".join(lines)
 
 
+# cup: allow-plain the speed check of the conformance suite: it times the scenarios and compares them with the baseline
 def main(argv):
     argv = list(argv)
     record, check = "--record" in argv, "--check" in argv
@@ -167,6 +171,7 @@ def main(argv):
     return 0
 
 
+# cup: allow-plain the speed check of the conformance suite: it times the scenarios and compares them with the baseline
 def markdown(scenarios, table, problems, refused=()):
     targets = list(table)
     lines = ["µs per run (best of 5 × 20,000, after 20,000 warmup runs); lower is better.", "",
