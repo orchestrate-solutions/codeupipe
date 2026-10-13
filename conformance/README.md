@@ -7,6 +7,11 @@ One set of language-neutral cases, a runner, and **one judge** (`run.py`).
 The judge is itself a codeupipe pipeline, in [judging/](judging/): one step
 reads the cases, one runs each target, one compares, and one writes the
 matrix. Each step is tested alone in `tests/conformance/test_judge_pipeline.py`.
+
+The Python runner is built the same way, in
+[runners/python/case_runner/](runners/python/case_runner/): one pipeline plays
+a case and one times a scenario. Its steps are tested alone in
+`tests/conformance/test_case_runner.py`.
 The dynamic run and each compiled form are held to exactly the same
 comparison.
 
