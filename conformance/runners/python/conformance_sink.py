@@ -9,8 +9,11 @@ packages/codeupipe/codeupipe/compile/filters/emit_inline_module_filter.py).
 
 TAPS = []
 HOOKS = []
+# The State of each run that a run_again step started, in order.
+INNER_STATES = []
 
 
 def reset():
     del TAPS[:]
     del HOOKS[:]
+    del INNER_STATES[:]

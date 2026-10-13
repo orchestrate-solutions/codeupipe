@@ -71,6 +71,14 @@ load a number can leave the band.
             "taps": [...], "hooks": ["before:", "before:s1", ...]}}
 ```
 
+Three more keys are for the cases about State and runs that overlap:
+
+- `"given_state": true` in a case: the runner gives the run a new State
+  (`run(p, state)`), and reports that State as `state`.
+- `expect.inner_states`: the State of each run that a `run_again` step
+  started, in order.
+- `expect.pipeline_state`: `state` on the Pipeline after the run ends.
+
 Every case also checks, implicitly, that **the caller's input was not mutated**.
 Numbers compare as JSON numbers (`1 == 1.0`), but `true` is never `1`.
 
@@ -87,6 +95,7 @@ Numbers compare as JSON numbers (`1 == 1.0`), but `true` is never `1`.
 | filter | `merge` value | `merge(Payload(value))` |
 | filter | `has` key, to | insert `to = has(key)` |
 | filter | `mutate` key, value | `insert(key, value)` as a statement of its own, then return the payload |
+| filter | `run_again` input | when `get("inner")` is not true: run the pipeline that this step is in one more time, with `input` as a new Payload and a new State that the step gives, and keep that State for the report. Then return the payload with no change. This is a second run that starts and ends while the first one is in progress |
 | tap | `record` key | append `get(key)` to the runner's tap log |
 | tap | `fail` message | raise |
 | valve `when` | `equals` key, value | `get(key) == value` |

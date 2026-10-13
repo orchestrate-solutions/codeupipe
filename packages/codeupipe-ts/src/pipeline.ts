@@ -124,11 +124,14 @@ export class Pipeline {
    * A step can be sync or async. A Filter failure stops the run and is
    * thrown again after the Hooks have seen it. A Tap failure is recorded in
    * State and the run continues.
+   *
+   * The run writes into `state` when the caller gives one, and into a new
+   * State when not. A State belongs to one run: a caller with more than one
+   * run of this Pipeline at a time gives each run its own.
    */
-  async run(initial: Payload): Promise<Payload> {
-    // Each run writes to its own State, so two runs at the same time do not mix.
-    const state = new State();
-    this.#state = state;
+  async run(initial: Payload, state: State = new State()): Promise<Payload> {
+    // The State is a local of this call, so two runs at the same time do not mix.
+    this.#state = state; // the State of the run that started last
     const hooks = this.#hooks;
     const timed = this.#timing;
     let payload = initial.copy(); // the caller's Payload is not changed

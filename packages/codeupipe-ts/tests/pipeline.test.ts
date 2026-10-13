@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { Hook, Payload, Pipeline } from "../src/index.ts";
+import { Hook, Payload, Pipeline, State } from "../src/index.ts";
 import type { Filter, Predicate, Tap } from "../src/index.ts";
 
 class AddFilter implements Filter {
@@ -251,4 +251,47 @@ test("two runs at the same time do not write into the same State", async () => {
   assert.equal(a.get("n"), 2);
   assert.equal(b.get("n"), 2);
   assert.deepEqual(pipeline.state.executed, ["AddLaterFilter", "AddLaterFilter#2"]);
+});
+
+// -- a State belongs to one run -------------------------------------------
+
+class WaitFilter implements Filter {
+  async call(payload: Payload): Promise<Payload> {
+    await new Promise((resolve) => setTimeout(resolve, payload.get<number>("wait") ?? 0));
+    return payload.insert("done", payload.get("name"));
+  }
+}
+
+class FailForBFilter implements Filter {
+  call(payload: Payload): Payload {
+    if (payload.get("name") === "B") throw new Error("B fails");
+    return payload;
+  }
+}
+
+test("each of two runs at the same time writes into the State that its caller gave", async () => {
+  const pipeline = new Pipeline();
+  pipeline.addFilter(new WaitFilter());
+  pipeline.addFilter(new FailForBFilter());
+  const [a, b] = [new State(), new State()];
+  // A starts first and ends last. B starts second, fails, and ends first.
+  await Promise.all([
+    pipeline.run(new Payload({ name: "A", wait: 40 }), a),
+    pipeline.run(new Payload({ name: "B", wait: 5 }), b).catch(() => null),
+  ]);
+  assert.deepEqual(a.executed, ["WaitFilter", "FailForBFilter"]);
+  assert.deepEqual(b.executed, ["WaitFilter"]);
+  assert.equal(pipeline.state, b); // the State of the run that started last
+});
+
+test("with no State from the caller, a run makes a new one, and a later run does not write into a State that was given", async () => {
+  const pipeline = new Pipeline();
+  pipeline.addFilter(new FailForBFilter());
+  const given = new State();
+  await pipeline.run(new Payload({ name: "A" }), given);
+  assert.equal(pipeline.state, given);
+  await pipeline.run(new Payload({ name: "A" }));
+  assert.notEqual(pipeline.state, given);
+  assert.deepEqual(given.executed, ["FailForBFilter"]);
+  assert.deepEqual(pipeline.state.executed, ["FailForBFilter"]);
 });

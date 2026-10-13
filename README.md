@@ -183,7 +183,7 @@ An editable install needs pip 21.3 or later.
 | Command | What it does |
 |---|---|
 | `python -m pytest tests -q` | Runs the tests |
-| `python conformance/run.py` | Runs the 27 conformance cases against the Python dynamic run and the three compiled forms, and against the TypeScript targets that the machine can run |
+| `python conformance/run.py` | Runs the 30 conformance cases against the Python dynamic run and the three compiled forms, and against the TypeScript targets that the machine can run |
 | `python -m codeupipe_lint.anonymous_steps` | Runs the anonymous-step linter. Paths come from `cup.config.json` |
 | `python -m codeupipe_lint.invariants` | Runs the invariant linter. Paths come from `cup.config.json` |
 | `python -m codeupipe.compile examples.pricing.pricing_pipeline:PricingPipeline --out build/pricing` | Compiles the example to `build/pricing/src/steps/` |

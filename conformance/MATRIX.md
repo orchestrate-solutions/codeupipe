@@ -4,9 +4,13 @@ A snapshot of `python conformance/run.py`. Regenerate with that command; the
 live copy is `results/latest.md` (not committed). The command exits non-zero
 if any target has a ❌.
 
-**Every target passes every case, and nothing is unsupported.** The targets
-are the Python dynamic run, async run and three compiled forms, and the
-TypeScript run and its compiled form.
+**Every target passes every case that it can express.** The targets are the
+Python dynamic run, async run and three compiled forms, and the TypeScript
+run and its compiled form.
+
+Two cases are ➖ for the compiled forms. In them a step starts a second run
+of its own Pipeline, and a compiled form is one function with no Pipeline to
+run again.
 
 The fast modes (`python:static-steps`, `python:static-inline`,
 `typescript:static`) expose no State or Hooks, so they pass those cases as
@@ -34,6 +38,9 @@ The fast modes (`python:static-steps`, `python:static-inline`,
 | `pipeline/steps-run-in-order` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* |
 | `pipeline/filter-error-halts-the-run` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* |
 | `pipeline/nested-pipeline-is-a-step` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* |
+| `state/the-caller-gives-the-state-of-a-run` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* |
+| `state/a-run-that-starts-inside-another-run-has-its-own-state` | ✅ | ✅ | ➖ | ➖ | ➖ | ✅ | ➖ |
+| `state/with-no-state-from-the-caller-the-pipeline-has-the-state-of-the-run-that-started-last` | ✅ | ✅ | ➖ | ➖ | ➖ | ✅ | ➖ |
 | `tap/observes-without-changing-output` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* |
 | `tap/failure-never-halts-the-pipeline` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* |
 | `tap/failure-does-not-stop-later-taps` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* |
@@ -44,12 +51,12 @@ The fast modes (`python:static-steps`, `python:static-inline`,
 | `valve/sees-upstream-changes` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* |
 | `valve/independent-gates` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* |
 
-- **python:run**: 27 pass, 0 pass*, 0 fail, 0 unsupported
-- **python:run_async**: 27 pass, 0 pass*, 0 fail, 0 unsupported
-- **python:static-steps**: 11 pass, 16 pass*, 0 fail, 0 unsupported
-- **python:static-inline**: 11 pass, 16 pass*, 0 fail, 0 unsupported
-- **python:static-observe**: 27 pass, 0 pass*, 0 fail, 0 unsupported
-- **typescript:run**: 27 pass, 0 pass*, 0 fail, 0 unsupported
-- **typescript:static**: 11 pass, 16 pass*, 0 fail, 0 unsupported
+- **python:run**: 30 pass, 0 pass*, 0 fail, 0 unsupported
+- **python:run_async**: 30 pass, 0 pass*, 0 fail, 0 unsupported
+- **python:static-steps**: 11 pass, 17 pass*, 0 fail, 2 unsupported
+- **python:static-inline**: 11 pass, 17 pass*, 0 fail, 2 unsupported
+- **python:static-observe**: 28 pass, 0 pass*, 0 fail, 2 unsupported
+- **typescript:run**: 30 pass, 0 pass*, 0 fail, 0 unsupported
+- **typescript:static**: 11 pass, 17 pass*, 0 fail, 2 unsupported
 
 ✅* passed everything the target can observe; it does not expose State or Hooks (the fast mode). ➖ the target cannot express the case.

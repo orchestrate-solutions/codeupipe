@@ -164,6 +164,10 @@ def judge(case, result):
             if got != want:
                 problems.append(f"state.{key} {got!r} != {want!r}")
 
+    for key in ("inner_states", "pipeline_state"):
+        if key in expect and key in result and result[key] != expect[key]:
+            problems.append(f"{key} {result[key]!r} != {expect[key]!r}")
+
     if "hooks" in expect and "hooks" in result and result["hooks"] != expect["hooks"]:
         problems.append(f"hooks {result['hooks']!r} != {expect['hooks']!r}")
 

@@ -28,7 +28,7 @@ sys.path.insert(0, str(HERE))
 
 import conformance_sink as sink  # noqa: E402
 import cup_ops as ops  # noqa: E402
-from codeupipe import Payload, Pipeline  # noqa: E402
+from codeupipe import Payload, Pipeline, State  # noqa: E402
   # noqa: E402
 
 
@@ -36,8 +36,10 @@ class Unsupported(Exception):
     pass
 
 
-def _filter(spec):
+def _filter(spec, run_async=False):
     op = spec["op"]
+    if op == "run_again":
+        return (ops.AsyncRunAgainFilter if run_async else ops.RunAgainFilter)(spec["input"])
     if op == "set":
         return ops.SetFilter(spec["key"], spec["value"])
     if op == "copy":
@@ -105,12 +107,14 @@ def _predicates(steps, module_dir, module_name):
         sys.path.remove(str(module_dir))
 
 
-def build(case, cls, predicates, names):
+def build(case, cls, predicates, names, run_async=False):
     p = cls()
     for step in case["steps"]:
         kind, name = step["kind"], step["name"]
         if kind == "filter":
-            obj = _filter(step)
+            obj = _filter(step, run_async)
+            if step["op"] == "run_again":
+                obj.pipeline = p
             p.add_filter(obj)
         elif kind == "tap":
             obj = _tap(step)
@@ -155,26 +159,33 @@ def _named_hooks(events, label):
 
 def _dynamic(case, predicates, run_async=False):
     names = {}
-    p = build(case, Pipeline, predicates, names)
+    p = build(case, Pipeline, predicates, names, run_async)
     label = labels(p, names)
     if case.get("hooks"):
         p.use_hook(ops.RecordHook())
     data = copy.deepcopy(case["input"])
+    # With "given_state", the caller gives the State of the run. If not, the run makes one.
+    given = [State()] if case.get("given_state") else []
     result = {}
     try:
         if run_async:
-            out = asyncio.run(p.run_async(Payload(data)))
+            out = asyncio.run(p.run_async(Payload(data), *given))
         else:
-            out = p.run(Payload(data))
+            out = p.run(Payload(data), *given)
         result["output"] = out.to_dict()
     except Exception as error:  # noqa: BLE001 — the error is the result
         result["error"] = f"{type(error).__name__}: {error}"
-    state = p.state
-    result["state"] = {
-        "executed": _named(state.executed, label),
-        "skipped": _named(state.skipped, label),
-        "errors": _named([step for step, _ in state.errors], label),
-    }
+
+    def report(state):
+        return {
+            "executed": _named(state.executed, label),
+            "skipped": _named(state.skipped, label),
+            "errors": _named([step for step, _ in state.errors], label),
+        }
+
+    result["state"] = report(given[0] if given else p.state)
+    result["pipeline_state"] = report(p.state)
+    result["inner_states"] = [report(state) for state in sink.INNER_STATES]
     if case.get("hooks"):
         result["hooks"] = _named_hooks(sink.HOOKS, label)
     result["input_after"] = data
@@ -202,6 +213,9 @@ def _load_export(p, lowering, observe, workdir):
 
 
 def _static(case, predicates, lowering, workdir, observe=False):
+    # The compiled form always gets its State from the caller, so "given_state" needs nothing more.
+    if any(step.get("op") == "run_again" for step in case["steps"]):
+        raise Unsupported("the compiled form is one function: it has no Pipeline that a step can run again")
     names = {}
     p = build(case, Pipeline, predicates, names)
     label = labels(p, names)

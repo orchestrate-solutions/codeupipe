@@ -69,6 +69,10 @@ class Valve(Generic[TInput, TOutput]):
         self._inner_sync_call = inner_sync if callable(inner_sync) else None
         self._inner_is_sync = self._inner_sync_call is not None or not inspect.iscoroutinefunction(
             getattr(inner, "call", None))
+        # What a synchronous run calls when the Predicate holds. The Pipeline
+        # asks the Predicate and calls this itself, and reads no flag from
+        # the Valve: a flag would be shared by each run that is in progress.
+        self._sync_inner = self._inner_sync_call if self._inner_sync_call is not None else inner.call
 
     async def call(self, payload: Payload[TInput]) -> Payload[TOutput]:
         """Execute the inner filter only if the predicate passes."""
