@@ -1,0 +1,4 @@
+# The Cargo workspace of the Rust packages. It is not a package.
+[workspace]
+resolver = "2"
+members = ["packages/codeupipe-rs"]
