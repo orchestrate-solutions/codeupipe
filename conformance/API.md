@@ -14,10 +14,10 @@ parameters, their defaults, and how they fail.
 | State | records what happened |
 | Pipeline | runs the steps in order |
 
-Python and TypeScript implement it. Each runtime has the same contract,
+Python, TypeScript and Rust implement it. Each runtime has the same contract,
 with identifier casing in the style of its language, and the same
 conformance cases judge it. The tables below show the Python names. The
-TypeScript names and differences are in "Runtimes".
+TypeScript and Rust names and differences are in "Runtimes".
 
 ## Principles
 
@@ -217,15 +217,15 @@ map and fails the comparison.
 
 ## Runtimes
 
-| | Python | TypeScript |
-|---|---|---|
-| Package | `packages/codeupipe` | `packages/codeupipe-ts` |
-| Names | snake_case | camelCase: `addFilter`, `addValve`, `toDict`, `withTrace`, `traceId`, `onError` |
-| Run | `run` is sync. `run_async` is opt-in | One `run`. It returns a Promise. A step can be sync or async |
-| Absent | `None` | `null` |
-| Label of a step | `type(step).__name__` | `step.constructor.name` |
-| Compile | `codeupipe.compile` | `packages/codeupipe-compile-ts` |
-| Linter | `packages/codeupipe-lint` | `packages/codeupipe-lint-ts` |
+| | Python | TypeScript | Rust |
+|---|---|---|---|
+| Package | `packages/codeupipe` | `packages/codeupipe-ts` | `packages/codeupipe-rs` (crate `codeupipe`) |
+| Names | snake_case | camelCase: `addFilter`, `addValve`, `toDict`, `withTrace`, `traceId`, `onError` | snake_case, as Python |
+| Run | `run` is sync. `run_async` is opt-in | One `run`. It returns a Promise. A step can be sync or async | `run` is sync. No async run yet |
+| Absent | `None` | `null` | `None` from `get`; `Value::Null` is a JSON null |
+| Label of a step | `type(step).__name__` | `step.constructor.name` | The name of the step's type, from `std::any::type_name` |
+| Compile | `codeupipe.compile` | `packages/codeupipe-compile-ts` | None yet |
+| Linter | `packages/codeupipe-lint` | `packages/codeupipe-lint-ts` | None yet. The compiler refuses several of the shapes that the linters find |
 
 Notes on TypeScript:
 
@@ -240,3 +240,16 @@ Notes on TypeScript:
 - **State and concurrent runs.** Two runs of one pipeline at the same time
   each write to their own State. `state` is the State of the run that
   started last.
+
+Notes on Rust:
+
+- **Refused when added, at compile time.** A closure is not a step, the
+  arguments of `add_valve` are in one order only, and a Tap, a Hook or a
+  Predicate gets `&Payload`, so it cannot write. Each is a type error.
+- **A Filter changes the Payload in place.** `call(&self, &mut Payload)`
+  returns `Result<(), StepError>`. A failure is an `Err`; a panic is not a
+  failure of the step and is not caught.
+- **Values.** A value is a `Value`: null, a bool, a number (`f64`), a string,
+  a list or a map that keeps the order of its keys, as JSON has.
+- **State of a run.** `run(&mut self, …)` takes the pipeline mutably, so two
+  runs of one pipeline at the same time are not possible.

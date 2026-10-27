@@ -1,4 +1,5 @@
-# The Cargo workspace of the Rust packages. It is not a package.
+# The Cargo workspace of the Rust packages and the Rust conformance runner.
+# It is not a package.
 [workspace]
 resolver = "2"
-members = ["packages/codeupipe-rs"]
+members = ["packages/codeupipe-rs", "conformance/runners/rust"]

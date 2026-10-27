@@ -235,8 +235,8 @@ crates.io. The old repository used `codeupipe-core`.
 
 ## Phase 1: the core crate
 
-**Done** (2026-10-27): `packages/codeupipe-rs`, 46 tests (16 Payload, 17
-Pipeline, 7 labels, 2 example, 4 doc tests, 3 of them `compile_fail`),
+**Done** (2026-10-27): `packages/codeupipe-rs`, 47 tests (16 Payload, 17
+Pipeline, 7 labels, 3 example, 4 doc tests, 3 of them `compile_fail`),
 `cargo clippy -- -D warnings` and `cargo fmt --check` clean. The tests are
 ported from `packages/codeupipe-ts/tests`, except those that have no Rust form:
 async steps, two runs at the same time, a class with no name, a key named like
@@ -261,6 +261,37 @@ Done when: `cargo test`, `cargo clippy -- -D warnings` and `cargo fmt --check`
 pass, and `cargo run --example pricing` prints the result and the State.
 
 ## Phase 2: conformance
+
+**Done** (2026-10-27): `rust:run` passes all 27 cases, with nothing
+unsupported. To check that the runner catches a broken runtime, the core was
+changed so that it did not record a Tap failure: 3 cases failed. The runner
+has 7 tests of its JSON reader and writer. `bench.py` measures `rust:run`, its
+baseline is kept under its own key (`rust`, not a Python version), and CI has a `rust` job, which also
+builds with Rust 1.75 (D9).
+
+One thing that only Rust needed: `add_filter` and `add_valve` take the type
+of the step, which gives its label. A step that the runner picks at run time
+cannot be a `Box<dyn Filter>` (its label would be `Box`), so the runner hands
+each Filter over by its own type through a small generic trait (`UseFilter`).
+
+The numbers (µs per run, Apple Silicon, one run):
+
+| scenario | python:run | python:static-inline | rust:run |
+|---|---|---|---|
+| `micro-pass` (10 filters) | 5.03 | 0.613 | 1.10 |
+| `valve-gated` | 5.83 | 0.830 | 1.24 |
+| `taps` | 5.25 | 0.614 | 1.17 |
+| `hook` | 5.98 | — | 1.10 |
+| `heavy-allocation` (50 inserts) | 16.80 | 1.49 | 7.26 |
+
+`rust:run` is 4 to 5 times faster than `python:run`, and about 2 times
+**slower** than compiled Python. The time is in allocation, not in dispatch:
+each run copies the Payload into a new map with `String` keys, each insert
+makes a `String` for its key, and State clones a `String` label for every step.
+`heavy-allocation`, which is all inserts, shows it most. This changes the
+question for phase 3: the first gain is in the core (labels shared instead of
+cloned, State kept between runs), which every user gets with no compiler.
+Measure again after that, then decide on phase 3.
 
 A runner in `conformance/runners/rust/`, with the protocol of the others:
 `runner <target> < cases.json > results.json`. It never judges.

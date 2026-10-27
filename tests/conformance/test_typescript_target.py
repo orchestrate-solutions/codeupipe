@@ -52,4 +52,4 @@ def test_a_target_that_cannot_run_is_a_failure(monkeypatch, tmp_path):
 def test_node_is_not_needed_for_the_default_targets(monkeypatch):
     monkeypatch.setattr(conformance_run, "_node_runs_typescript", lambda: False)
     assert [name for name in conformance_run.default_targets() if name.startswith("typescript:")] == []
-    assert len(conformance_run.default_targets()) == 5  # every Python target
+    assert len([name for name in conformance_run.default_targets() if name.startswith("python:")]) == 5
