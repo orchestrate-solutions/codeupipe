@@ -6,6 +6,7 @@ use crate::filter::Filter;
 use crate::hook::Hook;
 use crate::named_pipeline::NamedPipeline;
 use crate::payload::Payload;
+use crate::pipeline_data::PipelineData;
 use crate::predicate::Predicate;
 use crate::state::State;
 use crate::step_error::StepError;
@@ -14,20 +15,20 @@ use crate::tap::Tap;
 use crate::valve::Valve;
 
 /// A step that Hooks see: it runs, and its failure stops the run.
-enum Gated {
-    Filter(Box<dyn Filter>),
-    Valve(Valve),
-    Pipeline(Box<Pipeline>),
+enum Gated<P> {
+    Filter(Box<dyn Filter<P>>),
+    Valve(Valve<P>),
+    Pipeline(Box<Pipeline<P>>),
 }
 
-enum Step {
-    Tap(Box<dyn Tap>),
-    Gated(Gated),
+enum Step<P> {
+    Tap(Box<dyn Tap<P>>),
+    Gated(Gated<P>),
 }
 
-struct Labeled {
+struct Labeled<P> {
     label: String,
-    step: Step,
+    step: Step<P>,
 }
 
 /// Pipeline: runs the steps in order.
@@ -36,23 +37,26 @@ struct Labeled {
 /// lifecycle, and State records what ran. Add steps with `add_filter`,
 /// `add_valve`, `add_tap` and `add_pipeline`, add Hooks with `use_hook`, and
 /// run with `pipeline.run(&payload)`.
-pub struct Pipeline {
+///
+/// It carries a `Payload` unless you give it a type of your own
+/// (`Pipeline<Order>`, see `PipelineData`).
+pub struct Pipeline<P = Payload> {
     label: String,
-    steps: Vec<Labeled>,
+    steps: Vec<Labeled<P>>,
     uses: HashMap<String, usize>,
-    hooks: Vec<Box<dyn Hook>>,
+    hooks: Vec<Box<dyn Hook<P>>>,
     state: State,
     timing: bool,
     lineage: bool,
 }
 
-impl Default for Pipeline {
+impl<P: PipelineData> Default for Pipeline<P> {
     fn default() -> Self {
         Pipeline::new()
     }
 }
 
-impl fmt::Debug for Pipeline {
+impl<P> fmt::Debug for Pipeline<P> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Pipeline")
             .field("label", &self.label)
@@ -61,7 +65,14 @@ impl fmt::Debug for Pipeline {
     }
 }
 
-impl Pipeline {
+impl<P> Pipeline<P> {
+    /// The label of each step, in order.
+    pub fn labels(&self) -> Vec<String> {
+        self.steps.iter().map(|step| step.label.clone()).collect()
+    }
+}
+
+impl<P: PipelineData> Pipeline<P> {
     /// A pipeline with no name. Nested, its label is `Pipeline`.
     pub fn new() -> Self {
         Pipeline {
@@ -77,7 +88,7 @@ impl Pipeline {
 
     /// The pipeline that `named` adds the steps of. Its label is the name of
     /// the type of `named`.
-    pub fn named<N: NamedPipeline>(named: N) -> Self {
+    pub fn named<N: NamedPipeline<P>>(named: N) -> Self {
         let mut pipeline = Pipeline::new();
         pipeline.label = label_of::<N>();
         named.add_steps(&mut pipeline);
@@ -87,11 +98,6 @@ impl Pipeline {
     /// What happened in the last run.
     pub fn state(&self) -> &State {
         &self.state
-    }
-
-    /// The label of each step, in order.
-    pub fn labels(&self) -> Vec<String> {
-        self.steps.iter().map(|step| step.label.clone()).collect()
     }
 
     /// The type name of the step, with a number from its second use in this pipeline.
@@ -105,13 +111,13 @@ impl Pipeline {
         }
     }
 
-    fn push(&mut self, base: String, step: Step) {
+    fn push(&mut self, base: String, step: Step<P>) {
         let label = self.next_label(base);
         self.steps.push(Labeled { label, step });
     }
 
     /// Add a Filter.
-    pub fn add_filter<F: Filter + 'static>(&mut self, filter: F) {
+    pub fn add_filter<F: Filter<P> + 'static>(&mut self, filter: F) {
         self.push(
             label_of::<F>(),
             Step::Gated(Gated::Filter(Box::new(filter))),
@@ -123,9 +129,9 @@ impl Pipeline {
     /// The condition comes first, then the Filter that it controls. When the
     /// test is false the Payload passes through unchanged and the step is
     /// recorded as skipped. The step has the label of its Filter.
-    pub fn add_valve<P: Predicate + 'static, F: Filter + 'static>(
+    pub fn add_valve<Q: Predicate<P> + 'static, F: Filter<P> + 'static>(
         &mut self,
-        predicate: P,
+        predicate: Q,
         filter: F,
     ) {
         let valve = Valve {
@@ -136,12 +142,12 @@ impl Pipeline {
     }
 
     /// Add a Tap.
-    pub fn add_tap<T: Tap + 'static>(&mut self, tap: T) {
+    pub fn add_tap<T: Tap<P> + 'static>(&mut self, tap: T) {
         self.push(label_of::<T>(), Step::Tap(Box::new(tap)));
     }
 
     /// Nest a Pipeline as one step of this Pipeline.
-    pub fn add_pipeline(&mut self, pipeline: Pipeline) {
+    pub fn add_pipeline(&mut self, pipeline: Pipeline<P>) {
         self.push(
             pipeline.label.clone(),
             Step::Gated(Gated::Pipeline(Box::new(pipeline))),
@@ -149,7 +155,7 @@ impl Pipeline {
     }
 
     /// Add a Hook.
-    pub fn use_hook<H: Hook + 'static>(&mut self, hook: H) {
+    pub fn use_hook<H: Hook<P> + 'static>(&mut self, hook: H) {
         self.hooks.push(Box::new(hook));
     }
 
@@ -164,13 +170,13 @@ impl Pipeline {
     ///
     /// A Filter failure stops the run and is returned after the Hooks have
     /// seen it. A Tap failure is recorded in State and the run continues.
-    pub fn run(&mut self, input: &Payload) -> Result<Payload, StepError> {
-        let mut payload = input.copy(); // the caller's Payload is not changed
+    pub fn run(&mut self, input: &P) -> Result<P, StepError> {
+        let mut payload = input.clone(); // the caller's value is not changed
         self.run_on(&mut payload)?;
         Ok(payload)
     }
 
-    fn run_on(&mut self, payload: &mut Payload) -> Result<(), StepError> {
+    fn run_on(&mut self, payload: &mut P) -> Result<(), StepError> {
         self.state.reset();
         let Pipeline {
             steps,
@@ -240,14 +246,14 @@ impl Pipeline {
 }
 
 /// Run one step that Hooks see. `Ok(false)` is a Valve that skipped its Filter.
-fn run_gated(gated: &mut Gated, payload: &mut Payload) -> Result<bool, StepError> {
+fn run_gated<P: PipelineData>(gated: &mut Gated<P>, payload: &mut P) -> Result<bool, StepError> {
     match gated {
         Gated::Filter(filter) => filter.call(payload).map(|()| true),
         Gated::Valve(valve) if !valve.predicate.test(payload) => Ok(false),
         Gated::Valve(valve) => valve.filter.call(payload).map(|()| true),
         Gated::Pipeline(inner) => {
             // As a run of its own: a failure inside leaves this Payload as it was.
-            let mut result = payload.copy();
+            let mut result = payload.clone();
             inner.run_on(&mut result)?;
             *payload = result;
             Ok(true)

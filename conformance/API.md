@@ -253,3 +253,7 @@ Notes on Rust:
   a list or a map that keeps the order of its keys, as JSON has.
 - **State of a run.** `run(&mut self, …)` takes the pipeline mutably, so two
   runs of one pipeline at the same time are not possible.
+- **A payload of your own.** `Payload` is the default. Each primitive takes
+  the data type as a parameter (`Filter<Order>`, `Pipeline<Order>`), and a
+  type opts in with `impl PipelineData for Order {}`. The rules of this
+  contract stay the same. The conformance cases run with `Payload`.

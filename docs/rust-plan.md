@@ -233,6 +233,26 @@ nothing newer. This machine has 1.89.
 other languages. Before the first publish, check that they are free on
 crates.io. The old repository used `codeupipe-core`.
 
+### D11. A payload of your own
+
+**Settled (2026-10-27).** `Payload` stays the default: a map that any
+developer can read, which shows that anything can go there. A developer, or
+an agent, that would write a struct anyway can opt in: each primitive takes
+the data type as a parameter with `Payload` as its default (`Filter<P =
+Payload>`, `Pipeline<P = Payload>`), and the type implements `PipelineData`:
+`Clone` (for the copy that `run` works on) and an optional `stamp` for
+lineage. Code written for `Payload` does not change; `Pipeline::new()` infers
+the type from its steps.
+
+Python allows the same by duck typing (its Pipeline calls only `copy()`, and
+`_stamp()` when lineage is on); TypeScript has no such option. A step for one
+type in a pipeline of another is a compile error, checked by a doc test.
+
+Measured (release, Apple Silicon): the pricing pipeline runs in 0.024 µs
+with an `Order` struct against 0.18 µs with a Payload, and 50 writes take
+0.46 µs against 4.3 µs. What is left, about 9 ns a step, is the pipeline's own
+work: State, Hooks and the call through `dyn Filter`.
+
 ## Phase 1: the core crate
 
 **Done** (2026-10-27): `packages/codeupipe-rs`, 47 tests (16 Payload, 17

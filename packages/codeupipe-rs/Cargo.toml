@@ -14,3 +14,7 @@ publish = false
 [[example]]
 name = "pricing"
 path = "examples/pricing/main.rs"
+
+[[example]]
+name = "typed_pricing"
+path = "examples/typed_pricing/main.rs"

@@ -98,6 +98,59 @@ result.to_dict();
 cargo run --example pricing
 ```
 
+## A payload of your own
+
+`Payload` is the default, and it stays the default: a map of JSON-shaped
+values that any developer can read, in any runtime of codeupipe. It shows
+that anything can go there.
+
+You can opt in to a type of your own, such as the struct that you would
+write anyway. Implement `PipelineData` for it (one line), and the steps of
+that pipeline take the struct:
+
+```rust
+#[derive(Clone)]
+pub struct Order {
+    pub price: f64,
+    pub qty: u32,
+    pub bulk: bool,
+}
+
+impl PipelineData for Order {}
+
+impl Filter<Order> for MarkBulkFilter {
+    fn call(&self, order: &mut Order) -> Result<(), StepError> {
+        order.bulk = true;
+        Ok(())
+    }
+}
+
+impl NamedPipeline<Order> for PricingPipeline {
+    fn add_steps(&self, pipeline: &mut Pipeline<Order>) {
+        pipeline.add_filter(DiscountFilter::new(0.1));
+        pipeline.add_valve(AtLeastPredicate::new(10), MarkBulkFilter);
+        pipeline.add_tap(AuditTap);
+    }
+}
+```
+
+`Filter`, `Predicate`, `Tap`, `Hook`, `NamedPipeline` and `Pipeline` each take
+the type as a parameter, which is `Payload` when you leave it out. The rules
+stay the same: `run` works on a clone of the input, only a Filter writes, a
+Tap failure is recorded and the run goes on, and the labels are the same. A
+step for another type is a compile error. Lineage is kept only if the type
+implements `PipelineData::stamp`.
+
+The whole example is in [examples/typed_pricing/](examples/typed_pricing/):
+
+```bash
+cargo run --example typed_pricing
+```
+
+A typed pipeline has no map to look keys up in, so it is faster: on the
+pricing pipeline 0.024 µs a run against 0.18 µs with a Payload, and for 50
+writes 0.46 µs against 4.3 µs (Apple Silicon, release build).
+
 ## Names
 
 The names are the names of the contract.
@@ -137,6 +190,8 @@ nothing unless you implement them.
 - **The label** is the type name without its path or generic arguments. It
   comes from `std::any::type_name`, whose exact text Rust does not promise to
   keep the same; the tests check it.
+- **A payload of your own** is a type parameter of each primitive (see
+  above). Python allows one by duck typing; TypeScript has none.
 - **Timing in WebAssembly.** `std::time::Instant` panics on
   `wasm32-unknown-unknown`. Timing is off by default, so a pipeline runs
   there as long as `observe(true, ...)` is not called.
@@ -150,6 +205,7 @@ cargo test                   # the tests, and the doc tests
 cargo clippy -- -D warnings
 cargo fmt --check
 cargo run --example pricing
+cargo run --example typed_pricing
 ```
 
 One primitive is in each file, and the file name is the type name in

@@ -5,6 +5,6 @@ use crate::step_error::StepError;
 ///
 /// The Filter gets the Payload itself and writes to it in place. It is the
 /// only step that can write: the others get `&Payload`.
-pub trait Filter {
-    fn call(&self, payload: &mut Payload) -> Result<(), StepError>;
+pub trait Filter<P = Payload> {
+    fn call(&self, payload: &mut P) -> Result<(), StepError>;
 }

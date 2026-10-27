@@ -82,8 +82,10 @@ jobs:
         run: cargo clippy --offline --all-targets -- -D warnings
       - name: Tests
         run: cargo test --offline
-      - name: Example
-        run: cargo run --offline --example pricing -p codeupipe
+      - name: Examples
+        run: |
+          cargo run --offline --example pricing -p codeupipe
+          cargo run --offline --example typed_pricing -p codeupipe
       - name: Conformance
         run: python conformance/run.py rust:run
       - name: The oldest Rust that the crate supports (rust-version)

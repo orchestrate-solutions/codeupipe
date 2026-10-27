@@ -1,4 +1,5 @@
 use crate::map::Map;
+use crate::pipeline_data::PipelineData;
 use crate::value::Value;
 
 /// Payload: the data that moves through a pipeline.
@@ -6,7 +7,7 @@ use crate::value::Value;
 /// One keyed container. Every write changes it in place and returns it, so
 /// writes can be chained. `copy()` gives a separate Payload when you want to
 /// keep the one you have.
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Payload {
     data: Map,
     trace_id: Option<String>,
@@ -68,11 +69,7 @@ impl Payload {
 
     /// A separate Payload with the same contents, trace id and lineage.
     pub fn copy(&self) -> Payload {
-        Payload {
-            data: self.data.clone(),
-            trace_id: self.trace_id.clone(),
-            lineage: self.lineage.clone(),
-        }
+        self.clone()
     }
 
     /// The contents as a new map.
@@ -95,9 +92,11 @@ impl Payload {
     pub fn lineage(&self) -> &[String] {
         &self.lineage
     }
+}
 
-    /// Record a step in the lineage. For the Pipeline.
-    pub(crate) fn stamp(&mut self, label: &str) {
+impl PipelineData for Payload {
+    /// Lineage: the label of each step, in `lineage()`.
+    fn stamp(&mut self, label: &str) {
         self.lineage.push(label.to_string());
     }
 }

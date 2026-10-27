@@ -5,7 +5,7 @@ use crate::predicate::Predicate;
 /// Predicate is true.
 ///
 /// `Pipeline::add_valve(predicate, filter)` makes one. It is not a public name.
-pub(crate) struct Valve {
-    pub(crate) predicate: Box<dyn Predicate>,
-    pub(crate) filter: Box<dyn Filter>,
+pub(crate) struct Valve<P> {
+    pub(crate) predicate: Box<dyn Predicate<P>>,
+    pub(crate) filter: Box<dyn Filter<P>>,
 }

@@ -54,6 +54,22 @@
 //! pipeline.add_valve(SetFilter, OnPredicate);
 //! ```
 //!
+//! A pipeline carries one type. A Filter for a type of your own
+//! (`PipelineData`) does not go into a pipeline of `Payload`:
+//!
+//! ```compile_fail
+//! use codeupipe::{Filter, Payload, Pipeline, PipelineData, StepError};
+//! #[derive(Clone)]
+//! struct Order { price: f64 }
+//! impl PipelineData for Order {}
+//! struct DiscountFilter;
+//! impl Filter<Order> for DiscountFilter {
+//!     fn call(&self, order: &mut Order) -> Result<(), StepError> { order.price *= 0.9; Ok(()) }
+//! }
+//! let mut pipeline: Pipeline<Payload> = Pipeline::new();
+//! pipeline.add_filter(DiscountFilter);
+//! ```
+//!
 //! Only a Filter writes. A Tap gets `&Payload`:
 //!
 //! ```compile_fail
@@ -73,6 +89,7 @@ mod map;
 mod named_pipeline;
 mod payload;
 mod pipeline;
+mod pipeline_data;
 mod predicate;
 mod state;
 mod step_error;
@@ -87,6 +104,7 @@ pub use map::Map;
 pub use named_pipeline::NamedPipeline;
 pub use payload::Payload;
 pub use pipeline::Pipeline;
+pub use pipeline_data::PipelineData;
 pub use predicate::Predicate;
 pub use state::State;
 pub use step_error::StepError;
