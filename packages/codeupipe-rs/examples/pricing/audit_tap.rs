@@ -1,11 +1,12 @@
 use codeupipe::{Payload, StepError, Tap};
 
-/// A Tap: reads the Payload and returns nothing. This one fails every time,
-/// to show that a Tap failure is recorded and never stops the run.
+/// A Tap: reads the Payload and returns nothing. If it fails, State records
+/// the error and the run goes on.
 pub struct AuditTap;
 
 impl Tap for AuditTap {
-    fn observe(&self, _payload: &Payload) -> Result<(), StepError> {
-        Err("audit sink is down".into())
+    fn observe(&self, payload: &Payload) -> Result<(), StepError> {
+        println!("audit: {:?}", payload.to_dict());
+        Ok(())
     }
 }

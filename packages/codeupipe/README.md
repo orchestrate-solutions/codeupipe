@@ -61,7 +61,7 @@ class PricingPipeline(Pipeline):
         self.add_filter(DiscountFilter(0.1))
         # MarkBulkFilter runs only when the predicate is true.
         self.add_valve(AtLeastPredicate("qty", 10), MarkBulkFilter())
-        # A Tap failure is recorded and does not stop the run.
+        # A Tap only reads. If it fails, State records the error and the run goes on.
         self.add_tap(AuditTap())
 ```
 

@@ -34,13 +34,15 @@ fn a_large_order_gets_the_discount_and_the_bulk_mark() {
         pipeline.state().executed(),
         ["DiscountFilter", "MarkBulkFilter", "AuditTap"]
     );
-    let errors: Vec<&str> = pipeline
-        .state()
-        .errors()
-        .iter()
-        .map(|(label, _)| label.as_str())
-        .collect();
-    assert_eq!(errors, ["AuditTap"]);
+    assert!(pipeline.state().errors().is_empty());
+}
+
+#[test]
+fn the_tap_reads_the_payload() {
+    use codeupipe::Tap;
+    assert!(audit_tap::AuditTap
+        .observe(&Payload::from_map(Map::from([("price", 90)])))
+        .is_ok());
 }
 
 #[test]

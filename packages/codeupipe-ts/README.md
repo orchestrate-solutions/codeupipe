@@ -99,7 +99,7 @@ export class PricingPipeline extends Pipeline {
     this.addFilter(new DiscountFilter(0.1));
     // MarkBulkFilter runs only when the predicate is true.
     this.addValve(new AtLeastPredicate("qty", 10), new MarkBulkFilter());
-    // A Tap failure is recorded and does not stop the run.
+    // A Tap only reads. If it fails, State records the error and the run goes on.
     this.addTap(new AuditTap());
   }
 }

@@ -13,7 +13,7 @@ impl NamedPipeline for PricingPipeline {
         pipeline.add_filter(DiscountFilter::new(0.1));
         // MarkBulkFilter runs only when the predicate is true.
         pipeline.add_valve(AtLeastPredicate::new("qty", 10.0), MarkBulkFilter);
-        // A Tap failure is recorded and does not stop the run.
+        // A Tap only reads. If it fails, State records the error and the run goes on.
         pipeline.add_tap(AuditTap);
     }
 }
