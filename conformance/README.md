@@ -27,14 +27,17 @@ The committed snapshot is [MATRIX.md](MATRIX.md).
 ([BENCH.md](BENCH.md)). The runner has a `bench` mode that times the
 scenarios in `bench/scenarios.json`.
 
-**The speed check** compares each benchmark number with its recorded
-baseline (`bench/baseline.json`):
+**Speed is measured, not judged.** CI runs `bench.py` and keeps the numbers
+(the job summary and an artifact), and never fails because of them: a shared
+machine is too noisy for a speed gate. A comparison with a recorded baseline
+(`bench/baseline.json`) is kept for a machine whose resources are fixed, such
+as a constrained container. No test and no CI job runs it:
 
 ```bash
-python conformance/bench.py --check                  # fails outside ±25%
+python conformance/bench.py --check                  # outside ±25% of the baseline
 python conformance/bench.py --check --tolerance 15
-python conformance/bench.py --record                 # after a change in speed that you accept
-python -m pytest -m perf                             # the same check, as a test
+python conformance/bench.py --record                 # record the baseline
+python conformance/bench.py rust:run --record        # only the Rust numbers
 ```
 
 A number is kept as a ratio to a reference workload (plain dict writes
@@ -42,7 +45,9 @@ behind function calls) that the runner times beside it, so the check does
 not depend on how fast the machine is. Slower than the band is a regression.
 Faster than the band also fails, with the instruction to record again:
 otherwise the next regression would hide inside the gain. There is one
-baseline for each Python version. Run it on a quiet machine: under heavy
+baseline for each Python version, and one for the Rust run, which does not
+depend on Python (the Rust runner times a reference of map writes of its own).
+`--record` with targets named replaces only those targets. Run it on a quiet machine: under heavy
 load a number can leave the band.
 
 | Target | How it runs (all offline) |
@@ -52,6 +57,7 @@ load a number can leave the band.
 | `python:static-observe` | `codeupipe.compile` with `observe=True`: State and Hooks judged too |
 | `typescript:run` | `packages/codeupipe-ts` Pipeline. Node runs the `.ts` runner as it is (Node 22.18 or later). With no arguments, `run.py` leaves this target out when the machine has no such Node |
 | `typescript:static` | `packages/codeupipe-compile-ts`: the pipeline as plain code, written to a file and imported (no State or Hooks: ✅\*). Needs `npm ci` in that package and a built core package; `run.py` leaves it out when they are not there |
+| `rust:run` | `packages/codeupipe-rs` Pipeline. `cargo run --release --offline` builds the runner, which has no dependency to download. With no arguments, `run.py` leaves this target out when the machine has no `cargo` |
 
 ## Statuses
 
@@ -137,7 +143,8 @@ never halts the pipeline). Where it is silent, they encode Python
    when the Valve skips its filter.
 3. **`equals` across types.** Python's `==` makes `1 == true`; JSON does not.
    TypeScript uses `===`, which does not compare lists or maps by content.
-   No case depends on it yet.
+   Rust compares `Value` by content, and a number is never equal to a
+   boolean. No case depends on it yet.
 4. **`truthy` across languages.** An empty list or map is false in Python
-   and true in JavaScript. Each runner uses the rule of its language. No
-   case depends on it yet.
+   and true in JavaScript. Each runner uses the rule of its language; Rust
+   has no rule of its own and follows Python. No case depends on it yet.
