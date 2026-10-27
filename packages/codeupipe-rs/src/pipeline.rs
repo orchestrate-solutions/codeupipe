@@ -171,7 +171,7 @@ impl Pipeline {
     }
 
     fn run_on(&mut self, payload: &mut Payload) -> Result<(), StepError> {
-        self.state = State::default();
+        self.state.reset();
         let Pipeline {
             steps,
             hooks,

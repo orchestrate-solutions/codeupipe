@@ -21,11 +21,11 @@ records State and calls Hooks as `python:run` does.
 
 | scenario | steps | python:run | python:static-steps | python:static-inline | python:static-observe | rust:run |
 |---|---|---|---|---|---|---|
-| `micro-pass` | 10 | 5.03 | 0.803 | 0.613 | 1.92 | 1.10 |
-| `valve-gated` | 10 | 5.83 | 1.09 | 0.830 | 2.25 | 1.24 |
-| `taps` | 13 | 5.25 | 0.874 | 0.614 | 2.03 | 1.17 |
-| `hook` | 10 | 5.98 | — | — | 2.88 | 1.10 |
-| `heavy-allocation` | 50 | 16.80 | 2.84 | 1.49 | 7.02 | 7.26 |
+| `micro-pass` | 10 | 4.94 | 0.824 | 0.606 | 1.92 | 0.246 |
+| `valve-gated` | 10 | 5.81 | 1.11 | 0.801 | 2.25 | 0.301 |
+| `taps` | 13 | 5.34 | 0.899 | 0.602 | 2.03 | 0.256 |
+| `hook` | 10 | 5.88 | — | — | 2.97 | 0.247 |
+| `heavy-allocation` | 50 | 16.05 | 2.84 | 1.49 | 7.01 | 4.24 |
 
 Not measured (the target refuses the scenario):
 - python:static-steps hook: UnsupportedFilterShape: <pipeline>.call at line 0:0 — cannot lower Hook. Hint: Hooks do not run in the fast static export. Export with observe=True (top-level Hooks only), or remove them.

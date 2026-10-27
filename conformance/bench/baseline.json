@@ -118,20 +118,20 @@
   "rust": {
     "relative": {
       "rust:run": {
-        "heavy-allocation": 9.303745035804434,
-        "hook": 1.3994415477762348,
-        "micro-pass": 1.4242917839779374,
-        "taps": 1.4986568238869071,
-        "valve-gated": 1.5767745950367715
+        "heavy-allocation": 5.499536001936514,
+        "hook": 0.31824585893023705,
+        "micro-pass": 0.3043599491942981,
+        "taps": 0.3339576838504764,
+        "valve-gated": 0.3778348235708194
       }
     },
     "us_per_run": {
       "rust:run": {
-        "heavy-allocation": 7.383758299999999,
-        "hook": 1.05555,
-        "micro-pass": 1.1066896,
-        "taps": 1.13433335,
-        "valve-gated": 1.22620415
+        "heavy-allocation": 4.212337499999999,
+        "hook": 0.24734585000000003,
+        "micro-pass": 0.24505415,
+        "taps": 0.2559104,
+        "valve-gated": 0.29349165
       }
     }
   }

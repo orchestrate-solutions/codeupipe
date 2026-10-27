@@ -274,24 +274,37 @@ of the step, which gives its label. A step that the runner picks at run time
 cannot be a `Box<dyn Filter>` (its label would be `Box`), so the runner hands
 each Filter over by its own type through a small generic trait (`UseFilter`).
 
-The numbers (µs per run, Apple Silicon, one run):
+The first numbers showed `rust:run` 4 to 5 times faster than `python:run`
+but about 2 times **slower** than compiled Python. The time was in
+allocation, not in dispatch (50 no-op steps take 0.42 µs). Three changes to
+the core, with no change to its behaviour or its API:
 
-| scenario | python:run | python:static-inline | rust:run |
-|---|---|---|---|
-| `micro-pass` (10 filters) | 5.03 | 0.613 | 1.10 |
-| `valve-gated` | 5.83 | 0.830 | 1.24 |
-| `taps` | 5.25 | 0.614 | 1.17 |
-| `hook` | 5.98 | — | 1.10 |
-| `heavy-allocation` (50 inserts) | 16.80 | 1.49 | 7.26 |
+1. **`Map::insert` looks the key up first**, so a key that is there makes no
+   new `String`.
+2. **State keeps its storage between runs** and writes the labels over, so a
+   run like the last one makes no new label `String`.
+3. **A key is an `Arc<str>`, made once**, shared by the index and by every
+   copy of the map. A map of 8 keys or fewer is searched in order and has no
+   hash index; a larger one gets an index with room to grow. The hash stays
+   std's SipHash: a faster hasher with no random seed would let crafted keys
+   slow down a map that is read from untrusted JSON.
 
-`rust:run` is 4 to 5 times faster than `python:run`, and about 2 times
-**slower** than compiled Python. The time is in allocation, not in dispatch:
-each run copies the Payload into a new map with `String` keys, each insert
-makes a `String` for its key, and State clones a `String` label for every step.
-`heavy-allocation`, which is all inserts, shows it most. This changes the
-question for phase 3: the first gain is in the core (labels shared instead of
-cloned, State kept between runs), which every user gets with no compiler.
-Measure again after that, then decide on phase 3.
+µs per run, Apple Silicon, one run:
+
+| scenario | python:run | python:static-inline | rust:run before | rust:run now |
+|---|---|---|---|---|
+| `micro-pass` (10 filters) | 4.94 | 0.606 | 1.10 | 0.246 |
+| `valve-gated` | 5.81 | 0.801 | 1.24 | 0.301 |
+| `taps` | 5.34 | 0.602 | 1.17 | 0.256 |
+| `hook` | 5.88 | — | 1.10 | 0.247 |
+| `heavy-allocation` (50 inserts) | 16.05 | 1.49 | 7.26 | 4.24 |
+
+The dynamic Rust run is now 20 times faster than `python:run`, and 2.5 times
+faster than compiled Python, except where a run makes 50 new keys: there each
+new key is an allocation and a hash, and a Python dict is hard to beat. **So
+phase 3 waits**: the dynamic run already costs about 25 ns a step, and a
+compiler would remove nanoseconds that few pipelines would notice. The README
+says "no compiler yet".
 
 A runner in `conformance/runners/rust/`, with the protocol of the others:
 `runner <target> < cases.json > results.json`. It never judges.
@@ -357,6 +370,11 @@ the Hook loop and the call through `dyn Filter`. That could be 2 to 3 times,
 or less. **Phase 2 measures `rust:run` first. Phase 3 starts only if the
 number leaves room for a gain that is worth a compiler.** If it does not, the
 compiler waits, and the Rust row in the README says "no compiler".
+
+Measured in phase 2 (2026-10-27): it does not, for now. After the work on the
+core, a dynamic step costs about 25 ns, and the dynamic run is faster than
+compiled Python in four of the five scenarios. The compiler waits until a
+real pipeline shows a need.
 
 ### The value type in compiled code
 

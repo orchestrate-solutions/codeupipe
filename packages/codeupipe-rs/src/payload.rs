@@ -39,7 +39,11 @@ impl Payload {
     }
 
     /// Set `key` to `value` in this Payload, and return it.
-    pub fn insert(&mut self, key: impl Into<String>, value: impl Into<Value>) -> &mut Self {
+    pub fn insert<K: AsRef<str> + Into<String>>(
+        &mut self,
+        key: K,
+        value: impl Into<Value>,
+    ) -> &mut Self {
         self.data.insert(key, value);
         self
     }

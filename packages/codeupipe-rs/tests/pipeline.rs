@@ -370,6 +370,74 @@ fn each_run_starts_with_a_new_state() {
 }
 
 #[test]
+fn a_shorter_run_after_a_longer_one_keeps_nothing_of_it() {
+    struct FailIfAskedFilter;
+    impl Filter for FailIfAskedFilter {
+        fn call(&self, payload: &mut Payload) -> Result<(), StepError> {
+            if payload.get("fail") == Some(&Value::Bool(true)) {
+                return Err("asked to fail".into());
+            }
+            Ok(())
+        }
+    }
+    struct FailIfAskedTap;
+    impl Tap for FailIfAskedTap {
+        fn observe(&self, payload: &Payload) -> Result<(), StepError> {
+            if payload.get("tap_fail") == Some(&Value::Bool(true)) {
+                return Err("asked to fail".into());
+            }
+            Ok(())
+        }
+    }
+    let mut pipeline = Pipeline::new();
+    pipeline.observe(true, false);
+    pipeline.add_filter(FailIfAskedFilter);
+    pipeline.add_valve(IsOnPredicate, AddFilter);
+    pipeline.add_tap(FailIfAskedTap);
+
+    pipeline
+        .run(&Payload::from_map(Map::from([
+            ("on", true),
+            ("tap_fail", true),
+        ])))
+        .unwrap();
+    let state = pipeline.state();
+    assert_eq!(
+        state.executed(),
+        ["FailIfAskedFilter", "AddFilter", "FailIfAskedTap"]
+    );
+    assert_eq!(state.errors().len(), 1);
+    let timed: Vec<&str> = state
+        .timings()
+        .iter()
+        .map(|(label, _)| label.as_str())
+        .collect();
+    assert_eq!(timed, ["FailIfAskedFilter", "AddFilter"]);
+
+    pipeline
+        .run(&Payload::from_map(Map::from([("fail", true)])))
+        .unwrap_err();
+    let state = pipeline.state();
+    assert!(state.executed().is_empty());
+    assert!(state.skipped().is_empty());
+    assert!(state.errors().is_empty());
+    let timed: Vec<&str> = state
+        .timings()
+        .iter()
+        .map(|(label, _)| label.as_str())
+        .collect();
+    assert_eq!(timed, ["FailIfAskedFilter"]);
+
+    pipeline
+        .run(&Payload::from_map(Map::from([("on", false)])))
+        .unwrap();
+    let state = pipeline.state();
+    assert_eq!(state.executed(), ["FailIfAskedFilter", "FailIfAskedTap"]);
+    assert_eq!(state.skipped(), ["AddFilter"]);
+    assert!(state.errors().is_empty());
+}
+
+#[test]
 fn a_failure_inside_a_nested_pipeline_is_reported_as_the_nesting_step() {
     struct FailingInnerPipeline;
     impl NamedPipeline for FailingInnerPipeline {

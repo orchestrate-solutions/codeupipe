@@ -159,3 +159,10 @@ fn maps_with_the_same_entries_are_equal_in_any_order() {
     );
     assert_ne!(Map::from([("a", 1)]), Map::from([("a", 1), ("b", 2)]));
 }
+
+#[test]
+fn a_payload_can_go_to_another_thread() {
+    fn send_and_sync<T: Send + Sync>() {}
+    send_and_sync::<Payload>();
+    send_and_sync::<codeupipe::Map>();
+}
