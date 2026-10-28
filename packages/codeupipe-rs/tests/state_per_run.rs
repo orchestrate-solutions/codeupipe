@@ -139,14 +139,15 @@ fn a_state_that_was_read_does_not_change_with_the_next_run() {
     assert_eq!(pipeline.state().skipped(), ["MarkFilter"]);
 }
 
+struct FailFilter;
+impl Filter for FailFilter {
+    fn call(&self, _payload: &mut Payload) -> Result<(), StepError> {
+        Err("boom".into())
+    }
+}
+
 #[test]
 fn a_failed_run_with_the_callers_state_keeps_the_steps_before_the_failure() {
-    struct FailFilter;
-    impl Filter for FailFilter {
-        fn call(&self, _payload: &mut Payload) -> Result<(), StepError> {
-            Err("boom".into())
-        }
-    }
     let mut pipeline = Pipeline::new();
     pipeline.add_filter(SetFilter);
     pipeline.add_filter(FailFilter);

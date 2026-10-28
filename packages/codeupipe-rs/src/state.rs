@@ -30,6 +30,7 @@ struct Labels {
     len: usize,
 }
 
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 impl Labels {
     fn push(&mut self, label: &str) {
         match self.all.get_mut(self.len) {
@@ -57,6 +58,7 @@ impl fmt::Debug for Labels {
     }
 }
 
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 impl State {
     /// An empty State, for a caller that gives the State of a run
     /// (`pipeline.run_with_state(&input, &mut state)`).

@@ -28,7 +28,7 @@ If you know Unix, these are close to things you know.
 | Hook | A git hook: code that runs before and after a step |
 | State | `$?` and `PIPESTATUS` |
 
-This repository has six packages.
+This repository has seven packages.
 
 | Package | Contents | Reference |
 |---|---|---|
@@ -37,7 +37,8 @@ This repository has six packages.
 | `codeupipe` for TypeScript | The eight primitives. No dependencies | [packages/codeupipe-ts/README.md](packages/codeupipe-ts/README.md) |
 | `codeupipe-lint` for TypeScript | A linter for pipeline code in TypeScript | [packages/codeupipe-lint-ts/README.md](packages/codeupipe-lint-ts/README.md) |
 | `codeupipe-compile` for TypeScript | Writes a pipeline as plain TypeScript with no import of codeupipe | [packages/codeupipe-compile-ts/README.md](packages/codeupipe-compile-ts/README.md) |
-| `codeupipe` for Rust | The primitives, 0.1.0. No dependencies. No compiler or linter yet | [packages/codeupipe-rs/README.md](packages/codeupipe-rs/README.md) |
+| `codeupipe` for Rust | The primitives, 0.1.0. No dependencies. No compiler yet | [packages/codeupipe-rs/README.md](packages/codeupipe-rs/README.md) |
+| `codeupipe-lint` for Rust | A linter for pipeline code in Rust, for the rules that the compiler does not check | [packages/codeupipe-lint-rs/README.md](packages/codeupipe-lint-rs/README.md) |
 
 ## Install
 
@@ -205,7 +206,8 @@ An editable install needs pip 21.3 or later.
 | `packages/codeupipe-ts/` | The TypeScript runtime, with its tests and its example |
 | `packages/codeupipe-lint-ts/` | The TypeScript linter, with its tests |
 | `packages/codeupipe-compile-ts/` | The TypeScript compiler, with its tests |
-| `packages/codeupipe-rs/` | The Rust runtime, with its tests and its example |
+| `packages/codeupipe-rs/` | The Rust runtime, with its tests and its examples |
+| `packages/codeupipe-lint-rs/` | The Rust linter, with its tests. A Cargo workspace of its own |
 | `conformance/` | The contract ([API.md](conformance/API.md)), the cases, the runners, the benchmark |
 | `tests/` | The tests for the two Python packages |
 | `examples/pricing/` | The example, with its test in `tests/examples/` |
@@ -215,7 +217,9 @@ An editable install needs pip 21.3 or later.
 The root `pyproject.toml` is not a package. It holds the test settings. The
 root `package.json` is not a package: it makes the three TypeScript packages
 one npm workspace. The root `Cargo.toml` is not a package either: it makes
-the Rust runtime and its conformance runner one Cargo workspace.
+the Rust runtime and its conformance runner one Cargo workspace, which
+builds with no download. The Rust linter needs `syn`, so it is a workspace
+of its own.
 
 ## Other languages
 
@@ -223,7 +227,7 @@ The contract and the conformance cases do not depend on a language. Python
 is the first runtime and TypeScript is the second
 ([packages/codeupipe-ts/](packages/codeupipe-ts/)), with its own linter and
 its own compiler. Rust is the third
-([packages/codeupipe-rs/](packages/codeupipe-rs/)); its plan is
+([packages/codeupipe-rs/](packages/codeupipe-rs/)), with its own linter; its plan is
 [docs/rust-plan.md](docs/rust-plan.md). A runtime in another language must implement
 the contract and add a conformance runner.
 

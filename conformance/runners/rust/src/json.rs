@@ -4,6 +4,7 @@
 use codeupipe::{Map, Value};
 
 /// Read one JSON value from `text`.
+// cup: allow-plain the JSON reader and writer of the runner, which must not download a crate
 pub fn read(text: &str) -> Result<Value, String> {
     let mut reader = Reader { text, at: 0 };
     let value = reader.value()?;
@@ -21,6 +22,7 @@ pub fn write(value: &Value) -> String {
     out
 }
 
+// cup: allow-plain the JSON reader and writer of the runner, which must not download a crate
 fn write_into(value: &Value, out: &mut String) {
     match value {
         Value::Null => out.push_str("null"),
@@ -54,6 +56,7 @@ fn write_into(value: &Value, out: &mut String) {
     }
 }
 
+// cup: allow-plain the JSON reader and writer of the runner, which must not download a crate
 fn write_string(s: &str, out: &mut String) {
     out.push('"');
     for c in s.chars() {
@@ -75,6 +78,7 @@ struct Reader<'a> {
     at: usize,
 }
 
+// cup: allow-plain the JSON reader and writer of the runner, which must not download a crate
 impl Reader<'_> {
     fn problem(&self, what: &str) -> String {
         format!("not JSON at byte {}: {what}", self.at)

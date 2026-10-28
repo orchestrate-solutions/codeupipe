@@ -64,6 +64,7 @@ struct Runs {
     spare: RefCell<Option<State>>,
 }
 
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 impl Runs {
     fn start(&self) -> u64 {
         let ticket = self.started.get() + 1;
@@ -114,6 +115,7 @@ impl<P> Pipeline<P> {
     }
 }
 
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 impl<P: PipelineData> Pipeline<P> {
     /// A pipeline with no name. Nested, its label is `Pipeline`.
     pub fn new() -> Self {
@@ -308,6 +310,7 @@ impl<P: PipelineData> Pipeline<P> {
 }
 
 /// Run one step that Hooks see. `Ok(false)` is a Valve that skipped its Filter.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 fn run_gated<P: PipelineData>(gated: &Gated<P>, payload: &mut P) -> Result<bool, StepError> {
     match gated {
         Gated::Filter(filter) => filter.call(payload).map(|()| true),

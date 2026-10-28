@@ -173,23 +173,24 @@ fn a_failure_is_the_same_as_with_a_payload() {
     );
 }
 
+#[derive(Clone, Default)]
+struct Traced {
+    steps: Vec<String>,
+}
+impl PipelineData for Traced {
+    fn stamp(&mut self, label: &str) {
+        self.steps.push(label.to_string());
+    }
+}
+struct NoopFilter;
+impl Filter<Traced> for NoopFilter {
+    fn call(&self, _traced: &mut Traced) -> Result<(), StepError> {
+        Ok(())
+    }
+}
+
 #[test]
 fn lineage_is_kept_only_by_a_type_that_keeps_it() {
-    #[derive(Clone, Default)]
-    struct Traced {
-        steps: Vec<String>,
-    }
-    impl PipelineData for Traced {
-        fn stamp(&mut self, label: &str) {
-            self.steps.push(label.to_string());
-        }
-    }
-    struct NoopFilter;
-    impl Filter<Traced> for NoopFilter {
-        fn call(&self, _traced: &mut Traced) -> Result<(), StepError> {
-            Ok(())
-        }
-    }
     let mut traced = Pipeline::new();
     traced.add_filter(NoopFilter);
     traced.observe(false, true);

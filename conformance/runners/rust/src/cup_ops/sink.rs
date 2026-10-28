@@ -29,6 +29,7 @@ pub fn set_run_again(run_again: Option<RunAgain>) {
     RUN_AGAIN.with(|slot| slot.replace(run_again));
 }
 
+// cup: allow-plain the edge of the runner: it runs the pipeline again for the run_again op
 pub fn run_again(input: Map) -> Result<(), StepError> {
     // Taken out of the cell first: the run that it starts reads the cell too.
     let run_again = RUN_AGAIN.with(|slot| slot.borrow().clone());

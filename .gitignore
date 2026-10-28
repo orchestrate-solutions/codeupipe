@@ -11,3 +11,4 @@ scorecard/results/
 node_modules/
 
 /target/
+/packages/codeupipe-lint-rs/target/

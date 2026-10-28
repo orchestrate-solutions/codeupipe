@@ -46,7 +46,9 @@ The packages are beside the others, with `-rs` where TypeScript has `-ts`.
 A root `Cargo.toml` makes the Rust crates one Cargo workspace. It is not a
 package, as the root `package.json` is not a package. `Cargo.lock` is
 committed, since the workspace has a binary (the runner). `target/` goes in
-`.gitignore`.
+`.gitignore`. The linter (phase 4) is a workspace of its own, with its own
+`Cargo.lock`: it needs `syn` from crates.io, and the root workspace builds
+with no download.
 
 One primitive is in each file, and the file name is the type name in
 snake_case, as in Python: `DiscountFilter` is in `discount_filter.rs`.
@@ -479,6 +481,37 @@ as `typescript:static` does, and the refusal tests pass.
 
 ## Phase 4: the linter
 
+**Done** (2026-10-27): `packages/codeupipe-lint-rs/`, the crate
+`codeupipe-lint` 0.1.0, with its own README. It is a codeupipe pipeline of
+eleven Filters that carry a `LintRun` (a type of its own, D11), on `syn`
+(`full`, `visit`) and `serde_json` for `cup.config.json`. The rules are
+CUP-I000, A003, A005, I003, I005, I006, I007, and the warnings I008 and
+I009; the arguments, the config file, the markers and the report are those
+of the TypeScript linter. Decided on the way:
+
+- **The file name is snake_case** (`discount_filter.rs`), and a primitive is
+  a type that implements a primitive trait in the same file.
+- **CUP-I008 is reported for each `impl`** of a type that is not a
+  primitive, not once for the type: in Rust the code of a type is in its
+  `impl` blocks, so the marker goes next to the code. Each `impl` of a
+  primitive (a helper method of a Filter, its `new`) is the primitive's code.
+- **Comments are found between the tokens**, since a syntax tree has none.
+  Text in a doc comment or a string is not a marker.
+- **A name is followed to its `let`** with the scopes of Rust: a later `let`
+  replaces it, a closure sees the function around it, a nested function does
+  not, and the types declared in a block are seen in all of it.
+
+CI runs it with `--strict` on all the Rust code of the repository (the
+runtime, its examples and tests, the conformance runner, and the linter), as
+the Python linter runs. That needed 45 `cup: allow-plain` markers (the
+runtime's own types, the runner's JSON reader and entry, the linter's
+visitors) and a fix in the runtime's tests: six step types declared in a
+test function moved to the top of the file, and the test of a plain nested
+Pipeline's label says why with `cup: allow-anonymous`.
+
+What follows is the plan as it was written.
+
+
 Rust's types already check several rules:
 
 | Rule | In Rust |
@@ -505,7 +538,7 @@ correctness. The others are about form.
 | 1 | Core crate, example, README | About 600 lines with tests (TypeScript: 415 lines of source) |
 | 2 | Runner, `run.py`, bench, CI, documents | About 400 lines, most of it the JSON reader and the `cup_ops` |
 | 3 | Compiler and `rust:static`, if the benchmark says so | About 1,000 lines (TypeScript: 851 lines of source) |
-| 4 | Linter | About 1,200 lines |
+| 4 | Linter. **Done** | About 1,200 lines (written: 2,060 of source with its comments, 950 of tests) |
 
 Phases 1 and 2 are one release: `codeupipe` 0.1.0 for Rust, in the
 conformance matrix. Phases 3 and 4 are later versions.
