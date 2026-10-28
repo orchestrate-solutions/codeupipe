@@ -15,7 +15,7 @@ use pricing_pipeline::PricingPipeline;
 
 #[test]
 fn a_large_order_gets_the_discount_and_the_bulk_mark() {
-    let mut pipeline = Pipeline::named(PricingPipeline);
+    let pipeline = Pipeline::named(PricingPipeline);
     let out = pipeline
         .run(&Payload::from_map(Map::from([
             ("price", 100.0),
@@ -47,7 +47,7 @@ fn the_tap_reads_the_payload() {
 
 #[test]
 fn a_small_order_gets_the_discount_only() {
-    let mut pipeline = Pipeline::named(PricingPipeline);
+    let pipeline = Pipeline::named(PricingPipeline);
     let out = pipeline
         .run(&Payload::from_map(Map::from([
             ("price", 100.0),

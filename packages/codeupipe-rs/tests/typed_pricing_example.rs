@@ -20,7 +20,7 @@ use pricing_pipeline::PricingPipeline;
 
 #[test]
 fn a_large_order_gets_the_discount_and_the_bulk_mark() {
-    let mut pipeline = Pipeline::named(PricingPipeline);
+    let pipeline = Pipeline::named(PricingPipeline);
     let out = pipeline.run(&Order::new(100.0, 12)).unwrap();
     assert_eq!(
         out,
@@ -39,7 +39,7 @@ fn a_large_order_gets_the_discount_and_the_bulk_mark() {
 
 #[test]
 fn a_small_order_gets_the_discount_only() {
-    let mut pipeline = Pipeline::named(PricingPipeline);
+    let pipeline = Pipeline::named(PricingPipeline);
     let out = pipeline.run(&Order::new(100.0, 2)).unwrap();
     assert_eq!(
         out,

@@ -106,7 +106,7 @@ pub use payload::Payload;
 pub use pipeline::Pipeline;
 pub use pipeline_data::PipelineData;
 pub use predicate::Predicate;
-pub use state::State;
+pub use state::{SharedError, State};
 pub use step_error::StepError;
 pub use tap::Tap;
 pub use value::Value;

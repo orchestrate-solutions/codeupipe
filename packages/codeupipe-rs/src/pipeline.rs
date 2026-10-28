@@ -1,5 +1,7 @@
+use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::fmt;
+use std::rc::Rc;
 use std::time::Instant;
 
 use crate::filter::Filter;
@@ -45,9 +47,49 @@ pub struct Pipeline<P = Payload> {
     steps: Vec<Labeled<P>>,
     uses: HashMap<String, usize>,
     hooks: Vec<Box<dyn Hook<P>>>,
-    state: State,
+    runs: Runs,
     timing: bool,
     lineage: bool,
+}
+
+/// The runs of a pipeline. Each run writes into a State of its own; this
+/// keeps the State of the run that started last, for `state()`.
+#[derive(Default)]
+struct Runs {
+    /// The number of runs that have started; a run's number is its ticket.
+    started: Cell<u64>,
+    /// The State of the run that started last, and that has ended.
+    last: RefCell<Rc<State>>,
+    /// A State that no run and no reader has, kept for its storage.
+    spare: RefCell<Option<State>>,
+}
+
+impl Runs {
+    fn start(&self) -> u64 {
+        let ticket = self.started.get() + 1;
+        self.started.set(ticket);
+        ticket
+    }
+
+    /// A State for a run, with the storage of an earlier one when there is one.
+    fn new_state(&self) -> State {
+        let mut state = self.spare.take().unwrap_or_default();
+        state.reset();
+        state
+    }
+
+    /// Keep `state` as the State of the pipeline, unless a run that started
+    /// later has ended already (a run inside this run).
+    fn end(&self, ticket: u64, state: State) {
+        if ticket != self.started.get() {
+            self.spare.replace(Some(state));
+            return;
+        }
+        let earlier = self.last.replace(Rc::new(state));
+        if let Ok(earlier) = Rc::try_unwrap(earlier) {
+            self.spare.replace(Some(earlier));
+        }
+    }
 }
 
 impl<P: PipelineData> Default for Pipeline<P> {
@@ -80,7 +122,7 @@ impl<P: PipelineData> Pipeline<P> {
             steps: Vec::new(),
             uses: HashMap::new(),
             hooks: Vec::new(),
-            state: State::default(),
+            runs: Runs::default(),
             timing: false,
             lineage: false,
         }
@@ -95,9 +137,14 @@ impl<P: PipelineData> Pipeline<P> {
         pipeline
     }
 
-    /// What happened in the last run.
-    pub fn state(&self) -> &State {
-        &self.state
+    /// The State of the run that started last, once it has ended.
+    ///
+    /// A State belongs to one run, and this is for a caller with one run at a
+    /// time. It is a snapshot: a later run does not change it. A caller with
+    /// more than one run at a time gives each run its own State
+    /// (`run_with_state`).
+    pub fn state(&self) -> Rc<State> {
+        Rc::clone(&self.runs.last.borrow())
     }
 
     /// The type name of the step, with a number from its second use in this pipeline.
@@ -170,18 +217,33 @@ impl<P: PipelineData> Pipeline<P> {
     ///
     /// A Filter failure stops the run and is returned after the Hooks have
     /// seen it. A Tap failure is recorded in State and the run continues.
-    pub fn run(&mut self, input: &P) -> Result<P, StepError> {
+    /// The run writes into a new State, which `state()` gives afterwards.
+    ///
+    /// It takes `&self`: a step can hold the pipeline that it is in (an `Rc`)
+    /// and run it again, and each run has its own State.
+    pub fn run(&self, input: &P) -> Result<P, StepError> {
+        let ticket = self.runs.start();
+        let mut state = self.runs.new_state();
         let mut payload = input.clone(); // the caller's value is not changed
-        self.run_on(&mut payload)?;
-        Ok(payload)
+        let result = self.run_steps(&mut payload, &mut state);
+        self.runs.end(ticket, state);
+        result.map(|()| payload)
     }
 
-    fn run_on(&mut self, payload: &mut P) -> Result<(), StepError> {
-        self.state.reset();
+    /// `run`, writing into `state`, which the caller gives. A caller with more
+    /// than one run at a time gives each run its own State.
+    pub fn run_with_state(&self, input: &P, state: &mut State) -> Result<P, StepError> {
+        let ticket = self.runs.start();
+        let mut payload = input.clone(); // the caller's value is not changed
+        let result = self.run_steps(&mut payload, state);
+        self.runs.end(ticket, state.clone());
+        result.map(|()| payload)
+    }
+
+    fn run_steps(&self, payload: &mut P, state: &mut State) -> Result<(), StepError> {
         let Pipeline {
             steps,
             hooks,
-            state,
             timing,
             lineage,
             ..
@@ -191,7 +253,7 @@ impl<P: PipelineData> Pipeline<P> {
             hook.before(None, payload);
         }
 
-        for Labeled { label, step } in steps.iter_mut() {
+        for Labeled { label, step } in steps.iter() {
             let gated = match step {
                 Step::Tap(tap) => {
                     if let Err(error) = tap.observe(payload) {
@@ -246,16 +308,15 @@ impl<P: PipelineData> Pipeline<P> {
 }
 
 /// Run one step that Hooks see. `Ok(false)` is a Valve that skipped its Filter.
-fn run_gated<P: PipelineData>(gated: &mut Gated<P>, payload: &mut P) -> Result<bool, StepError> {
+fn run_gated<P: PipelineData>(gated: &Gated<P>, payload: &mut P) -> Result<bool, StepError> {
     match gated {
         Gated::Filter(filter) => filter.call(payload).map(|()| true),
         Gated::Valve(valve) if !valve.predicate.test(payload) => Ok(false),
         Gated::Valve(valve) => valve.filter.call(payload).map(|()| true),
         Gated::Pipeline(inner) => {
-            // As a run of its own: a failure inside leaves this Payload as it was.
-            let mut result = payload.clone();
-            inner.run_on(&mut result)?;
-            *payload = result;
+            // A run of its own, with its own State: a failure inside leaves this
+            // Payload as it was.
+            *payload = inner.run(payload)?;
             Ok(true)
         }
     }

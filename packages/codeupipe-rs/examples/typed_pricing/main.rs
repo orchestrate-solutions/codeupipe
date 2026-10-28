@@ -13,7 +13,7 @@ use order::Order;
 use pricing_pipeline::PricingPipeline;
 
 fn main() -> Result<(), StepError> {
-    let mut pipeline = Pipeline::named(PricingPipeline);
+    let pipeline = Pipeline::named(PricingPipeline);
     let result = pipeline.run(&Order::new(100.0, 12))?;
 
     let state = pipeline.state();

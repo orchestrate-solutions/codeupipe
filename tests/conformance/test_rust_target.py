@@ -15,11 +15,6 @@ sys.path.insert(0, str(CONFORMANCE))
 
 import run as conformance_run  # noqa: E402
 
-NOT_YET = [
-    "state/the-caller-gives-the-state-of-a-run",
-    "state/a-run-that-starts-inside-another-run-has-its-own-state",
-    "state/with-no-state-from-the-caller-the-pipeline-has-the-state-of-the-run-that-started-last",
-]
 
 
 @pytest.mark.skipif(shutil.which("cargo") is None, reason="needs cargo")
@@ -29,11 +24,7 @@ def test_rust_passes_every_case():
     assert error is None, error
     verdicts = {case["id"]: conformance_run.judge(case, results.get(case["id"])) for case in cases}
     not_passed = {case_id: verdict for case_id, verdict in verdicts.items() if verdict[0] != "pass"}
-    # The Rust runtime has no run with a State from the caller and no run
-    # inside a run yet (conformance/MATRIX.md). Those cases are unsupported,
-    # never wrong; when one passes, take it out of this list.
-    assert {case_id: verdict[0] for case_id, verdict in not_passed.items()} == {
-        case_id: "unsupported" for case_id in NOT_YET}, json.dumps(not_passed, indent=2)
+    assert not_passed == {}, json.dumps(not_passed, indent=2)
 
 
 def test_cargo_is_not_needed_for_the_default_targets(monkeypatch):

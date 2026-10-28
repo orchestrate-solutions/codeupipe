@@ -4,14 +4,9 @@ A snapshot of `python conformance/run.py`. Regenerate with that command; the
 live copy is `results/latest.md` (not committed). The command exits non-zero
 if any target has a ❌.
 
-**Every target passes every case that it can express.** The targets are the
-Python dynamic run, async run and three compiled forms, the TypeScript run
-and its compiled form, and the Rust run.
-
-`rust:run` cannot express the three `state/` cases yet: the Rust runtime has
-no run with a State from the caller (`run(p, state)`), and no run inside a
-run of the same pipeline. They are reported as unsupported (➖), not as
-passed.
+**Every target passes every case, and nothing is unsupported.** The targets
+are the Python dynamic run, async run and three compiled forms, the
+TypeScript run and its compiled form, and the Rust run.
 
 The fast modes (`python:static-steps`, `python:static-inline`,
 `typescript:static`) expose no State or Hooks, so they pass those cases as
@@ -41,9 +36,9 @@ function and has no such object. See
 | `pipeline/steps-run-in-order` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* | ✅ |
 | `pipeline/filter-error-halts-the-run` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* | ✅ |
 | `pipeline/nested-pipeline-is-a-step` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* | ✅ |
-| `state/the-caller-gives-the-state-of-a-run` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* | ➖ |
-| `state/a-run-that-starts-inside-another-run-has-its-own-state` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* | ➖ |
-| `state/with-no-state-from-the-caller-the-pipeline-has-the-state-of-the-run-that-started-last` | ✅ | ✅ | ✅* | ✅* | ✅* | ✅ | ✅* | ➖ |
+| `state/the-caller-gives-the-state-of-a-run` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* | ✅ |
+| `state/a-run-that-starts-inside-another-run-has-its-own-state` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* | ✅ |
+| `state/with-no-state-from-the-caller-the-pipeline-has-the-state-of-the-run-that-started-last` | ✅ | ✅ | ✅* | ✅* | ✅* | ✅ | ✅* | ✅ |
 | `tap/observes-without-changing-output` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* | ✅ |
 | `tap/failure-never-halts-the-pipeline` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* | ✅ |
 | `tap/failure-does-not-stop-later-taps` | ✅ | ✅ | ✅* | ✅* | ✅ | ✅ | ✅* | ✅ |
@@ -61,6 +56,6 @@ function and has no such object. See
 - **python:static-observe**: 29 pass, 1 pass*, 0 fail, 0 unsupported
 - **typescript:run**: 30 pass, 0 pass*, 0 fail, 0 unsupported
 - **typescript:static**: 11 pass, 19 pass*, 0 fail, 0 unsupported
-- **rust:run**: 27 pass, 0 pass*, 0 fail, 3 unsupported
+- **rust:run**: 30 pass, 0 pass*, 0 fail, 0 unsupported
 
 ✅* passed everything the target can observe; it does not expose State or Hooks (the fast mode). ➖ the target cannot express the case.

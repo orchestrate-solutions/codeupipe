@@ -88,7 +88,7 @@ impl NamedPipeline for PricingPipeline {
 ```rust
 use codeupipe::{Map, Payload, Pipeline};
 
-let mut pipeline = Pipeline::named(PricingPipeline);
+let pipeline = Pipeline::named(PricingPipeline);
 let result = pipeline.run(&Payload::from_map(Map::from([("price", 100.0), ("qty", 12.0)])))?;
 result.to_dict();
 // {"price": 90, "qty": 12, "bulk": true}
@@ -158,7 +158,7 @@ The names are the names of the contract.
 | Contract | Rust |
 |---|---|
 | `add_filter`, `add_valve`, `add_tap`, `add_pipeline`, `use_hook` | the same |
-| `run`, `state`, `labels` | `run`, `state()`, `labels()` |
+| `run(p)`, `run(p, state)`, `state`, `labels` | `run(&p)`, `run_with_state(&p, &mut state)`, `state()`, `labels()` |
 | `observe(timing, lineage)` | `observe(timing, lineage)`, two `bool`s |
 | `get`, `has`, `insert`, `remove`, `merge`, `copy`, `to_dict`, `with_trace` | the same |
 | `trace_id`, `lineage` | `trace_id()`, `lineage()` |
@@ -180,8 +180,14 @@ nothing unless you implement them.
 - **`get` gives `Option<&Value>`.** Absent is `None`. A default is
   `.unwrap_or(...)`. `Value` is JSON-shaped, with one number type: `1` and
   `1.0` are the same value.
-- **`run` is sync, and there is no `run_async` yet.** It takes `&mut self`,
-  so two runs of one pipeline at the same time are not possible.
+- **`run` is sync, and there is no `run_async` yet.** It takes `&self`, so a
+  step can hold the pipeline that it is in (an `Rc`) and run it again; each
+  run writes into a State of its own. Rust has no optional argument, so the
+  run with the caller's State is `run_with_state(&input, &mut state)`.
+- **`state()` gives an `Rc<State>`**: the State of the run that started last,
+  as a snapshot that a later run does not change. Keep it in a variable to
+  borrow from it (`let state = pipeline.state();`). Its errors are
+  `Arc<dyn Error>` (`SharedError`), so that a State can be cloned.
 - **A failure is an `Err`.** A panic is not a failure: it is not caught, and
   a panicking Tap stops the run.
 - **`copy()` is deep.** A value shared by two Payloads could not be changed in

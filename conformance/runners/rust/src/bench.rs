@@ -60,7 +60,7 @@ fn measure(mut f: impl FnMut()) -> (f64, f64) {
 }
 
 /// Time one scenario. `pipeline` is built from its steps; `input` is its input.
-pub fn bench(id: Value, mut pipeline: Pipeline, input: codeupipe::Payload) -> Value {
+pub fn bench(id: Value, pipeline: Pipeline, input: codeupipe::Payload) -> Value {
     let output = match pipeline.run(&input) {
         Ok(output) => output.to_dict(),
         Err(error) => {

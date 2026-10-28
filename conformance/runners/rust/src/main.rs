@@ -18,11 +18,11 @@ use std::io::{self, Read, Write};
 use std::process::ExitCode;
 use std::rc::Rc;
 
-use codeupipe::{Filter, Map, Payload, Pipeline, Predicate, Value};
+use codeupipe::{Filter, Map, Payload, Pipeline, Predicate, State, Value};
 use cup_ops::{
     sink, AddFilter, AppendFilter, CopyFilter, EqualsPredicate, FailFilter, FailTap, HasFilter,
     MergeFilter, MutateFilter, NestedPipeline, NoopHook, NoopTap, RecordHook, RecordTap,
-    RemoveFilter, SetFilter, TruthyPredicate,
+    RemoveFilter, RunAgainFilter, SetFilter, TruthyPredicate,
 };
 
 /// A case that this runner cannot express. It is reported, never judged.
@@ -114,12 +114,9 @@ fn add_filter(spec: &Map, to: impl UseFilter) -> Result<(), Unsupported> {
         "fail" => to.add(FailFilter {
             message: text(spec, "message")?,
         }),
-        "run_again" => {
-            return Err(Unsupported(
-                "a run inside a run of the same pipeline is not in the Rust runtime yet"
-                    .to_string(),
-            ))
-        }
+        "run_again" => to.add(RunAgainFilter {
+            input: map(spec, "input")?.clone(),
+        }),
         op => return Err(Unsupported(format!("unknown filter op '{op}'"))),
     }
     Ok(())
@@ -214,12 +211,6 @@ fn names(labels: &[String], named: &impl Fn(&str) -> String) -> Value {
 }
 
 fn run_case(spec: &Map) -> Result<Value, Unsupported> {
-    if spec.get("given_state") == Some(&Value::Bool(true)) {
-        return Err(Unsupported(
-            "a run with a State from the caller, run(p, state), is not in the Rust runtime yet"
-                .to_string(),
-        ));
-    }
     let steps = steps_of(spec)?;
     let mut pipeline = Pipeline::new();
     build(steps, &mut pipeline)?;
@@ -238,27 +229,48 @@ fn run_case(spec: &Map) -> Result<Value, Unsupported> {
         });
     }
 
+    // A run_again step runs this pipeline again, as the TypeScript runner does.
+    let pipeline = Rc::new(pipeline);
+    let again = Rc::downgrade(&pipeline);
+    sink::set_run_again(Some(Rc::new(move |input: Map| {
+        let pipeline = again.upgrade().ok_or("the pipeline is gone")?;
+        let mut state = State::new();
+        let result = pipeline.run_with_state(&Payload::from_map(input), &mut state);
+        sink::keep_inner_state(state);
+        result.map(|_| ())
+    })));
+
     let input = Payload::from_map(map(spec, "input")?.clone());
     let mut result = Map::new();
     result.insert("id", value(spec, "id")?);
-    match pipeline.run(&input) {
+    // With "given_state", the caller gives the State of the run. If not, the run makes one.
+    let mut given = (spec.get("given_state") == Some(&Value::Bool(true))).then(State::new);
+    let ran = match given.as_mut() {
+        Some(state) => pipeline.run_with_state(&input, state),
+        None => pipeline.run(&input),
+    };
+    match ran {
         Ok(output) => result.insert("output", output.to_dict()),
         Err(error) => result.insert("error", error.to_string()),
     };
-    let state = pipeline.state();
-    let errors: Vec<String> = state
-        .errors()
-        .iter()
-        .map(|(label, _)| label.clone())
-        .collect();
-    result.insert(
-        "state",
-        Map::from([
+    sink::set_run_again(None);
+    let report = |state: &State| {
+        let errors: Vec<String> = state
+            .errors()
+            .iter()
+            .map(|(label, _)| label.clone())
+            .collect();
+        Value::Map(Map::from([
             ("executed", names(state.executed(), &named)),
             ("skipped", names(state.skipped(), &named)),
             ("errors", names(&errors, &named)),
-        ]),
-    );
+        ]))
+    };
+    let last = pipeline.state();
+    result.insert("state", report(given.as_ref().unwrap_or(&last)));
+    result.insert("pipeline_state", report(&last));
+    let inner: Vec<Value> = sink::take_inner_states().iter().map(report).collect();
+    result.insert("inner_states", Value::List(inner));
     result.insert("taps", sink::take());
     if hooks {
         let events: Vec<Value> = events

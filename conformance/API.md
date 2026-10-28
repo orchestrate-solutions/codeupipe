@@ -239,7 +239,7 @@ map and fails the comparison.
 |---|---|---|---|
 | Package | `packages/codeupipe` | `packages/codeupipe-ts` | `packages/codeupipe-rs` (crate `codeupipe`) |
 | Names | snake_case | camelCase: `addFilter`, `addValve`, `toDict`, `withTrace`, `traceId`, `onError` | snake_case, as Python |
-| Run | `run` is sync. `run_async` is opt-in | One `run`. It returns a Promise. A step can be sync or async | `run` is sync. No async run yet |
+| Run | `run` is sync. `run_async` is opt-in | One `run`. It returns a Promise. A step can be sync or async | `run` is sync, and `run_with_state` for the caller's State. No async run yet |
 | Absent | `None` | `null` | `None` from `get`; `Value::Null` is a JSON null |
 | Label of a step | `type(step).__name__` | `step.constructor.name` | The name of the step's type, from `std::any::type_name` |
 | Compile | `codeupipe.compile` | `packages/codeupipe-compile-ts` | None yet |
@@ -270,12 +270,11 @@ Notes on Rust:
   failure of the step and is not caught.
 - **Values.** A value is a `Value`: null, a bool, a number (`f64`), a string,
   a list or a map that keeps the order of its keys, as JSON has.
-- **State of a run: not all of the contract yet.** `run(&mut self, …)` takes
-  the pipeline mutably, so two runs of one pipeline at the same time are not
-  possible, and `state()` is the State of the last run. There is no
-  `run(p, state)`, and a step cannot run its own pipeline again while it
-  runs. The three `state/` cases are unsupported for `rust:run`
-  ([MATRIX.md](MATRIX.md)); [docs/rust-plan.md](../docs/rust-plan.md) has the
+- **A State for each run.** `run(&self, …)` takes the pipeline by shared
+  reference, so a step can hold the pipeline that it is in (an `Rc`) and run
+  it again. The run with the caller's State is
+  `run_with_state(&input, &mut state)`. `state()` gives an `Rc<State>`: the
+  State of the run that started last, once it has ended, as a snapshot.md](../docs/rust-plan.md) has the
   plan.
 - **A type of your own** is a type parameter of each primitive, with
   `Payload` as its default, so a step for one type in a pipeline of another

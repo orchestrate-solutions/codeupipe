@@ -118,12 +118,12 @@ impl Hook for RecordHook {
     }
 }
 
-fn labels_of_errors(pipeline: &Pipeline) -> Vec<&str> {
+fn labels_of_errors(pipeline: &Pipeline) -> Vec<String> {
     pipeline
         .state()
         .errors()
         .iter()
-        .map(|(label, _)| label.as_str())
+        .map(|(label, _)| label.clone())
         .collect()
 }
 
@@ -345,8 +345,8 @@ fn observe_turns_timing_on_and_lineage_when_asked() {
     pipeline.add_valve(IsOnPredicate, AddOtherFilter);
     pipeline.observe(true, true);
     let out = pipeline.run(&Payload::new()).unwrap();
-    let timed: Vec<&str> = pipeline
-        .state()
+    let state = pipeline.state();
+    let timed: Vec<&str> = state
         .timings()
         .iter()
         .map(|(label, _)| label.as_str())

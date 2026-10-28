@@ -1,23 +1,30 @@
+use std::error::Error;
 use std::fmt;
+use std::sync::Arc;
 use std::time::Duration;
 
 use crate::step_error::StepError;
 
-/// State: what happened in the last run.
+/// An error that State keeps. It is shared, so that a State can be cloned.
+pub type SharedError = Arc<dyn Error + Send + Sync>;
+
+/// State: what happened in one run.
 ///
 /// Which steps executed, which a Valve skipped, the errors, and the timings
-/// when timing is on. Read it after a run through `pipeline.state()`.
-#[derive(Debug, Default)]
+/// when timing is on. A State belongs to one run: give one to
+/// `pipeline.run_with_state`, or read the State of the run that started last
+/// with `pipeline.state()`.
+#[derive(Clone, Debug, Default)]
 pub struct State {
     executed: Labels,
     skipped: Labels,
-    errors: Vec<(String, StepError)>,
+    errors: Vec<(String, SharedError)>,
     timings: Vec<(String, Duration)>,
 }
 
 /// A list of labels whose Strings are kept from one run to the next and
 /// written over, so that a run like the last one makes no new String.
-#[derive(Default)]
+#[derive(Clone, Default)]
 struct Labels {
     all: Vec<String>,
     len: usize,
@@ -51,6 +58,12 @@ impl fmt::Debug for Labels {
 }
 
 impl State {
+    /// An empty State, for a caller that gives the State of a run
+    /// (`pipeline.run_with_state(&input, &mut state)`).
+    pub fn new() -> Self {
+        State::default()
+    }
+
     /// Step labels, in order.
     pub fn executed(&self) -> &[String] {
         self.executed.as_slice()
@@ -62,7 +75,7 @@ impl State {
     }
 
     /// Pairs of label and error.
-    pub fn errors(&self) -> &[(String, StepError)] {
+    pub fn errors(&self) -> &[(String, SharedError)] {
         &self.errors
     }
 
@@ -88,7 +101,7 @@ impl State {
     }
 
     pub(crate) fn record_error(&mut self, label: &str, error: StepError) {
-        self.errors.push((label.to_string(), error));
+        self.errors.push((label.to_string(), Arc::from(error)));
     }
 
     pub(crate) fn record_timing(&mut self, label: &str, time: Duration) {
