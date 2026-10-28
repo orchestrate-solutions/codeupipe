@@ -61,6 +61,9 @@ jobs:
         run: node packages/codeupipe-ts/examples/pricing/main.ts
       - name: The linter on the TypeScript code of this repository
         run: npm run lint -w codeupipe-lint
+      - name: Install the Python package, for the judge
+        # conformance/run.py is a codeupipe pipeline (conformance/judging/).
+        run: python -m pip install -e packages/codeupipe
       - name: Conformance
         run: python conformance/run.py typescript:run typescript:static
       - name: The packages as npm makes them
@@ -86,6 +89,9 @@ jobs:
         run: |
           cargo run --offline --example pricing -p codeupipe
           cargo run --offline --example typed_pricing -p codeupipe
+      - name: Install the Python package, for the judge
+        # conformance/run.py is a codeupipe pipeline (conformance/judging/).
+        run: python -m pip install -e packages/codeupipe
       - name: Conformance
         run: python conformance/run.py rust:run
       - name: The oldest Rust that the crate supports (rust-version)
