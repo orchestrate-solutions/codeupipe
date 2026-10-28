@@ -270,8 +270,13 @@ Notes on Rust:
   failure of the step and is not caught.
 - **Values.** A value is a `Value`: null, a bool, a number (`f64`), a string,
   a list or a map that keeps the order of its keys, as JSON has.
-- **State of a run.** `run(&mut self, …)` takes the pipeline mutably, so two
-  runs of one pipeline at the same time are not possible.
+- **State of a run: not all of the contract yet.** `run(&mut self, …)` takes
+  the pipeline mutably, so two runs of one pipeline at the same time are not
+  possible, and `state()` is the State of the last run. There is no
+  `run(p, state)`, and a step cannot run its own pipeline again while it
+  runs. The three `state/` cases are unsupported for `rust:run`
+  ([MATRIX.md](MATRIX.md)); [docs/rust-plan.md](../docs/rust-plan.md) has the
+  plan.
 - **A type of your own** is a type parameter of each primitive, with
   `Payload` as its default, so a step for one type in a pipeline of another
   is a compile error. TypeScript does the same with its type check.

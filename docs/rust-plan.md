@@ -284,8 +284,10 @@ pass, and `cargo run --example pricing` prints the result and the State.
 
 ## Phase 2: conformance
 
-**Done** (2026-10-27): `rust:run` passes all 27 cases, with nothing
-unsupported. To check that the runner catches a broken runtime, the core was
+**Done** (2026-10-27): `rust:run` passed all 27 cases, with nothing
+unsupported. The contract has since added three cases, from "A State
+belongs to one run" (`run(p, state)`, and a run inside a run); Rust does not
+pass them yet, see "Next: a State for each run" below. To check that the runner catches a broken runtime, the core was
 changed so that it did not record a Tap failure: 3 cases failed. The runner
 has 7 tests of its JSON reader and writer. `bench.py` measures `rust:run`, its
 baseline is kept under its own key (`rust`, not a Python version), and CI has a `rust` job, which also
@@ -358,6 +360,33 @@ Open questions 3 and 4 of the conformance README (`equals` and `truthy`
 across languages) get a Rust answer here. Recommendation: `equals` compares
 `Value` by content, and `truthy` follows Python (an empty list or map is
 false). No case depends on them yet.
+
+## Next: a State for each run
+
+The contract now says that a State belongs to one run, not to the Pipeline
+(conformance/API.md, "State"): a caller can give the State (`run(p,
+state)`), each run writes into its own, a step can run its own pipeline
+again while it runs, and `state` on the Pipeline is the State of the run
+that started last. `rust:run` reports the three `state/` cases as
+unsupported until this is done.
+
+What it changes in Rust, to settle before the code:
+
+- **`run(&self, ...)` in place of `run(&mut self, ...)`**, so that a step can
+  hold the pipeline it is in (an `Rc` or a `Weak` to it) and run it again.
+  The steps are already `&self`. D8 changes with it.
+- **`run_with_state(&input, &mut state)`** for the State from the caller; Rust
+  has no optional argument.
+- **`state()` behind a `RefCell`**, kept as the State of the run that started
+  last: each run takes a number when it starts, and its State is kept at the
+  end only if no later run has started. `state()` gives a `Ref<State>`.
+- **The State from the caller and `state()` at the same time.** In Python
+  both are one object. In Rust the caller has the `&mut State`, so the
+  Pipeline keeps a copy, and a copy needs the errors to be shared
+  (`Arc<dyn Error>`), since a `Box<dyn Error>` cannot be cloned.
+- **Speed.** State keeps its storage between runs today (phase 2). A State
+  for each run gives that up, unless the Pipeline hands its last State to
+  the next run to fill.
 
 ## Phase 3: compile
 
