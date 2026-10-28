@@ -26,7 +26,7 @@ uses them from this repository:
 
 ```toml
 [dependencies]
-codeupipe = { git = "https://github.com/orchestrate-solutions/codeupipe", branch = "beta" }
+codeupipe = { git = "https://github.com/orchestrate-solutions/codeupipe", branch = "main" }
 ```
 
 Cargo finds the crate by its name inside the repository, so this works with

@@ -16,7 +16,7 @@ The crate is not on crates.io yet. Use it from this repository:
 
 ```toml
 [dependencies]
-codeupipe = { git = "https://github.com/orchestrate-solutions/codeupipe", branch = "beta" }
+codeupipe = { git = "https://github.com/orchestrate-solutions/codeupipe", branch = "main" }
 ```
 
 ## The eight primitives
