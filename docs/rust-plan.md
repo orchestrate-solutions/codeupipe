@@ -335,6 +335,29 @@ phase 3 waits**: the dynamic run already costs about 25 ns a step, and a
 compiler would remove nanoseconds that few pipelines would notice. The README
 says "no compiler yet".
 
+**50 new keys, later** ([#20](https://github.com/orchestrate-solutions/codeupipe/issues/20),
+2026-10-29). Measured apart, the 4.2 µs of 50 new keys was 1.4 µs for the
+key (an `Arc<str>` for each) and 1.9 µs for the index (SipHash, a lookup
+and then an insert, and a copy of the key into the index). Two changes, with
+no change to the API or to the order of the keys:
+
+1. **A key of 22 bytes or fewer is kept in the entry**, with no allocation.
+   A longer key is shared, as before. A clone of a map copies a short key with
+   no atomic count.
+2. **The index maps the hash of a key to its place.** One hash for each
+   insert, and no copy of the key. Two keys with one hash share a place, and
+   the search then goes in order, so it is right in each case. The hash stays
+   std's SipHash, with keys that are random for each process.
+
+`heavy-allocation` went from 4.39 to 2.33 µs (three runs of each, alternated);
+the other four scenarios did not change. Also measured, and not used: a
+larger `INDEX_FROM` (slower: a search in order of 50 keys costs 4.1 µs), an
+index made only when a lookup needs it (no gain, and a `RefCell` makes `Map`
+not `Sync`), and an open table of entry numbers with a fast hash of its own
+(2.85 µs on its own measure; it gives up SipHash, and does not keep short keys
+in the entry). The test of a map that grows past its first index comes from
+that last one.
+
 A runner in `conformance/runners/rust/`, with the protocol of the others:
 `runner <target> < cases.json > results.json`. It never judges.
 
