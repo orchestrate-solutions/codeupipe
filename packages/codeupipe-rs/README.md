@@ -191,7 +191,7 @@ nothing unless you implement them.
   comes from `std::any::type_name`, whose exact text Rust does not promise to
   keep the same; the tests check it.
 - **A payload of your own** is a type parameter of each primitive (see
-  above). Python allows one by duck typing; TypeScript has none.
+  above), as in TypeScript. Python takes any object with `copy()`.
 - **Timing in WebAssembly.** `std::time::Instant` panics on
   `wasm32-unknown-unknown`. Timing is off by default, so a pipeline runs
   there as long as `observe(true, ...)` is not called.

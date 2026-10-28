@@ -244,8 +244,10 @@ Payload>`, `Pipeline<P = Payload>`), and the type implements `PipelineData`:
 lineage. Code written for `Payload` does not change; `Pipeline::new()` infers
 the type from its steps.
 
-Python allows the same by duck typing (its Pipeline calls only `copy()`, and
-`_stamp()` when lineage is on); TypeScript has no such option. A step for one
+Python and TypeScript have the same option (2026-10-27): Python takes any
+object with `copy()`, and TypeScript has the same type parameter. In all
+three, lineage is kept only by a type that can keep it, and does nothing for
+any other ("A type of your own" in conformance/API.md). A step for one
 type in a pipeline of another is a compile error, checked by a doc test.
 
 Measured (release, Apple Silicon): the pricing pipeline runs in 0.024 µs

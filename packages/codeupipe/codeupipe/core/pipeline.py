@@ -173,6 +173,15 @@ class Pipeline(Generic[TInput, TOutput]):
         return payload  # type: ignore[return-value]
 
     @staticmethod
+    def _stamp(payload: Any, label: str) -> None:
+        """Lineage: record that a step ran. Payload keeps the label. A type of
+        your own keeps it only if it has ``_stamp(label)``; for any other type,
+        lineage does nothing. The return value of ``_stamp`` is not used."""
+        stamp = getattr(payload, "_stamp", None)
+        if stamp is not None:
+            stamp(label)
+
+    @staticmethod
     async def _invoke(fn, *args):
         """Call fn(*args), awaiting the result only if it is a coroutine."""
         result = fn(*args)
@@ -246,7 +255,7 @@ class Pipeline(Generic[TInput, TOutput]):
                 if self._observe_timing:
                     state.record_timing(name, time.monotonic() - _step_t0)
                 if self._observe_lineage:
-                    payload = payload._stamp(name)
+                    self._stamp(payload, name)
 
         except Exception as e:
             if _step_t0 is not None and _step_name is not None and self._observe_timing:
@@ -413,7 +422,7 @@ class Pipeline(Generic[TInput, TOutput]):
                 if timed:
                     state.record_timing(name, time.monotonic() - _step_t0)
                 if self._observe_lineage:
-                    payload = payload._stamp(name)
+                    self._stamp(payload, name)
 
         except Exception as e:
             if timed and _step_t0 is not None and _step_name is not None:

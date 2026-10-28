@@ -76,6 +76,31 @@ A step is a class. State and Hooks report each step by the name of its
 class, for example `DiscountFilter`. A lambda is refused, because it does not
 have the method of a step.
 
+## A type of your own
+
+`Payload` is the default: a map that any developer can read. Any object with
+a `copy()` method can take its place, such as a dataclass:
+
+```python
+@dataclasses.dataclass
+class Order:
+    price: float
+
+    def copy(self):
+        return dataclasses.replace(self)
+
+
+class DiscountFilter:
+    def call(self, order):
+        order.price = round(order.price * 0.9, 2)
+        return order
+```
+
+The rules stay the same. Lineage is kept only if the object has
+`_stamp(label)`; otherwise `observe(lineage=True)` does nothing for it. The
+compiler reads Payload operations only: keep such a pipeline dynamic. See
+"A type of your own" in [conformance/API.md](../../conformance/API.md).
+
 ## What is in the package
 
 - `codeupipe`: the eight primitives.

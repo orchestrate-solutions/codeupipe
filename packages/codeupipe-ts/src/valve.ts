@@ -7,11 +7,11 @@ import type { Predicate } from "./predicate.ts";
  *
  * `Pipeline.addValve(predicate, filter)` makes one. It is not a public name.
  */
-export class Valve {
-  readonly predicate: Predicate;
-  readonly filter: Filter;
+export class Valve<P> {
+  readonly predicate: Predicate<P>;
+  readonly filter: Filter<P>;
 
-  constructor(predicate: Predicate, filter: Filter) {
+  constructor(predicate: Predicate<P>, filter: Filter<P>) {
     this.predicate = predicate;
     this.filter = filter;
   }

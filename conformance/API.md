@@ -71,6 +71,24 @@ Rules:
 - A Tap, a Hook or a Predicate that wants its own changed version, or that
   keeps the Payload for later, takes a `copy()`.
 
+### A type of your own
+
+The Payload is the default, and the form that this contract, the
+conformance cases and the compilers use: a map that any developer can read,
+which shows that anything can go there. A pipeline can carry a type of your
+own instead, such as the class or struct that your steps would use anyway.
+Its Filters, Predicates, Taps and Hooks then take that type.
+
+- **The Pipeline asks one thing of it: `copy()`**, for the copy that `run`
+  works on. Every rule above stays the same.
+- **Lineage is kept only by a type that has `_stamp(label)`** (`stamp` in
+  Rust). For any other type, `observe(lineage=True)` does nothing: the run
+  goes on, and `state.executed` still lists the steps.
+- **The compilers read Payload operations only.** A step that uses a type of
+  your own stays dynamic; the TypeScript compiler refuses it.
+
+How each runtime spells it is in "Runtimes".
+
 ## Filter
 
 `call(payload) -> payload`. A failure raises.
@@ -226,6 +244,7 @@ map and fails the comparison.
 | Label of a step | `type(step).__name__` | `step.constructor.name` | The name of the step's type, from `std::any::type_name` |
 | Compile | `codeupipe.compile` | `packages/codeupipe-compile-ts` | None yet |
 | Linter | `packages/codeupipe-lint` | `packages/codeupipe-lint-ts` | None yet. The compiler refuses several of the shapes that the linters find |
+| A type of your own | Any object with `copy()` | `class Order implements PipelineData<Order>`, then `new Pipeline<Order>()`, `Filter<Order>` | `impl PipelineData for Order {}`, then `Pipeline<Order>`, `Filter<Order>` |
 
 Notes on TypeScript:
 
@@ -253,7 +272,6 @@ Notes on Rust:
   a list or a map that keeps the order of its keys, as JSON has.
 - **State of a run.** `run(&mut self, …)` takes the pipeline mutably, so two
   runs of one pipeline at the same time are not possible.
-- **A payload of your own.** `Payload` is the default. Each primitive takes
-  the data type as a parameter (`Filter<Order>`, `Pipeline<Order>`), and a
-  type opts in with `impl PipelineData for Order {}`. The rules of this
-  contract stay the same. The conformance cases run with `Payload`.
+- **A type of your own** is a type parameter of each primitive, with
+  `Payload` as its default, so a step for one type in a pipeline of another
+  is a compile error. TypeScript does the same with its type check.

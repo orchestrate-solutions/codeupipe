@@ -1,17 +1,18 @@
 import type { Filter } from "./filter.ts";
 import type { Hook } from "./hook.ts";
 import type { Payload } from "./payload.ts";
+import type { PipelineData } from "./pipeline-data.ts";
 import type { Predicate } from "./predicate.ts";
 import { State } from "./state.ts";
 import { labelOf } from "./step-label.ts";
 import type { Tap } from "./tap.ts";
 import { Valve } from "./valve.ts";
 
-type Step =
-  | { kind: "filter"; label: string; filter: Filter }
-  | { kind: "valve"; label: string; valve: Valve }
-  | { kind: "tap"; label: string; tap: Tap }
-  | { kind: "pipeline"; label: string; pipeline: Pipeline };
+type Step<P extends PipelineData<P>> =
+  | { kind: "filter"; label: string; filter: Filter<P> }
+  | { kind: "valve"; label: string; valve: Valve<P> }
+  | { kind: "tap"; label: string; tap: Tap<P> }
+  | { kind: "pipeline"; label: string; pipeline: Pipeline<P> };
 
 // The clock of browsers and of Node. Declared here so that this file needs
 // the types of neither.
@@ -43,11 +44,14 @@ function require(step: unknown, method: string, what: string): void { // cup: al
  * lifecycle, and State records what ran. Add steps with `addFilter`,
  * `addValve`, `addTap` and `addPipeline`, add Hooks with `useHook`, and run
  * with `await pipeline.run(payload)`.
+ *
+ * It carries a Payload unless you give it a type of your own
+ * (`new Pipeline<Order>()`, see `PipelineData`).
  */
-export class Pipeline {
-  #steps: Step[] = [];
+export class Pipeline<P extends PipelineData<P> = Payload> {
+  #steps: Step<P>[] = [];
   #uses: Map<string, number> = new Map();
-  #hooks: Hook[] = [];
+  #hooks: Hook<P>[] = [];
   #state: State = new State();
   #timing = false;
   #lineage = false;
@@ -71,7 +75,7 @@ export class Pipeline {
   }
 
   /** Add a Filter. */
-  addFilter(filter: Filter): void {
+  addFilter(filter: Filter<P>): void {
     require(filter, "call", "A Filter");
     this.#steps.push({ kind: "filter", label: this.#label(filter), filter });
   }
@@ -83,7 +87,7 @@ export class Pipeline {
    * test is false the Payload passes through unchanged and the step is
    * recorded as skipped. The step has the label of its Filter.
    */
-  addValve(predicate: Predicate, filter: Filter): void {
+  addValve(predicate: Predicate<P>, filter: Filter<P>): void {
     if (!has(predicate, "test") && has(predicate, "call") && has(filter, "test")) {
       throw new TypeError("The arguments are in the wrong order: addValve(predicate, filter). "
         + "The condition comes first, then the Filter.");
@@ -94,13 +98,13 @@ export class Pipeline {
   }
 
   /** Add a Tap. */
-  addTap(tap: Tap): void {
+  addTap(tap: Tap<P>): void {
     require(tap, "observe", "A Tap");
     this.#steps.push({ kind: "tap", label: this.#label(tap), tap });
   }
 
   /** Nest a Pipeline as one step of this Pipeline. */
-  addPipeline(pipeline: Pipeline): void {
+  addPipeline(pipeline: Pipeline<P>): void {
     if (!(pipeline instanceof Pipeline)) {
       throw new TypeError("addPipeline takes a Pipeline. The value that was given is not one.");
     }
@@ -108,11 +112,14 @@ export class Pipeline {
   }
 
   /** Add a Hook. */
-  useHook(hook: Hook): void {
+  useHook(hook: Hook<P>): void {
     this.#hooks.push(hook);
   }
 
-  /** Turn on timing (seconds for each step, in State) and lineage (labels on the Payload). */
+  /**
+   * Turn on timing (seconds for each step, in State) and lineage (labels on
+   * the Payload). A type of your own keeps lineage only if it has `_stamp`.
+   */
   observe(options: { timing?: boolean; lineage?: boolean } = {}): void {
     this.#timing = options.timing ?? true;
     this.#lineage = options.lineage ?? false;
@@ -129,12 +136,12 @@ export class Pipeline {
    * State when not. A State belongs to one run: a caller with more than one
    * run of this Pipeline at a time gives each run its own.
    */
-  async run(initial: Payload, state: State = new State()): Promise<Payload> {
+  async run(initial: P, state: State = new State()): Promise<P> {
     // The State is a local of this call, so two runs at the same time do not mix.
     this.#state = state; // the State of the run that started last
     const hooks = this.#hooks;
     const timed = this.#timing;
-    let payload = initial.copy(); // the caller's Payload is not changed
+    let payload = initial.copy(); // the caller's value is not changed
 
     for (const hook of hooks) {
       const done = hook.before(null, payload);
@@ -184,7 +191,7 @@ export class Pipeline {
           if (isThenable(done)) await done;
         }
         if (timed && started !== null) state.recordTiming(label, (performance.now() - started) / 1000);
-        if (this.#lineage) payload._stamp(label);
+        if (this.#lineage) payload._stamp?.(label);
       }
     } catch (error) {
       if (timed && started !== null && failing !== null) {
