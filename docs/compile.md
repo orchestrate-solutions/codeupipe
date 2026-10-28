@@ -73,6 +73,7 @@ generated `run()` (scorecard findings F3–F8).
 | Literal instance settings (`self.key` holding a str, number, ...) | compiled in as constants | `test_export_instance_config` |
 | Type hints on a step (`Payload[Reads] -> Payload[Writes]`, hinted locals) | erased: compiled code carries no hints and never imports their names | `test_export_typed_steps` |
 | Payload ops `get insert remove merge has to_dict copy` | dict operations; a write is an in-place statement (`data[k] = v`) | `test_rewrite_payload_ops` |
+| The Payload parameter under any name (`call(self, order)`, `test(self, p)`) | the same, followed by its name: an unrelated local called `payload` stays separate | `test_export_parameter_name` |
 
 Evidence: all 30 conformance cases on both layouts (`python:static-steps`,
 `python:static-inline`), and the parity spike at 2400/2400 inputs.
@@ -90,7 +91,7 @@ and the older shape tests beside it.
 | `observe=True` with `lowering="inline"` (`ValueError`) | inline writes the payload in place, so a Hook holding it would see later steps' writes | use the default `steps` layout |
 | **Async steps** (async `call`/`observe`, Valve around one, async `test`) | static `run` is sync, as the dynamic `run` is: it raises `AsyncStepInSyncRun` on the same pipeline | make the step sync |
 | **`payload.trace_id`, `payload.lineage`, `payload.with_trace`** | a plain dict carries neither | keep the step dynamic |
-| any other payload attribute (`payload._data`, ...) | same: only the operations above have a dict form | use an compilable operation |
+| any other attribute of the Payload parameter (`payload._data`, `order.price` on a type of your own, ...) | same: only the operations above have a dict form. The refusal names the parameter as the step wrote it | use a compilable operation, or keep a step over a type of your own dynamic |
 | callables or objects on `self` (filter or predicate), steps writing `self.x` | no source or literal to compile in | literal settings (predicates and filters are module-level classes anyway: the runtime refuses anything else) |
 
 ## What the fast mode gives up

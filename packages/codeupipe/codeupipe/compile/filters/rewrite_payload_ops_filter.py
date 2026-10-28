@@ -62,12 +62,13 @@ class _PayloadToDictTransformer(ast.NodeTransformer):
     or a ``copy()``) becomes a name bound to a dict.
     """
 
-    def __init__(self, filter_name: str, method_name: str, fn_name: str = ""):
+    def __init__(self, filter_name: str, method_name: str, fn_name: str = "", parameter: str = "payload"):
         self.filter_name = filter_name  # the step's label: for messages
         self.method_name = method_name
         self.fn_name = fn_name or filter_name  # the generated function's name
         # source name bound to a Payload -> the dict variable it becomes
-        self.payloads = {"payload": "data"}
+        self.parameter = parameter  # the name the step gives its Payload
+        self.payloads = {parameter: "data"}
         self._temps = 0
 
     # -- which expressions are Payloads ---------------------------------
@@ -164,7 +165,7 @@ class _PayloadToDictTransformer(ast.NodeTransformer):
             source = node.targets[0].id
             statements: list = []
             value = self._lower_payload(node.value, statements)
-            variable = self.payloads.setdefault(source, "data" if source == "payload" else source)
+            variable = self.payloads.setdefault(source, "data" if source == self.parameter else source)
             if not (isinstance(value, ast.Name) and value.id == variable):
                 statements.append(ast.Assign(targets=[_name(variable, ast.Store())], value=value))
             return self._located(statements or [ast.Pass()], node)
@@ -184,10 +185,10 @@ class _PayloadToDictTransformer(ast.NodeTransformer):
                 and node.attr not in _LOWERED_MEMBERS):
             if node.attr in _OBSERVABILITY_MEMBERS:
                 raise self._error(node, "Attribute",
-                                  f"payload.{node.attr} has no static form: exported steps work on a "
+                                  f"{node.value.id}.{node.attr} has no static form: exported steps work on a "
                                   "plain dict, which carries no trace ID or lineage.")
             raise self._error(node, "Attribute",
-                              f"payload.{node.attr} is not an exportable Payload operation "
+                              f"{node.value.id}.{node.attr} is not an exportable Payload operation "
                               f"({', '.join(sorted(_LOWERED_MEMBERS))}).")
         return self.generic_visit(node)
 
@@ -258,12 +259,15 @@ class RewritePayloadOpsFilter:
         rewritten_steps = []
 
         for step in pipeline_ir.steps:
-            call_transformer = _PayloadToDictTransformer(step.name, step.call_ast.name, step.ident)
+            call_transformer = _PayloadToDictTransformer(step.name, step.call_ast.name, step.ident,
+                                                         RewritePayloadOpsFilter.payload_parameter(step.call_ast))
             call_ast = ast.fix_missing_locations(call_transformer.visit(ast.parse(ast.unparse(step.call_ast)).body[0]))
             predicate_ast = step.predicate_ast
             if predicate_ast is not None:
                 predicate_name = getattr(predicate_ast, "name", "predicate")
-                predicate_transformer = _PayloadToDictTransformer(step.name, predicate_name, step.ident)
+                predicate_transformer = _PayloadToDictTransformer(
+                    step.name, predicate_name, step.ident,
+                    RewritePayloadOpsFilter.payload_parameter(predicate_ast, after_self=False))
                 predicate_ast = ast.fix_missing_locations(
                     predicate_transformer.visit(ast.parse(ast.unparse(predicate_ast)).body[0])
                 )
@@ -271,6 +275,15 @@ class RewritePayloadOpsFilter:
             rewritten_steps.append(replace(step, call_ast=call_ast, predicate_ast=predicate_ast, imports=imports))
 
         return payload.insert("pipeline_ir", replace(pipeline_ir, steps=rewritten_steps))
+
+    @staticmethod
+    def payload_parameter(fn: ast.FunctionDef, after_self: bool = True) -> str:
+        """The name that a step gives its Payload: the parameter after ``self``,
+        or the first one for a Valve's predicate, whose ``self`` is already gone
+        (its reads are constants). A step that calls it ``order`` compiles as
+        one that calls it ``payload``."""
+        at = 1 if after_self else 0
+        return fn.args.args[at].arg if len(fn.args.args) > at else "payload"
 
     @staticmethod
     def _drop_unused_framework_imports(imports: tuple, *trees: ast.AST) -> tuple:

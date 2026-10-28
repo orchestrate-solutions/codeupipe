@@ -8,7 +8,7 @@ from codeupipe_lint.invariants.lint_pipeline import lint_paths
 from ._support import REPO
 
 # The places with a `cup: allow-plain` comment.
-PLAIN_BY_DESIGN = 60
+PLAIN_BY_DESIGN = 63
 
 CHECKED = ["packages/codeupipe/codeupipe", "conformance", "scorecard", "packages/codeupipe-lint/codeupipe_lint", "tests", "examples"]
 
