@@ -369,26 +369,27 @@ fn each_run_starts_with_a_new_state() {
     assert!(pipeline.state().skipped().is_empty());
 }
 
+struct FailIfAskedFilter;
+impl Filter for FailIfAskedFilter {
+    fn call(&self, payload: &mut Payload) -> Result<(), StepError> {
+        if payload.get("fail") == Some(&Value::Bool(true)) {
+            return Err("asked to fail".into());
+        }
+        Ok(())
+    }
+}
+struct FailIfAskedTap;
+impl Tap for FailIfAskedTap {
+    fn observe(&self, payload: &Payload) -> Result<(), StepError> {
+        if payload.get("tap_fail") == Some(&Value::Bool(true)) {
+            return Err("asked to fail".into());
+        }
+        Ok(())
+    }
+}
+
 #[test]
 fn a_shorter_run_after_a_longer_one_keeps_nothing_of_it() {
-    struct FailIfAskedFilter;
-    impl Filter for FailIfAskedFilter {
-        fn call(&self, payload: &mut Payload) -> Result<(), StepError> {
-            if payload.get("fail") == Some(&Value::Bool(true)) {
-                return Err("asked to fail".into());
-            }
-            Ok(())
-        }
-    }
-    struct FailIfAskedTap;
-    impl Tap for FailIfAskedTap {
-        fn observe(&self, payload: &Payload) -> Result<(), StepError> {
-            if payload.get("tap_fail") == Some(&Value::Bool(true)) {
-                return Err("asked to fail".into());
-            }
-            Ok(())
-        }
-    }
     let mut pipeline = Pipeline::new();
     pipeline.observe(true, false);
     pipeline.add_filter(FailIfAskedFilter);
@@ -437,15 +438,15 @@ fn a_shorter_run_after_a_longer_one_keeps_nothing_of_it() {
     assert!(state.errors().is_empty());
 }
 
+struct FailingInnerPipeline;
+impl NamedPipeline for FailingInnerPipeline {
+    fn add_steps(&self, pipeline: &mut Pipeline) {
+        pipeline.add_filter(FailFilter);
+    }
+}
+
 #[test]
 fn a_failure_inside_a_nested_pipeline_is_reported_as_the_nesting_step() {
-    struct FailingInnerPipeline;
-    impl NamedPipeline for FailingInnerPipeline {
-        fn add_steps(&self, pipeline: &mut Pipeline) {
-            pipeline.add_filter(FailFilter);
-        }
-    }
-
     let hook = RecordHook::default();
     let mut pipeline = Pipeline::new();
     pipeline.add_pipeline(Pipeline::named(FailingInnerPipeline));

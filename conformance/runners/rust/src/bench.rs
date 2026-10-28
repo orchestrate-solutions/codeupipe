@@ -19,6 +19,7 @@ fn reference_write(data: &mut HashMap<String, f64>, key: &str) {
 
 /// The reference workload: ten map writes behind ten function calls, with no
 /// framework. A pipeline's time is reported relative to it.
+// cup: allow-plain the timing loop of the bench target: it measures the pipeline, so it is not a step of it
 fn reference() -> HashMap<String, f64> {
     let mut data = HashMap::from([("a".to_string(), 1.0)]);
     for key in REFERENCE_KEYS {
@@ -27,6 +28,7 @@ fn reference() -> HashMap<String, f64> {
     data
 }
 
+// cup: allow-plain the timing loop of the bench target: it measures the pipeline, so it is not a step of it
 fn timed(f: &mut impl FnMut()) -> Duration {
     let started = Instant::now();
     for _ in 0..RUNS {
@@ -38,6 +40,7 @@ fn timed(f: &mut impl FnMut()) -> Duration {
 /// (µs per run, time relative to the reference workload). µs per run is the
 /// best of REPEATS x RUNS. Each repeat times the reference and then `f`,
 /// back to back, and the median of the ratios is reported.
+// cup: allow-plain the timing loop of the bench target: it measures the pipeline, so it is not a step of it
 fn measure(mut f: impl FnMut()) -> (f64, f64) {
     let mut reference_run = || {
         black_box(reference());
@@ -60,6 +63,7 @@ fn measure(mut f: impl FnMut()) -> (f64, f64) {
 }
 
 /// Time one scenario. `pipeline` is built from its steps; `input` is its input.
+// cup: allow-plain the timing loop of the bench target: it measures the pipeline, so it is not a step of it
 pub fn bench(id: Value, pipeline: Pipeline, input: codeupipe::Payload) -> Value {
     let output = match pipeline.run(&input) {
         Ok(output) => output.to_dict(),

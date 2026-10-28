@@ -16,6 +16,7 @@ pub enum Value {
     Map(Map),
 }
 
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 impl Value {
     pub fn is_null(&self) -> bool {
         matches!(self, Value::Null)
@@ -58,6 +59,7 @@ impl Value {
 }
 
 /// Written as JSON is, so that a printed Payload reads like the data.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 impl fmt::Debug for Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

@@ -66,6 +66,7 @@ fn a_valve_has_the_label_of_its_filter() {
 fn a_nested_pipeline_has_the_label_of_its_type() {
     let mut pipeline = Pipeline::new();
     pipeline.add_pipeline(Pipeline::named(InnerPipeline));
+    // cup: allow-anonymous the label of a plain nested pipeline is what this test checks
     pipeline.add_pipeline(Pipeline::new());
     assert_eq!(pipeline.labels(), ["InnerPipeline", "Pipeline"]);
 }
@@ -86,14 +87,15 @@ fn a_type_defined_in_a_function_works() {
     assert_eq!(pipeline.labels(), ["LocalFilter"]);
 }
 
+struct WrapFilter<T>(PhantomData<T>);
+impl<T> Filter for WrapFilter<T> {
+    fn call(&self, _payload: &mut Payload) -> Result<(), StepError> {
+        Ok(())
+    }
+}
+
 #[test]
 fn a_generic_type_has_its_name_without_the_arguments() {
-    struct WrapFilter<T>(PhantomData<T>);
-    impl<T> Filter for WrapFilter<T> {
-        fn call(&self, _payload: &mut Payload) -> Result<(), StepError> {
-            Ok(())
-        }
-    }
     let mut pipeline = Pipeline::new();
     pipeline.add_filter(WrapFilter::<std::collections::HashMap<String, Vec<u8>>>(
         PhantomData,

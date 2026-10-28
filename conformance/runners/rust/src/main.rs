@@ -79,6 +79,7 @@ impl<P: Predicate + 'static> UseFilter for AsValve<'_, P> {
     }
 }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 fn add_filter(spec: &Map, to: impl UseFilter) -> Result<(), Unsupported> {
     match text(spec, "op")?.as_str() {
         "set" => to.add(SetFilter {
@@ -122,6 +123,7 @@ fn add_filter(spec: &Map, to: impl UseFilter) -> Result<(), Unsupported> {
     Ok(())
 }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 fn add_tap(spec: &Map, pipeline: &mut Pipeline) -> Result<(), Unsupported> {
     match text(spec, "op")?.as_str() {
         "record" => pipeline.add_tap(RecordTap {
@@ -136,6 +138,7 @@ fn add_tap(spec: &Map, pipeline: &mut Pipeline) -> Result<(), Unsupported> {
     Ok(())
 }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 fn add_valve(when: &Map, filter: &Map, pipeline: &mut Pipeline) -> Result<(), Unsupported> {
     match text(when, "op")?.as_str() {
         "equals" => {
@@ -161,6 +164,7 @@ fn steps_of(spec: &Map) -> Result<&[Value], Unsupported> {
         .ok_or_else(|| Unsupported("'steps' is not a list".to_string()))
 }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 fn build(steps: &[Value], pipeline: &mut Pipeline) -> Result<(), Unsupported> {
     for step in steps {
         let step = step
@@ -210,6 +214,7 @@ fn names(labels: &[String], named: &impl Fn(&str) -> String) -> Value {
     )
 }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 fn run_case(spec: &Map) -> Result<Value, Unsupported> {
     let steps = steps_of(spec)?;
     let mut pipeline = Pipeline::new();
@@ -292,6 +297,7 @@ fn run_case(spec: &Map) -> Result<Value, Unsupported> {
     Ok(Value::Map(result))
 }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 fn bench_case(spec: &Map) -> Result<Value, Unsupported> {
     let mut pipeline = Pipeline::new();
     build(steps_of(spec)?, &mut pipeline)?;
@@ -302,6 +308,7 @@ fn bench_case(spec: &Map) -> Result<Value, Unsupported> {
     Ok(bench::bench(value(spec, "id")?, pipeline, input))
 }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 fn main() -> ExitCode {
     let target = std::env::args().nth(1).unwrap_or_default();
     let run: fn(&Map) -> Result<Value, Unsupported> = match target.as_str() {

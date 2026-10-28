@@ -20,6 +20,7 @@ pub struct Map {
     index: Option<HashMap<Arc<str>, usize>>,
 }
 
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 impl Map {
     pub fn new() -> Self {
         Map::default()
@@ -113,6 +114,7 @@ impl fmt::Debug for Map {
     }
 }
 
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 impl<K: AsRef<str>, V: Into<Value>> FromIterator<(K, V)> for Map {
     fn from_iter<I: IntoIterator<Item = (K, V)>>(entries: I) -> Self {
         let mut map = Map::new();

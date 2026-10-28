@@ -14,6 +14,7 @@ pub struct Payload {
     lineage: Vec<String>,
 }
 
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 impl Payload {
     /// An empty Payload.
     pub fn new() -> Self {

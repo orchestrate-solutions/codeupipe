@@ -4,8 +4,10 @@ codeupipe is a library for writing a program as a pipeline of small steps.
 This is the Rust runtime. It has no dependencies.
 
 It implements the same contract as the Python and TypeScript packages:
-[conformance/API.md](../../conformance/API.md). The conformance runner for
-Rust is not written yet ([docs/rust-plan.md](../../docs/rust-plan.md), phase 2).
+[conformance/API.md](../../conformance/API.md), and passes all its
+conformance cases (`python conformance/run.py rust:run`). The linter for
+Rust is [packages/codeupipe-lint-rs/](../codeupipe-lint-rs/); a compiler is
+not planned yet ([docs/rust-plan.md](../../docs/rust-plan.md)).
 
 The version is below 1.0: the package is not stable yet, and a new version
 can change in a way that is not compatible.
