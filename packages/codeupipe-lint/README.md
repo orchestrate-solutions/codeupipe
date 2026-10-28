@@ -13,7 +13,7 @@ Each rule can be switched off. There are three ways.
 
 | For | How |
 |---|---|
-| One line | A comment on the line: `# cup: allow-anonymous`, `# cup: allow-mutation`, `# cup: allow-state-read`, `# cup: allow-outside-write`, `# cup: allow-shared-file`, `# cup: allow-name` |
+| One line | A comment on the line: `# cup: allow-anonymous`, `# cup: allow-mutation`, `# cup: allow-state-read`, `# cup: allow-outside-write`, `# cup: allow-shared-file`, `# cup: allow-name`, `# cup: allow-plain`. A comment that allows no finding is itself a finding (CUP-I009) |
 | Some files | `--exclude GLOB`, or `lint.exclude` in `cup.config.json` |
 | The whole project | `--disable RULE`, or `lint.disable` in `cup.config.json` |
 
@@ -26,10 +26,10 @@ in the list: each linter uses the ids that are its own.
 
 ## Anonymous-step linter
 
-Step identity (conformance/API.md, "Step identity") makes a step's identity a
-pointer to its filter. Anonymous steps have no such pointer and are
-unsupported. The runtime refuses them when the step is added; this linter
-flags them at authoring time.
+A step is reported by the name of its class (conformance/API.md, "Step
+labels"). A step that is a lambda, a function, a class defined inside a
+function, or a plain nested `Pipeline` has no useful name and cannot be
+imported and tested alone. This linter flags them when the code is written.
 
 ```bash
 python -m codeupipe_lint.anonymous_steps <paths...>            # files or directories
@@ -40,7 +40,7 @@ python -m codeupipe_lint.anonymous_steps --rules               # list the rule i
 Each finding is one line, and the message names the fix:
 
 ```
-path:line:col  CUP-A001 lambda-step  Valve predicate is a lambda. Define it at module level (...) so it has a stable identity and can be tested on its own.
+path:line:col  CUP-A001 lambda-step  Valve predicate is a lambda. Define it at module level (...) so it has a name in State and can be tested on its own.
 ```
 
 With no paths, both linters read them from `cup.config.json`
@@ -61,7 +61,6 @@ returns the result Payload (`findings`, `suppressed`, `errors`, `report`, `exit_
 | CUP-A002 | local-function-step | a named function declared inside a function |
 | CUP-A003 | local-type-step | a class declared inside a function, or an instance of one |
 | CUP-A005 | unnamed-pipeline-step | a plain, unnamed `Pipeline` nested as a step; nested pipelines must be named Pipeline types |
-| CUP-A006 | entry-script-step | a class or function of a script (`__main__`), added from its `if __name__ == "__main__":` block |
 | CUP-A008 | function-predicate | a named function as a Valve predicate. Predicates are objects with `test(payload)` (conformance/API.md, "Valve") |
 
 A step is any argument of `add_filter`, `add_tap` or `add_pipeline` (on any
@@ -75,19 +74,15 @@ A comment containing `# cup: allow-anonymous` (any text may follow)
 suppresses a finding when it is on the finding's line, on the line of the
 enclosing add or Valve call, or alone on the line directly above. Suppressed
 findings are counted in the summary. Use it only where the anonymous step is
-the point, as in the tests that exercise the runtime's refusal
-(`tests/core/test_step_identity.py`).
+the point, as in a test of what the runtime does with one
+(`tests/core/test_step_labels.py`).
 
 ### Limits
 
 Names resolve lexically (innermost function scope out to the module; a
 parameter, loop target or import shadows). A name bound two different ways
-in one scope is not flagged. CUP-A006 is deliberately conservative: only a
-module with a `__main__` guard, only steps added from that block or from a
-module-level function it calls (transitively); a script without a guard is
-not flagged (the runtime still refuses it). Not seen: `functools.partial`,
-`type(...)`-built classes, steps built in another module (all refused at
-runtime).
+in one scope is not flagged. Not seen: `functools.partial`,
+`type(...)`-built classes, steps built in another module.
 
 ### Layout
 
@@ -129,6 +124,8 @@ a path could not be read. From Python:
 | CUP-I005 | one-primitive-per-file | a second Filter, Predicate, Tap, Hook or named Pipeline class at module level in one file |
 | CUP-I006 | primitive-file-name | the file of a primitive is not its class name in snake_case (`DiscountFilter` is in `discount_filter.py`) |
 | CUP-I007 | primitive-role-suffix | the class name of a primitive does not end with its role: `Filter`, `Tap`, `Hook`, `Predicate` or `Pipeline` |
+| CUP-I008 | logic-outside-primitive | **a warning.** A function, a class or the code at module level has logic (`if`, `a if c else b`, `match`, a loop, `try`) and is not a primitive |
+| CUP-I009 | marker-allows-nothing | **a warning.** A `# cup: allow-...` comment that allowed no finding: the code that it was for is gone or has moved, or its kind has a spelling error |
 
 **Why CUP-I002.** A Payload owns its keys, not its values.
 `payload.get("items")` returns the live list, shared with every copy of the
@@ -164,10 +161,30 @@ the standard style for a Python module, so one name gives the other. A
 subclass of `Valve` can end with `Valve`. Test files are not checked.
 Suppress with `cup: allow-name`.
 
+**Why CUP-I008.** A project that uses codeupipe writes its logic as Filters,
+Predicates, Taps, Hooks and Pipelines. Logic in a plain function or a plain
+class works as well, so nothing else shows the mistake. Flagged, once each:
+a function at module level, a class at module level that is not a primitive,
+and the code at module level. Not flagged: a primitive, a function or a class
+with no logic, a test file, and the guards `if __name__ == "__main__":` and
+`if TYPE_CHECKING:`. Not seen: a comprehension, and `and` / `or`. For logic
+that must be plain code (the edge to another program, the entry of a
+program), say why: `# cup: allow-plain <reason>`.
+
+**Warnings.** CUP-I008 and CUP-I009 are warnings. A warning is in the report
+and is counted apart (`No invariant violations. 3 warnings.`). It does not
+make the exit code 1. With `--strict`, a warning fails the run as a finding
+does.
+
+**Why CUP-I009.** A comment that allows nothing says that the code has an
+exception that it does not have. Only a comment that starts with the marker
+counts. A `cup: allow-anonymous` comment is for the anonymous-step linter and
+is not looked at.
+
 **Why CUP-I003.** A Filter's result and a Valve's decision must depend only
 on the Payload. A step is never handed State, so the only way to read it is
 to hold a pipeline or a State, and that makes the step's behaviour depend on
-what ran before it, which the static export cannot reproduce. Taps and Hooks
+what ran before it, which the compiled form cannot reproduce. Taps and Hooks
 only watch, so `observe` and Hook methods are not checked.
 
 `self.state` is not flagged when it is the step's own attribute. `<x>.state`

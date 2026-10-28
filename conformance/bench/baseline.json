@@ -114,5 +114,25 @@
         "valve-gated": 1.7382603999999968
       }
     }
+  },
+  "rust": {
+    "relative": {
+      "rust:run": {
+        "heavy-allocation": 5.329424607074787,
+        "hook": 0.36049069077903273,
+        "micro-pass": 0.3347908632428459,
+        "taps": 0.37290526661608375,
+        "valve-gated": 0.40713696452472475
+      }
+    },
+    "us_per_run": {
+      "rust:run": {
+        "heavy-allocation": 4.31750625,
+        "hook": 0.2910354,
+        "micro-pass": 0.2790875,
+        "taps": 0.29723954999999996,
+        "valve-gated": 0.33209375
+      }
+    }
   }
 }

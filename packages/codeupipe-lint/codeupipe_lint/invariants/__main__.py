@@ -1,8 +1,8 @@
-"""``python -m codeupipe_lint.invariants [--exclude GLOB] [--config FILE] [--rules] [paths...]``
+"""``python -m codeupipe_lint.invariants [--exclude GLOB] [--strict] [--config FILE] [--rules] [paths...]``
 
 With no paths, they come from ``cup.config.json`` (packages/codeupipe/codeupipe/config.py).
 
-Exit code: 0 clean, 1 invariant violations found, 2 a path could not be read
+Exit code: 0 clean, 1 invariant violations found (with ``--strict``, warnings too), 2 a path could not be read
 or the config cannot be used.
 """
 
@@ -16,6 +16,7 @@ from .rules import RULES
 from ..rule_ids import unknown_rules
 
 
+# cup: allow-plain the entry of the program: it reads the arguments, runs the pipeline and prints the result
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="python -m codeupipe_lint.invariants",
                                      description="Enforce CUP's structural invariants (packages/codeupipe-lint/README.md).")
@@ -24,6 +25,7 @@ def main(argv=None) -> int:
                         help="skip files whose path matches this fnmatch glob (repeatable)")
     parser.add_argument("--disable", action="append", metavar="RULE",
                         help="switch this rule off (repeatable), e.g. CUP-I005")
+    parser.add_argument("--strict", action="store_true", help="a warning fails the run, as a finding does")
     parser.add_argument("--config", metavar="FILE", help="read paths and excludes from FILE, not %s" % DEFAULT_NAME)
     parser.add_argument("--rules", action="store_true", help="list the rule ids and exit")
     args = parser.parse_args(argv)
@@ -49,7 +51,7 @@ def main(argv=None) -> int:
         print("error: no such rule: %s (the rules are listed by --rules of each linter)" % ", ".join(unknown),
               file=sys.stderr)
         return 2
-    out = lint_paths(paths, exclude, disable)
+    out = lint_paths(paths, exclude, disable, strict=args.strict)
     print(out.get("report"))
     if out.get("error_report"):
         print(out.get("error_report"), file=sys.stderr)

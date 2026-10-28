@@ -1,7 +1,7 @@
 # codeupipe
 
-codeupipe is a Python library for writing a program as a pipeline of small
-steps.
+codeupipe is a library for writing a program as a pipeline of small steps.
+It is for Python and for TypeScript.
 
 There are eight primitives. Each one does one thing.
 
@@ -28,23 +28,40 @@ If you know Unix, these are close to things you know.
 | Hook | A git hook: code that runs before and after a step |
 | State | `$?` and `PIPESTATUS` |
 
-This repository has two packages.
+This repository has seven packages.
 
 | Package | Contents | Reference |
 |---|---|---|
-| `codeupipe` | The eight primitives. An export command that writes a pipeline as plain Python with no import of codeupipe. A config file reader. No dependencies | [conformance/API.md](conformance/API.md), [docs/static-export.md](docs/static-export.md), [docs/config.md](docs/config.md) |
+| `codeupipe` | The eight primitives. A compile command that writes a pipeline as plain Python with no import of codeupipe. A config file reader. No dependencies | [conformance/API.md](conformance/API.md), [docs/compile.md](docs/compile.md), [docs/config.md](docs/config.md) |
 | `codeupipe-lint` | Two linters for pipeline code. Depends on `codeupipe` only | [packages/codeupipe-lint/README.md](packages/codeupipe-lint/README.md) |
+| `codeupipe` for TypeScript | The eight primitives. No dependencies | [packages/codeupipe-ts/README.md](packages/codeupipe-ts/README.md) |
+| `codeupipe-lint` for TypeScript | A linter for pipeline code in TypeScript | [packages/codeupipe-lint-ts/README.md](packages/codeupipe-lint-ts/README.md) |
+| `codeupipe-compile` for TypeScript | Writes a pipeline as plain TypeScript with no import of codeupipe | [packages/codeupipe-compile-ts/README.md](packages/codeupipe-compile-ts/README.md) |
+| `codeupipe` for Rust | The primitives, 0.1.0. No dependencies. No compiler yet | [packages/codeupipe-rs/README.md](packages/codeupipe-rs/README.md) |
+| `codeupipe-lint` for Rust | A linter for pipeline code in Rust, for the rules that the compiler does not check | [packages/codeupipe-lint-rs/README.md](packages/codeupipe-lint-rs/README.md) |
 
 ## Install
 
-Version 1.0.0 is on PyPI. Python 3.9 or later. No dependencies.
+Python 3.9 or later. No dependencies.
+
+| Version | State | Install |
+|---|---|---|
+| 1.0.0 | Stable. On PyPI | `pip install codeupipe` |
+| 2.0.0b1 | Beta. The `main` branch of this repository. Not on PyPI yet | From this repository, see below |
+
+This README describes version 2, the beta. A beta can change in a way that
+is not compatible, from one beta to the next. `pip install codeupipe` does
+not install a beta: pip installs one only when you ask for it, with
+`pip install --pre codeupipe` or with the exact version.
+
+Until the beta is on PyPI, install it from this repository:
 
 ```bash
-pip install codeupipe
+pip install "codeupipe @ git+https://github.com/orchestrate-solutions/codeupipe@main#subdirectory=packages/codeupipe"
+pip install "codeupipe-lint @ git+https://github.com/orchestrate-solutions/codeupipe@main#subdirectory=packages/codeupipe-lint"
 ```
 
-`codeupipe-lint` 1.0.0 is not on PyPI yet. Until it is, install it from this
-repository:
+`codeupipe-lint` 1.0.0 is not on PyPI. Install it from the tag `v1.0.0`:
 
 ```bash
 pip install "codeupipe-lint @ git+https://github.com/orchestrate-solutions/codeupipe@v1.0.0#subdirectory=packages/codeupipe-lint"
@@ -52,6 +69,29 @@ pip install "codeupipe-lint @ git+https://github.com/orchestrate-solutions/codeu
 
 Version 1.0.0 is not compatible with `codeupipe` 0.10.0. It is a new
 library with the same name.
+
+### Changes from 1.0.0 to 2.0.0b1
+
+These changes are not compatible with 1.0.0.
+
+- **A step is reported by a label, the name of its class.** State and Hooks
+  give `DiscountFilter`, where 1.0.0 gave the full path
+  `examples.pricing.discount_filter.DiscountFilter`.
+- **Removed:** `AnonymousStep`, `Pipeline.identities` (use
+  `Pipeline.labels`), `Pipeline.step_sites`, and lint rule CUP-A006.
+- **`codeupipe.lower` is now `codeupipe.compile`.** The command is
+  `python -m codeupipe.compile`.
+
+The TypeScript packages are new. They are version `0.1.0`. A version below
+1.0 is not stable yet, and a new version can change in a way that is not
+compatible. They are not on npm yet:
+[packages/codeupipe-ts/README.md](packages/codeupipe-ts/README.md) says how to
+install them from this repository.
+
+The Rust crate is new too, version `0.1.0` on the same terms. It is not on
+crates.io yet:
+[packages/codeupipe-rs/README.md](packages/codeupipe-rs/README.md) says how to
+use it from this repository.
 
 ## Example
 
@@ -108,7 +148,7 @@ class PricingPipeline(Pipeline):
         self.add_filter(DiscountFilter(0.1))
         # MarkBulkFilter runs only when the predicate is true.
         self.add_valve(AtLeastPredicate("qty", 10), MarkBulkFilter())
-        # A Tap failure is recorded and does not stop the run.
+        # A Tap only reads. If it fails, State records the error and the run goes on.
         self.add_tap(AuditTap())
 ```
 
@@ -123,10 +163,9 @@ A Valve is made in the pipeline file: `add_valve(predicate, filter)`. It
 joins a Predicate to a Filter. The Filter runs only when
 `predicate.test(payload)` is true. There is no Valve file.
 
-A step must be a class in a module. A lambda, or a class in the script that
-you run, is refused. The reason is step identity: a step is identified by its
-type, for example `examples.pricing.discount_filter.DiscountFilter`. State,
-Hooks and the export use that identity.
+A step is a class. State and Hooks report each step by the name of its
+class, for example `DiscountFilter`. A lambda is refused, because it does not
+have the method of a step.
 
 ```bash
 python -m examples.pricing
@@ -151,32 +190,46 @@ An editable install needs pip 21.3 or later.
 | Command | What it does |
 |---|---|
 | `python -m pytest tests -q` | Runs the tests |
-| `python conformance/run.py` | Runs the 27 conformance cases against the dynamic run and the three exports |
+| `python conformance/run.py` | Runs the 30 conformance cases against the Python dynamic run and the three compiled forms, and against the TypeScript targets that the machine can run |
 | `python -m codeupipe_lint.anonymous_steps` | Runs the anonymous-step linter. Paths come from `cup.config.json` |
 | `python -m codeupipe_lint.invariants` | Runs the invariant linter. Paths come from `cup.config.json` |
-| `python -m codeupipe.lower examples.pricing.pricing_pipeline:PricingPipeline --out build/pricing` | Exports the example to `build/pricing/src/steps/` |
-| `python conformance/bench.py --check` | Compares benchmark numbers with the recorded baseline. Fails outside 25% |
-| `python -m scorecard.differential` | Compares the export with the dynamic run on random pipelines |
+| `python -m codeupipe.compile examples.pricing.pricing_pipeline:PricingPipeline --out build/pricing` | Compiles the example to `build/pricing/src/steps/` |
+| `python conformance/bench.py` | Measures every target on the benchmark scenarios. It reports numbers and judges nothing |
+| `python -m scorecard.differential` | Compares the compiled code with the dynamic run on random pipelines |
 
 ## Layout
 
 | Path | Contents |
 |---|---|
-| `packages/codeupipe/` | The `codeupipe` package: `core/`, `lower/` (the export), `config.py` |
+| `packages/codeupipe/` | The `codeupipe` package: `core/`, `compile/` (the compiler), `config.py` |
 | `packages/codeupipe-lint/` | The `codeupipe-lint` package: `anonymous_steps/`, `invariants/` |
-| `conformance/` | The contract ([API.md](conformance/API.md)), the cases, the runner, the benchmark |
-| `tests/` | The tests for the two packages |
+| `packages/codeupipe-ts/` | The TypeScript runtime, with its tests and its example |
+| `packages/codeupipe-lint-ts/` | The TypeScript linter, with its tests |
+| `packages/codeupipe-compile-ts/` | The TypeScript compiler, with its tests |
+| `packages/codeupipe-rs/` | The Rust runtime, with its tests and its examples |
+| `packages/codeupipe-lint-rs/` | The Rust linter, with its tests. A Cargo workspace of its own |
+| `conformance/` | The contract ([API.md](conformance/API.md)), the cases, the runners, the benchmark |
+| `tests/` | The tests for the two Python packages |
 | `examples/pricing/` | The example, with its test in `tests/examples/` |
-| `scorecard/` | The comparison of the export with the dynamic run on random pipelines |
-| `docs/` | Reference for the export and the config file |
+| `scorecard/` | The comparison of the compiled code with the dynamic run on random pipelines |
+| `docs/` | Reference for the compiler and the config file |
 
-The root `pyproject.toml` is not a package. It holds the test settings.
+The root `pyproject.toml` is not a package. It holds the test settings. The
+root `package.json` is not a package: it makes the three TypeScript packages
+one npm workspace. The root `Cargo.toml` is not a package either: it makes
+the Rust runtime and its conformance runner one Cargo workspace, which
+builds with no download. The Rust linter needs `syn`, so it is a workspace
+of its own.
 
 ## Other languages
 
-This repository is Python only. The contract and the conformance cases do
-not depend on Python. A runtime in another language must implement the
-contract and add a conformance runner.
+The contract and the conformance cases do not depend on a language. Python
+is the first runtime and TypeScript is the second
+([packages/codeupipe-ts/](packages/codeupipe-ts/)), with its own linter and
+its own compiler. Rust is the third
+([packages/codeupipe-rs/](packages/codeupipe-rs/)), with its own linter; its plan is
+[docs/rust-plan.md](docs/rust-plan.md). A runtime in another language must implement
+the contract and add a conformance runner.
 
 ## License
 

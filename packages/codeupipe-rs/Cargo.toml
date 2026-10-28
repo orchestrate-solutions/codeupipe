@@ -1,0 +1,20 @@
+[package]
+name = "codeupipe"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "A Rust library for writing a program as a pipeline of small steps."
+license = "Apache-2.0"
+repository = "https://github.com/orchestrate-solutions/codeupipe"
+readme = "README.md"
+keywords = ["pipeline", "filter", "payload", "composition"]
+# Not on crates.io yet. A version below 1.0 is not stable.
+publish = false
+
+[[example]]
+name = "pricing"
+path = "examples/pricing/main.rs"
+
+[[example]]
+name = "typed_pricing"
+path = "examples/typed_pricing/main.rs"

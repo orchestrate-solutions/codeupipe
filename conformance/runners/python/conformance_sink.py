@@ -4,13 +4,19 @@ A separate module on purpose: static lowering re-emits a top-level
 ``from conformance_sink import TAPS`` as an import, so every lowered step
 appends to this one list. A list defined next to the ops would be *copied*
 into each lowered step instead (see the known limitation in
-packages/codeupipe/codeupipe/lower/filters/emit_inline_module_filter.py).
+packages/codeupipe/codeupipe/compile/filters/emit_inline_module_filter.py).
 """
 
 TAPS = []
 HOOKS = []
+# The State of each run that a run_again step started, in order.
+INNER_STATES = []
+# How the target runs its pipeline one more time: one function, that the runner sets for each case.
+RUN_AGAIN = [None]
 
 
 def reset():
     del TAPS[:]
     del HOOKS[:]
+    del INNER_STATES[:]
+    RUN_AGAIN[0] = None

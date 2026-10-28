@@ -4,7 +4,7 @@ from codeupipe_lint.anonymous_steps.finding import Finding
 
 __all__ = ["RULES", "PARSE_ERROR", "PAYLOAD_INTERNALS", "SHARED_VALUE_MUTATION", "STATE_READ",
            "WRITE_OUTSIDE_FILTER", "ONE_PRIMITIVE_PER_FILE", "PRIMITIVE_FILE_NAME",
-           "PRIMITIVE_ROLE_SUFFIX", "make_finding"]
+           "PRIMITIVE_ROLE_SUFFIX", "LOGIC_OUTSIDE_PRIMITIVE", "MARKER_ALLOWS_NOTHING", "WARNINGS", "make_finding"]
 
 PARSE_ERROR = "CUP-I000"
 PAYLOAD_INTERNALS = "CUP-I001"
@@ -14,6 +14,12 @@ WRITE_OUTSIDE_FILTER = "CUP-I004"
 ONE_PRIMITIVE_PER_FILE = "CUP-I005"
 PRIMITIVE_FILE_NAME = "CUP-I006"
 PRIMITIVE_ROLE_SUFFIX = "CUP-I007"
+LOGIC_OUTSIDE_PRIMITIVE = "CUP-I008"
+MARKER_ALLOWS_NOTHING = "CUP-I009"
+
+# The rules whose findings are warnings.
+WARNINGS = frozenset([LOGIC_OUTSIDE_PRIMITIVE, MARKER_ALLOWS_NOTHING])
+_SEVERITY = {rule: "warning" for rule in WARNINGS}
 
 RULES = {
     PARSE_ERROR: "parse-error",
@@ -24,6 +30,8 @@ RULES = {
     ONE_PRIMITIVE_PER_FILE: "one-primitive-per-file",
     PRIMITIVE_FILE_NAME: "primitive-file-name",
     PRIMITIVE_ROLE_SUFFIX: "primitive-role-suffix",
+    LOGIC_OUTSIDE_PRIMITIVE: "logic-outside-primitive",
+    MARKER_ALLOWS_NOTHING: "marker-allows-nothing",
 }
 
 _FIX = {
@@ -43,9 +51,14 @@ _FIX = {
                           "the other."),
     PRIMITIVE_ROLE_SUFFIX: ("A primitive's class name ends with its role (Filter, Tap, Hook, Predicate, "
                             "Pipeline), so the name tells what the class is."),
+    LOGIC_OUTSIDE_PRIMITIVE: ("Write it as a primitive, so that the pipeline has the logic and it can be tested "
+                              "as a step. For logic that must be plain code, say why: # cup: allow-plain <reason>"),
+    MARKER_ALLOWS_NOTHING: ("Remove it, or put it on the line of the finding that it is for. A comment that "
+                            "allows nothing says that the code has an exception that it does not have."),
 }
 
 
 def make_finding(path: str, line: int, col: int, rule: str, what: str) -> Finding:
     """A Finding whose message reads ``<what>. <fix>``."""
-    return Finding(path, line, col, rule, RULES[rule], "%s. %s" % (what, _FIX[rule]), "python")
+    return Finding(path, line, col, rule, RULES[rule], "%s. %s" % (what, _FIX[rule]), "python",
+                   severity=_SEVERITY.get(rule))

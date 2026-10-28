@@ -1,0 +1,202 @@
+[
+ {
+  "id": "state/the-caller-gives-the-state-of-a-run",
+  "given_state": true,
+  "steps": [
+   {
+    "kind": "filter",
+    "name": "first",
+    "op": "set",
+    "key": "a",
+    "value": 1
+   },
+   {
+    "kind": "valve",
+    "name": "gate",
+    "when": {
+     "op": "truthy",
+     "key": "inner"
+    },
+    "filter": {
+     "op": "set",
+     "key": "gated",
+     "value": true
+    }
+   },
+   {
+    "kind": "tap",
+    "name": "audit",
+    "op": "fail",
+    "message": "sink down"
+   },
+   {
+    "kind": "filter",
+    "name": "last",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   }
+  ],
+  "input": {},
+  "expect": {
+   "output": {
+    "a": 1,
+    "n": 1
+   },
+   "state": {
+    "executed": [
+     "first",
+     "audit",
+     "last"
+    ],
+    "skipped": [
+     "gate"
+    ],
+    "errors": [
+     "audit"
+    ]
+   },
+   "inner_states": []
+  }
+ },
+ {
+  "id": "state/a-run-that-starts-inside-another-run-has-its-own-state",
+  "given_state": true,
+  "steps": [
+   {
+    "kind": "filter",
+    "name": "first",
+    "op": "set",
+    "key": "a",
+    "value": 1
+   },
+   {
+    "kind": "filter",
+    "name": "again",
+    "op": "run_again",
+    "input": {
+     "inner": true
+    }
+   },
+   {
+    "kind": "valve",
+    "name": "gate",
+    "when": {
+     "op": "truthy",
+     "key": "inner"
+    },
+    "filter": {
+     "op": "set",
+     "key": "gated",
+     "value": true
+    }
+   },
+   {
+    "kind": "filter",
+    "name": "last",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   }
+  ],
+  "input": {},
+  "expect": {
+   "output": {
+    "a": 1,
+    "n": 1
+   },
+   "state": {
+    "executed": [
+     "first",
+     "again",
+     "last"
+    ],
+    "skipped": [
+     "gate"
+    ],
+    "errors": []
+   },
+   "inner_states": [
+    {
+     "executed": [
+      "first",
+      "again",
+      "gate",
+      "last"
+     ],
+     "skipped": [],
+     "errors": []
+    }
+   ]
+  }
+ },
+ {
+  "id": "state/with-no-state-from-the-caller-the-pipeline-has-the-state-of-the-run-that-started-last",
+  "steps": [
+   {
+    "kind": "filter",
+    "name": "first",
+    "op": "set",
+    "key": "a",
+    "value": 1
+   },
+   {
+    "kind": "filter",
+    "name": "again",
+    "op": "run_again",
+    "input": {
+     "inner": true
+    }
+   },
+   {
+    "kind": "valve",
+    "name": "gate",
+    "when": {
+     "op": "truthy",
+     "key": "inner"
+    },
+    "filter": {
+     "op": "set",
+     "key": "gated",
+     "value": true
+    }
+   },
+   {
+    "kind": "filter",
+    "name": "last",
+    "op": "add",
+    "key": "n",
+    "by": 1
+   }
+  ],
+  "input": {},
+  "expect": {
+   "output": {
+    "a": 1,
+    "n": 1
+   },
+   "inner_states": [
+    {
+     "executed": [
+      "first",
+      "again",
+      "gate",
+      "last"
+     ],
+     "skipped": [],
+     "errors": []
+    }
+   ],
+   "pipeline_state": {
+    "executed": [
+     "first",
+     "again",
+     "gate",
+     "last"
+    ],
+    "skipped": [],
+    "errors": []
+   }
+  }
+ }
+]

@@ -34,9 +34,95 @@ jobs:
       - name: Lint, anonymous steps
         run: python -m codeupipe_lint.anonymous_steps
       - name: Lint, invariants
-        run: python -m codeupipe_lint.invariants
+        run: python -m codeupipe_lint.invariants --strict
       - name: Conformance
         run: python conformance/run.py
+
+  typescript:
+    name: TypeScript packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - name: Install
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Type check
+        run: npm run typecheck
+      - name: Tests
+        run: npm test
+      - name: Example
+        run: node packages/codeupipe-ts/examples/pricing/main.ts
+      - name: The linter on the TypeScript code of this repository
+        run: npm run lint -w codeupipe-lint
+      - name: Install the Python package, for the judge
+        # conformance/run.py is a codeupipe pipeline (conformance/judging/).
+        run: python -m pip install -e packages/codeupipe
+      - name: Conformance
+        run: python conformance/run.py typescript:run typescript:static
+      - name: The packages as npm makes them
+        run: npm pack --workspaces --dry-run
+
+  rust:
+    name: Rust packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      # The runner image has rustup and a stable toolchain. Nothing is
+      # downloaded from crates.io: the crates have no dependencies.
+      - name: Format
+        run: cargo fmt --all --check
+      - name: Clippy
+        run: cargo clippy --offline --all-targets -- -D warnings
+      - name: Tests
+        run: cargo test --offline
+      - name: Examples
+        run: |
+          cargo run --offline --example pricing -p codeupipe
+          cargo run --offline --example typed_pricing -p codeupipe
+      - name: Install the Python package, for the judge
+        # conformance/run.py is a codeupipe pipeline (conformance/judging/).
+        run: python -m pip install -e packages/codeupipe
+      - name: Conformance
+        run: python conformance/run.py rust:run
+      - name: The oldest Rust that the crate supports (rust-version)
+        run: |
+          rustup toolchain install 1.75 --profile minimal
+          cargo +1.75 test --offline -p codeupipe
+
+  rust-lint:
+    name: Rust linter
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/codeupipe-lint-rs
+    steps:
+      - uses: actions/checkout@v5
+      # A workspace of its own: it downloads syn and serde_json from
+      # crates.io, at the versions in its Cargo.lock.
+      - name: Format
+        run: cargo fmt --check
+      - name: Clippy
+        run: cargo clippy --locked --all-targets -- -D warnings
+      - name: Tests
+        run: cargo test --locked
+      - name: The linter on the Rust code of this repository
+        run: >-
+          cargo run --locked -q -- --strict src tests ../codeupipe-rs/src
+          ../codeupipe-rs/examples ../codeupipe-rs/tests ../../conformance/runners/rust/src
+      - name: The oldest Rust that the crate supports (rust-version)
+        run: |
+          rustup toolchain install 1.75 --profile minimal
+          cargo +1.75 test --locked
 
   export:
     name: Export against dynamic run
@@ -76,11 +162,12 @@ jobs:
           /tmp/installed/bin/python -m codeupipe_lint.invariants --rules
           /tmp/installed/bin/python -m codeupipe_lint.anonymous_steps --rules
 
-  speed:
-    name: Speed check (does not block)
+  benchmark:
+    name: Benchmark (numbers only, never fails the run)
     runs-on: ubuntu-latest
-    # The baseline was recorded on a different machine. This job shows how
-    # far a CI machine is from it; it does not fail the run until that is known.
+    # A shared CI machine is too noisy to judge speed, so nothing here is
+    # compared with a baseline. The job measures and keeps the numbers: in
+    # the job summary and as an artifact.
     continue-on-error: true
     steps:
       - uses: actions/checkout@v5
@@ -91,5 +178,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e packages/codeupipe -e packages/codeupipe-lint -r requirements-dev.txt
-      - name: Compare with the recorded baseline
-        run: python conformance/bench.py --check
+      - name: Measure
+        run: |
+          set -o pipefail
+          python conformance/bench.py | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Keep the numbers
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark
+          path: conformance/results/bench-latest.*

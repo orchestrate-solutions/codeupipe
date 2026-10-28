@@ -16,6 +16,7 @@ from .rules import RULES
 from ..rule_ids import unknown_rules
 
 
+# cup: allow-plain the entry of the program: it reads the arguments, runs the pipeline and prints the result
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="python -m codeupipe_lint.anonymous_steps",
                                      description="Flag anonymous pipeline steps (packages/codeupipe-lint/README.md).")

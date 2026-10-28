@@ -1,0 +1,53 @@
+{
+  "name": "codeupipe-compile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Writes a codeupipe pipeline as plain TypeScript with no import of codeupipe.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orchestrate-solutions/codeupipe.git",
+    "directory": "packages/codeupipe-compile-ts"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "codeupipe-compile": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "core": "npm --prefix ../codeupipe-ts run build",
+    "pretest": "npm run core",
+    "test": "node --test \"tests/*.test.ts\"",
+    "pretypecheck": "npm run core",
+    "typecheck": "tsc --noEmit",
+    "prebuild": "npm run core",
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "codeupipe": "0.1.0",
+    "typescript": "^5.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0"
+  },
+  "keywords": [
+    "pipeline",
+    "filter",
+    "payload",
+    "composition"
+  ]
+}

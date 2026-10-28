@@ -1,6 +1,6 @@
 """The README example. Each primitive is in its own file, and the pipeline
-file puts them together. It runs, a failing Tap does not halt it, and its
-export gives the same answer with no framework import."""
+file puts them together. It runs, and its export gives the same answer
+with no framework import."""
 
 import importlib.util
 import pathlib
@@ -10,6 +10,7 @@ import sys
 from codeupipe import Payload
 
 from examples.pricing.at_least_predicate import AtLeastPredicate
+from examples.pricing.audit_tap import AuditTap
 from examples.pricing.discount_filter import DiscountFilter
 from examples.pricing.mark_bulk_filter import MarkBulkFilter
 from examples.pricing.pricing_pipeline import PricingPipeline
@@ -47,25 +48,31 @@ def test_dynamic_run():
     pipeline = PricingPipeline()
     out = pipeline.run(Payload({"price": 100.0, "qty": 12}))
     assert out.to_dict() == {"price": 90.0, "qty": 12, "bulk": True}
-    assert pipeline.identities == ["examples.pricing.discount_filter.DiscountFilter",
-                                   "examples.pricing.mark_bulk_filter.MarkBulkFilter",
-                                   "examples.pricing.audit_tap.AuditTap"]
-    assert [name for name, _ in pipeline.state.errors] == ["examples.pricing.audit_tap.AuditTap"]
+    assert pipeline.labels == ["DiscountFilter",
+                                   "MarkBulkFilter",
+                                   "AuditTap"]
+    assert pipeline.state.executed == ["DiscountFilter", "MarkBulkFilter", "AuditTap"]
+    assert pipeline.state.errors == []
 
 
 def test_valve_skips_small_orders():
     pipeline = PricingPipeline()
     out = pipeline.run(Payload({"price": 100.0, "qty": 2}))
     assert out.to_dict() == {"price": 90.0, "qty": 2}
-    assert pipeline.state.skipped == ["examples.pricing.mark_bulk_filter.MarkBulkFilter"]
+    assert pipeline.state.skipped == ["MarkBulkFilter"]
 
 
-def test_a_hook_sees_each_step(capsys):
+def test_the_tap_reads_the_payload(capsys):
+    assert AuditTap().observe(Payload({"price": 90.0})) is None
+    assert capsys.readouterr().out == "audit: {'price': 90.0}\n"
+
+
+def test_a_hook_sees_each_step_but_not_the_tap(capsys):
     pipeline = PricingPipeline()
     pipeline.use_hook(PrintStepsHook())
     pipeline.run(Payload({"price": 100.0, "qty": 12}))
     lines = capsys.readouterr().out.splitlines()
-    assert lines == ["  discount_filter.DiscountFilter", "  mark_bulk_filter.MarkBulkFilter"]
+    assert lines == ["  DiscountFilter", "  MarkBulkFilter", "audit: {'price': 90.0, 'qty': 12, 'bulk': True}"]
 
 
 def test_the_example_runs_as_a_module():
@@ -77,7 +84,7 @@ def test_the_example_runs_as_a_module():
 
 def test_export_matches_and_has_no_framework_import(tmp_path):
     done = subprocess.run(
-        [sys.executable, "-m", "codeupipe.lower", "examples.pricing.pricing_pipeline:PricingPipeline", "--out", str(tmp_path)],
+        [sys.executable, "-m", "codeupipe.compile", "examples.pricing.pricing_pipeline:PricingPipeline", "--out", str(tmp_path)],
         capture_output=True, text=True, cwd=EXAMPLE.parents[1],
     )
     assert done.returncode == 0, done.stderr

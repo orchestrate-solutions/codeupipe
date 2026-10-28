@@ -27,6 +27,7 @@ class ConfigError(Exception):
     """The config file cannot be used as it is."""
 
 
+# cup: allow-plain it reads the config file, before any pipeline exists
 def _unknown(where: str, given, allowed) -> None:
     extra = sorted(set(given) - set(allowed))
     if extra:
@@ -34,11 +35,13 @@ def _unknown(where: str, given, allowed) -> None:
             where, ", ".join(repr(key) for key in extra), ", ".join(allowed)))
 
 
+# cup: allow-plain it reads the config file, before any pipeline exists
 def _strings(where: str, value) -> None:
     if not (isinstance(value, list) and all(isinstance(item, str) for item in value)):
         raise ConfigError("%s must be a list of strings" % where)
 
 
+# cup: allow-plain it reads the config file, before any pipeline exists
 def load_config(path: Optional[str] = None) -> Optional[dict]:
     """The config as a dict, checked. With no ``path``: ``cup.config.json`` in
     the working directory, or None when there is no such file."""

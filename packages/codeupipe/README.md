@@ -61,7 +61,7 @@ class PricingPipeline(Pipeline):
         self.add_filter(DiscountFilter(0.1))
         # MarkBulkFilter runs only when the predicate is true.
         self.add_valve(AtLeastPredicate("qty", 10), MarkBulkFilter())
-        # A Tap failure is recorded and does not stop the run.
+        # A Tap only reads. If it fails, State records the error and the run goes on.
         self.add_tap(AuditTap())
 ```
 
@@ -72,13 +72,39 @@ PricingPipeline().run(Payload({"price": 100.0, "qty": 12})).to_dict()
 # {'price': 90.0, 'qty': 12, 'bulk': True}
 ```
 
-A step must be a class in a module. A lambda is refused, because a step is
-identified by its type, and State, Hooks and the export use that identity.
+A step is a class. State and Hooks report each step by the name of its
+class, for example `DiscountFilter`. A lambda is refused, because it does not
+have the method of a step.
+
+## A type of your own
+
+`Payload` is the default: a map that any developer can read. Any object with
+a `copy()` method can take its place, such as a dataclass:
+
+```python
+@dataclasses.dataclass
+class Order:
+    price: float
+
+    def copy(self):
+        return dataclasses.replace(self)
+
+
+class DiscountFilter:
+    def call(self, order):
+        order.price = round(order.price * 0.9, 2)
+        return order
+```
+
+The rules stay the same. Lineage is kept only if the object has
+`_stamp(label)`; otherwise `observe(lineage=True)` does nothing for it. The
+compiler reads Payload operations only: keep such a pipeline dynamic. See
+"A type of your own" in [conformance/API.md](../../conformance/API.md).
 
 ## What is in the package
 
 - `codeupipe`: the eight primitives.
-- `python -m codeupipe.lower`: writes a pipeline as plain Python with no
+- `python -m codeupipe.compile`: writes a pipeline as plain Python with no
   import of codeupipe.
 - `codeupipe.config`: reads `cup.config.json`.
 
@@ -88,7 +114,7 @@ in the repository README.
 ## Documentation
 
 - The contract: https://github.com/orchestrate-solutions/codeupipe/blob/main/conformance/API.md
-- The export: https://github.com/orchestrate-solutions/codeupipe/blob/main/docs/static-export.md
+- The compiler: https://github.com/orchestrate-solutions/codeupipe/blob/main/docs/compile.md
 - The config file: https://github.com/orchestrate-solutions/codeupipe/blob/main/docs/config.md
 - The repository: https://github.com/orchestrate-solutions/codeupipe
 

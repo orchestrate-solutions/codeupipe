@@ -23,6 +23,7 @@ _HOOK_METHODS = {"before", "after", "on_error"}
 _HOOK_BASES = {"Hook", "AsyncHook"}
 
 
+# cup: allow-plain shared by the analysis Filters: it says which primitive a class is, from its shape
 def _base_names(node):
     return {base.id if isinstance(base, ast.Name) else getattr(base, "attr", "") for base in node.bases}
 
@@ -33,6 +34,7 @@ def _takes_only_the_payload(method) -> bool:
             and not method.args.vararg and not method.args.kwonlyargs and not method.args.kwarg)
 
 
+# cup: allow-plain shared by the analysis Filters: it says which primitive a class is, from its shape
 def primitive_kind(node):
     """"Pipeline", "Hook", "Filter", "Tap" or "predicate"; None for any other class."""
     methods = {member.name: member for member in node.body

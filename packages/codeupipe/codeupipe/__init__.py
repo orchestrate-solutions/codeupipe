@@ -1,6 +1,6 @@
 """codeupipe: the eight primitives, runnable two ways.
 
-``codeupipe.core`` is the dynamic runtime. ``codeupipe.lower`` exports a
+``codeupipe.core`` is the dynamic runtime. ``codeupipe.compile`` compiles a
 pipeline as plain code with no framework import.
 """
 

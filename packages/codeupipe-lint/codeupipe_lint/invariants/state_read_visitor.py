@@ -24,23 +24,11 @@ STATE_MEMBERS = {"executed", "skipped", "errors", "timings", "mark_executed", "m
                  "record_timing", "record_error"}
 
 
-def _is_state_type(node) -> bool:
-    if isinstance(node, ast.Name):
-        return node.id == "State"
-    if isinstance(node, ast.Attribute):
-        return node.attr == "State"
-    return isinstance(node, ast.Constant) and node.value == "State"
-
-
 def _is_self(node) -> bool:
     return isinstance(node, ast.Name) and node.id == "self"
 
 
-def _names_a_pipeline(node) -> bool:
-    name = node.id if isinstance(node, ast.Name) else node.attr if isinstance(node, ast.Attribute) else ""
-    return "pipeline" in name.lower()
-
-
+# cup: allow-plain used by the analysis Filter and the visitor: it finds the names that hold a State
 def state_handles(class_node) -> set:
     """Attributes that ``__init__`` sets to a State."""
     handles = set()
@@ -48,19 +36,20 @@ def state_handles(class_node) -> set:
         if not (isinstance(member, ast.FunctionDef) and member.name == "__init__"):
             continue
         state_parameters = {a.arg for a in member.args.args + member.args.kwonlyargs
-                            if a.annotation is not None and _is_state_type(a.annotation)}
+                            if a.annotation is not None and StateReadVisitor._is_state_type(a.annotation)}
         for node in ast.walk(member):
             if not isinstance(node, ast.Assign):
                 continue
             value = node.value
             is_state = ((isinstance(value, ast.Name) and value.id in state_parameters)
                         or (isinstance(value, ast.Attribute) and value.attr == "state")
-                        or (isinstance(value, ast.Call) and _is_state_type(value.func)))
+                        or (isinstance(value, ast.Call) and StateReadVisitor._is_state_type(value.func)))
             if is_state:
                 handles.update(t.attr for t in node.targets if isinstance(t, ast.Attribute) and _is_self(t.value))
     return handles
 
 
+# cup: allow-plain a visitor of a syntax tree: the tool that a Filter uses to read or change source code
 class StateReadVisitor(ast.NodeVisitor):
     def __init__(self, path, method, handles):
         self.path = path
@@ -75,7 +64,7 @@ class StateReadVisitor(ast.NodeVisitor):
             if _is_self(node.value) and node.attr in self.handles:
                 return True
             if node.attr == "state" and not _is_self(node.value):
-                if outer in STATE_MEMBERS or _names_a_pipeline(node.value):
+                if outer in STATE_MEMBERS or StateReadVisitor._names_a_pipeline(node.value):
                     return True
             outer = node.attr
             node = node.value
@@ -92,3 +81,16 @@ class StateReadVisitor(ast.NodeVisitor):
         """A nested function or class is its own scope."""
 
     visit_FunctionDef = visit_AsyncFunctionDef = visit_ClassDef = visit_Lambda = _skip
+
+    @staticmethod
+    def _is_state_type(node) -> bool:
+        if isinstance(node, ast.Name):
+            return node.id == "State"
+        if isinstance(node, ast.Attribute):
+            return node.attr == "State"
+        return isinstance(node, ast.Constant) and node.value == "State"
+
+    @staticmethod
+    def _names_a_pipeline(node) -> bool:
+        name = node.id if isinstance(node, ast.Name) else node.attr if isinstance(node, ast.Attribute) else ""
+        return "pipeline" in name.lower()

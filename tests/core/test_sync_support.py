@@ -71,7 +71,7 @@ class TestSyncFilter:
             return pipeline.state
 
         state = run(go())
-        assert f"{__name__}.SyncPass" in state.executed
+        assert "SyncPass" in state.executed
 
 
 # ===========================================================================
@@ -128,7 +128,7 @@ class TestSyncTap:
             return pipeline.state
 
         state = run(go())
-        assert f"{__name__}.SyncNopTap" in state.executed
+        assert "SyncNopTap" in state.executed
 
 
 # ===========================================================================
@@ -167,8 +167,8 @@ class TestSyncHook:
         run(go())
         assert log == [
             "before:pipeline",
-            f"before:{__name__}.PassFilter",
-            f"after:{__name__}.PassFilter",
+            "before:PassFilter",
+            "after:PassFilter",
             "after:pipeline",
         ]
 
@@ -192,7 +192,7 @@ class TestSyncHook:
 
         run(go())
         # the failing step first, then the pipeline
-        assert errors == [f"{__name__}.BoomFilter:boom", "pipeline:boom"]
+        assert errors == ["BoomFilter:boom", "pipeline:boom"]
 
 
 # ===========================================================================
@@ -230,7 +230,7 @@ class TestSyncValveInner:
             return pipeline.state
 
         state = run(go())
-        assert f"{__name__}.SyncDiscount2" in state.skipped
+        assert "SyncDiscount2" in state.skipped
 
 
 # ===========================================================================

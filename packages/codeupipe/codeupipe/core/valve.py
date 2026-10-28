@@ -58,11 +58,8 @@ class Valve(Generic[TInput, TOutput]):
         inner: Filter[TInput, TOutput],
         predicate: "Predicate",
     ):
-        # A Valve is identified by its inner filter (conformance/API.md); its
-        # predicate is an object with test(payload) -> bool, identified by its
-        # class, configuration on the instance. Functions are not predicates.
-        from .step_identity import predicate_symbol
-        self.predicate_symbol = predicate_symbol(predicate)
+        # The predicate is an object with test(payload) -> bool. Its settings
+        # are on the instance.
         self._inner = inner
         self._predicate_object = predicate
         self._predicate = predicate.test  # bound once: called per run
@@ -72,6 +69,10 @@ class Valve(Generic[TInput, TOutput]):
         self._inner_sync_call = inner_sync if callable(inner_sync) else None
         self._inner_is_sync = self._inner_sync_call is not None or not inspect.iscoroutinefunction(
             getattr(inner, "call", None))
+        # What a synchronous run calls when the Predicate holds. The Pipeline
+        # asks the Predicate and calls this itself, and reads no flag from
+        # the Valve: a flag would be shared by each run that is in progress.
+        self._sync_inner = self._inner_sync_call if self._inner_sync_call is not None else inner.call
 
     async def call(self, payload: Payload[TInput]) -> Payload[TOutput]:
         """Execute the inner filter only if the predicate passes."""
@@ -111,4 +112,4 @@ class Valve(Generic[TInput, TOutput]):
         return result
 
     def __repr__(self) -> str:
-        return f"Valve({type(self._inner).__qualname__}, {self.predicate_symbol})"
+        return f"Valve({type(self._predicate_object).__name__}, {type(self._inner).__name__})"

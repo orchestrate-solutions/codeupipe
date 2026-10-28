@@ -1,0 +1,27 @@
+[package]
+name = "codeupipe-lint"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "A linter for Rust code that uses codeupipe."
+license = "Apache-2.0"
+repository = "https://github.com/orchestrate-solutions/codeupipe"
+readme = "README.md"
+keywords = ["pipeline", "filter", "payload", "lint"]
+# Not on crates.io yet. A version below 1.0 is not stable.
+publish = false
+
+[[bin]]
+name = "codeupipe-lint"
+path = "src/main.rs"
+
+[dependencies]
+codeupipe = { path = "../codeupipe-rs" }
+# Lines and columns of the syntax tree, outside a procedural macro.
+proc-macro2 = { version = "1.0.80", default-features = false, features = ["span-locations"] }
+serde_json = "1.0.100"
+syn = { version = "2.0.60", default-features = false, features = ["full", "parsing", "printing", "clone-impls", "visit"] }
+
+# A workspace of its own. The crates of the root workspace have no
+# dependencies and build with no download; this one needs syn.
+[workspace]

@@ -11,7 +11,11 @@ after 20,000 warmup runs (so JIT runtimes are measured warm) and reports the
 output it produced; this script refuses a result whose output differs from
 the others, so a fast wrong answer cannot win.
 
-The speed check (--check). A recorded time is true for one machine, so each
+The comparison (--check) is for a machine whose resources are fixed, such as
+a constrained container. CI does not run it: a shared machine is too noisy
+to judge speed, so CI only measures and keeps the numbers.
+
+A recorded time is true for one machine, so each
 number is kept as a ratio to a reference workload: plain Python dict writes
 and function calls, the work a pipeline does. The runner times the reference
 and the scenario back to back, so a slower or a busier machine slows both
@@ -21,7 +25,8 @@ its baseline, in either direction: slower is a regression, and faster means
 the baseline is out of date and must be recorded again, or the next
 regression would hide inside the gain. A baseline is kept for each Python
 version (bench/baseline.json), because interpreters differ in what they make
-fast.
+fast. The Rust run does not depend on Python, so it has one baseline, under
+"rust". --record replaces only the targets that it measured.
 """
 
 import json
@@ -41,6 +46,7 @@ BENCH_TARGETS = {
     "python:static-steps": ("python:static-steps", "bench:static-steps"),
     "python:static-inline": ("python:static-inline", "bench:static-inline"),
     "python:static-observe": ("python:static-observe", "bench:static-observe"),
+    "rust:run": ("rust:run", "bench:run"),
 }
 
 
@@ -57,10 +63,39 @@ def python_key():
     return "%d.%d" % sys.version_info[:2]
 
 
+# cup: allow-plain the speed check of the conformance suite: it times the scenarios and compares them with the baseline
 def load_baseline():
     return json.loads(BASELINE.read_text()) if BASELINE.exists() else {}
 
 
+# cup: allow-plain the speed check of the conformance suite: it times the scenarios and compares them with the baseline
+def baseline_key(target, python):
+    """Where the baseline of ``target`` is kept. A Python target is kept per
+    Python version; the Rust run does not depend on Python and has its own."""
+    return "rust" if target.startswith("rust:") else python
+
+
+# cup: allow-plain the speed check of the conformance suite: it times the scenarios and compares them with the baseline
+def baseline_for(baseline, targets, python):
+    """The recorded ratios of ``targets``, each from its own key."""
+    relative = {}
+    for target in targets:
+        row = baseline.get(baseline_key(target, python), {}).get("relative", {}).get(target)
+        if row is not None:
+            relative[target] = row
+    return {"relative": relative}
+
+
+# cup: allow-plain the speed check of the conformance suite: it times the scenarios and compares them with the baseline
+def record_into(baseline, current, python):
+    """Put the measured targets into ``baseline``. The others are kept."""
+    for kind in ("relative", "us_per_run"):
+        for target, row in current[kind].items():
+            recorded = baseline.setdefault(baseline_key(target, python), {"relative": {}, "us_per_run": {}})
+            recorded.setdefault(kind, {})[target] = row
+
+
+# cup: allow-plain the speed check of the conformance suite: it times the scenarios and compares them with the baseline
 def compare(baseline, current, tolerance=DEFAULT_TOLERANCE):
     """Every number that is not within ``tolerance`` percent of its baseline.
 
@@ -84,6 +119,7 @@ def compare(baseline, current, tolerance=DEFAULT_TOLERANCE):
     return problems
 
 
+# cup: allow-plain the speed check of the conformance suite: it times the scenarios and compares them with the baseline
 def _report(problems, tolerance):
     if not problems:
         return "Speed check: every number is within %g%% of its baseline." % tolerance
@@ -101,6 +137,7 @@ def _report(problems, tolerance):
     return "\n".join(lines)
 
 
+# cup: allow-plain the speed check of the conformance suite: it times the scenarios and compares them with the baseline
 def main(argv):
     argv = list(argv)
     record, check = "--record" in argv, "--check" in argv
@@ -112,7 +149,8 @@ def main(argv):
     argv = [a for a in argv if a not in ("--record", "--check")]
 
     scenarios = json.loads((HERE / "bench" / "scenarios.json").read_text())
-    names = argv or list(BENCH_TARGETS)
+    runnable = conformance.default_targets()
+    names = argv or [name for name in BENCH_TARGETS if BENCH_TARGETS[name][0] in runnable]
     table, relative, reference, problems, refused = {}, {}, {}, [], []
     for name in names:
         results, error = conformance.run_target(name, spec_for(name), scenarios)
@@ -151,22 +189,23 @@ def main(argv):
 
     if record:
         baseline = load_baseline()
-        baseline[python_key()] = current
+        record_into(baseline, current, python_key())
         BASELINE.write_text(json.dumps(baseline, indent=2, sort_keys=True) + "\n")
-        print("Recorded the baseline for Python %s in %s." % (python_key(), BASELINE.relative_to(HERE.parent)))
+        print("Recorded the baseline of %s in %s." % (", ".join(names), BASELINE.relative_to(HERE.parent)))
         return 0
     if check:
-        baseline = load_baseline().get(python_key())
-        if baseline is None:
+        baseline = load_baseline()
+        if python_key() not in baseline and any(name.startswith("python:") for name in names):
             print("Speed check: no baseline for Python %s. Record one: python conformance/bench.py --record"
                   % python_key())
             return 1
-        found = compare(baseline, current, tolerance)
+        found = compare(baseline_for(baseline, names, python_key()), current, tolerance)
         print(_report(found, tolerance))
         return 1 if found else 0
     return 0
 
 
+# cup: allow-plain the speed check of the conformance suite: it times the scenarios and compares them with the baseline
 def markdown(scenarios, table, problems, refused=()):
     targets = list(table)
     lines = ["µs per run (best of 5 × 20,000, after 20,000 warmup runs); lower is better.", "",

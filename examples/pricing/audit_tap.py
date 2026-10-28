@@ -2,8 +2,8 @@
 
 
 class AuditTap:
-    """Reads the Payload and returns nothing. This one fails every time, to
-    show that a Tap failure is recorded and never halts the run."""
+    """Reads the Payload and returns nothing. If it fails, State records the
+    error and the run goes on."""
 
     def observe(self, payload):
-        raise ConnectionError("audit sink is down")
+        print("audit:", payload.to_dict())

@@ -1,7 +1,9 @@
-"""The speed check: each benchmark number against its recorded baseline.
+"""The comparison of benchmark numbers with a recorded baseline
+(bench.py --check). No test and no CI job runs the comparison itself: a
+shared machine is too noisy to judge speed. It is kept for a machine whose
+resources are fixed, such as a constrained container.
 
-A number is compared as a ratio to a reference workload timed beside it, so
-the check does not depend on how fast or how busy the machine is.
+A number is compared as a ratio to a reference workload timed beside it.
 """
 
 import pathlib
@@ -63,16 +65,31 @@ def test_a_new_number_with_no_baseline_fails():
 def test_the_baseline_file_holds_a_ratio_for_every_number():
     baseline = bench.load_baseline()
     assert baseline, "run: python conformance/bench.py --record"
-    for version, recorded in baseline.items():
-        assert set(recorded["relative"]) == set(bench.BENCH_TARGETS), version
+    for key, recorded in baseline.items():
+        runtime = "rust" if key == "rust" else "python"   # the other keys are Python versions
+        want = {target for target in bench.BENCH_TARGETS if target.split(":")[0] == runtime}
+        assert set(recorded["relative"]) == want, key
         for target, row in recorded["relative"].items():
-            assert row and all(ratio > 0 for ratio in row.values()), (version, target)
+            assert row and all(ratio > 0 for ratio in row.values()), (key, target)
 
 
-@pytest.mark.perf
-def test_nothing_is_slower_or_faster_than_its_baseline():
-    if bench.python_key() not in bench.load_baseline():
-        pytest.skip("no baseline for Python %s: python conformance/bench.py --record" % bench.python_key())
-    done = subprocess.run([sys.executable, str(CONFORMANCE / "bench.py"), "--check"],
-                          capture_output=True, text=True, timeout=600)
-    assert done.returncode == 0, done.stdout[-3000:] + done.stderr[-2000:]
+def test_a_rust_number_is_kept_apart_from_the_python_version():
+    # The speed of the Rust runtime does not depend on the Python that runs bench.py.
+    assert bench.baseline_key("python:run", python="3.12") == "3.12"
+    assert bench.baseline_key("rust:run", python="3.12") == "rust"
+
+
+def test_the_check_compares_each_target_with_its_own_baseline():
+    baseline = {"3.12": {"relative": {"python:run": {"m": 5.0}, "python:static-inline": {"m": 0.5}}},
+                "3.9": {"relative": {"python:run": {"m": 9.0}}},
+                "rust": {"relative": {"rust:run": {"m": 1.0}}}}
+    assert bench.baseline_for(baseline, ["python:run", "rust:run"], python="3.12") == {
+        "relative": {"python:run": {"m": 5.0}, "rust:run": {"m": 1.0}}}
+
+
+def test_a_record_replaces_only_the_targets_that_were_measured():
+    baseline = {"3.12": {"relative": {"python:run": {"m": 5.0}}, "us_per_run": {"python:run": {"m": 4.0}}}}
+    now = {"relative": {"rust:run": {"m": 1.0}}, "us_per_run": {"rust:run": {"m": 0.9}}}
+    bench.record_into(baseline, now, python="3.12")
+    assert baseline == {"3.12": {"relative": {"python:run": {"m": 5.0}}, "us_per_run": {"python:run": {"m": 4.0}}},
+                        "rust": {"relative": {"rust:run": {"m": 1.0}}, "us_per_run": {"rust:run": {"m": 0.9}}}}

@@ -19,6 +19,7 @@ READER_METHODS = {"observe", "test", "before", "after", "on_error"}
 WRITES = {"insert", "remove", "merge", "with_trace"}
 
 
+# cup: allow-plain used by the analysis Filters and the visitor: it finds the payload parameter of a method
 def payload_parameter(method):
     """The parameter that holds the Payload: the one named ``payload``, else the last one."""
     names = [a.arg for a in method.args.posonlyargs + method.args.args]
@@ -29,6 +30,7 @@ def payload_parameter(method):
     return "payload" if "payload" in names else names[-1]
 
 
+# cup: allow-plain a visitor of a syntax tree: the tool that a Filter uses to read or change source code
 class OutsideWriteVisitor(ast.NodeVisitor):
     def __init__(self, path, method):
         self.path = path

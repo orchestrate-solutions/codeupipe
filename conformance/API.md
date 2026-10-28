@@ -14,9 +14,10 @@ parameters, their defaults, and how they fail.
 | State | records what happened |
 | Pipeline | runs the steps in order |
 
-Python implements it. A runtime in another language implements the same
-contract, with identifier casing in that language's style, and is judged by
-the same conformance cases.
+Python, TypeScript and Rust implement it. Each runtime has the same contract,
+with identifier casing in the style of its language, and the same
+conformance cases judge it. The tables below show the Python names. The
+TypeScript and Rust names and differences are in "Runtimes".
 
 ## Principles
 
@@ -70,6 +71,24 @@ Rules:
 - A Tap, a Hook or a Predicate that wants its own changed version, or that
   keeps the Payload for later, takes a `copy()`.
 
+### A type of your own
+
+The Payload is the default, and the form that this contract, the
+conformance cases and the compilers use: a map that any developer can read,
+which shows that anything can go there. A pipeline can carry a type of your
+own instead, such as the class or struct that your steps would use anyway.
+Its Filters, Predicates, Taps and Hooks then take that type.
+
+- **The Pipeline asks one thing of it: `copy()`**, for the copy that `run`
+  works on. Every rule above stays the same.
+- **Lineage is kept only by a type that has `_stamp(label)`** (`stamp` in
+  Rust). For any other type, `observe(lineage=True)` does nothing: the run
+  goes on, and `state.executed` still lists the steps.
+- **The compilers read Payload operations only.** A step that uses a type of
+  your own stays dynamic; the TypeScript compiler refuses it.
+
+How each runtime spells it is in "Runtimes".
+
 ## Filter
 
 `call(payload) -> payload`. A failure raises.
@@ -78,7 +97,7 @@ Rules:
 
 `test(payload) -> bool`.
 
-- A Predicate is an object. It is identified by its class like a step, and
+- A Predicate is an object. Its class gives it its name, and
   any setting (a threshold, a flag) is on the instance:
   `AtLeastPredicate("qty", 10)`. Functions, lambdas and closures are not
   Predicates.
@@ -94,7 +113,7 @@ A Valve is added with one call, the condition first:
 - When `predicate.test(payload)` is true, the Filter runs. When it is false,
   the Payload passes through unchanged and the step is recorded in
   `state.skipped`, not `state.executed`.
-- The step is identified by its Filter (see "Step identity").
+- The step has the label of its Filter (see "Step labels").
 - `add_valve` is the one way to add a Valve. There is no Valve class for a
   user to make, and `add_filter` does not accept one.
 
@@ -102,7 +121,7 @@ A Valve is added with one call, the condition first:
 
 `observe(payload)`, no return value. A Tap reads the Payload and does not
 write to it. **A Tap failure never halts the pipeline:** the error is
-recorded in `state.errors` under the Tap's identity, the Tap still counts as
+recorded in `state.errors` under the Tap's label, the Tap still counts as
 executed, and hooks are not notified.
 
 ## Hook — sees the lifecycle
@@ -110,7 +129,7 @@ executed, and hooks are not notified.
 `before(step, payload)`, `after(step, payload)`, `on_error(step, error, payload)`.
 A Hook reads the Payload and does not write to it.
 
-- `step` is the **step's identity** (see "Step identity"). Pipeline-level
+- `step` is the **step's label** (see "Step labels"). Pipeline-level
   events pass absent (`None`).
 - `error` is the error itself (never just its message).
 - Order on success: `before(pipeline)`, then for each filter or Valve
@@ -119,12 +138,23 @@ A Hook reads the Payload and does not write to it.
 - Order on a filter failure: `… before(step)`, `on_error(step)`,
   `on_error(pipeline)`. No `after` events follow.
 
-## State — what happened in the last run
+## State — what happened in one run
 
-`executed` (identities, in order), `skipped` (identities), `errors`
-(identity + error), `timings` (identity → seconds, when timing is on). A run
-starts with a new State. **A failed run keeps the steps that completed
-before the failure.**
+`executed` (labels, in order), `skipped` (labels), `errors`
+(label + error), `timings` (label → seconds, when timing is on). **A failed
+run keeps the steps that completed before the failure.**
+
+**A State belongs to one run, not to the Pipeline.**
+
+- Each run writes into a State of its own. Two runs of one Pipeline that
+  are in progress at the same time never write into the same State.
+- The caller can give the State: `run(p, state)`. The run writes into that
+  State. This is how a caller with more than one run at a time gets the
+  State of each run. The caller gives a new State for each run.
+- With no State from the caller, the run makes a new one.
+- `state` on the Pipeline is the State of the run that started last, with
+  a State from the caller or not. It is for a caller that has one run at a
+  time.
 
 ## Pipeline
 
@@ -136,70 +166,61 @@ before the failure.**
 | add a tap | `add_tap(t)` |
 | nest a pipeline | `add_pipeline(p)` |
 | add a hook | `use_hook(h)` |
-| run (sync) | `run(p)` |
-| run (async, opt-in) | `run_async(p)` |
-| last run | `state` |
+| run (sync) | `run(p)`, `run(p, state)` |
+| run (async, opt-in) | `run_async(p)`, `run_async(p, state)` |
+| the State of the run that started last | `state` |
 | timing and lineage | `observe(timing=True, lineage=False)` |
-| each step's identity, in order | `identities` |
-| where each step was added (`file:line`) | `step_sites` |
+| each step's label, in order | `labels` |
 
-- **Steps have no names.** State and Hooks report each step's identity.
+- **Steps are not named by hand.** State and Hooks report each step's label.
 - **`run` is synchronous** and never starts an event loop. If it meets an
   async step it raises `AsyncStepInSyncRun` rather than silently paying for
   a loop.
-- A nested pipeline is one step: its identity appears once in the parent's
+- A nested pipeline is one step: its label appears once in the parent's
   State.
 - **Timing and lineage are off by default.**
 
-## Step identity: the filter, not a name
+## Step labels
 
-A step's identity is a pointer to the code that runs it, derived
-automatically: `add_filter(f)`, not `add_filter(f, name)`. State, Hooks and
-exported code all report this identity.
+A step is reported by a label. The label is the name of the step's class:
+`add_filter(ValidateFilter())` gives the label `ValidateFilter`. State and
+Hooks report this label. A step is not given a name by hand:
+`add_filter(f)`, not `add_filter(f, name)`.
 
-Why: in a codebase maintained by agents and reviewed by humans, an identity
-taken from the code cannot drift from it. A hand-written name is an
-unchecked label that can describe code which no longer matches it; a pointer
-to the filter is always true, more specific, and needs no one to maintain
-it.
+- **A second use gets a number.** When the same label is in one pipeline
+  more than once, the second is `ValidateFilter#2`, the third
+  `ValidateFilter#3`.
+- **A Valve** has the label of its Filter.
+- **A nested pipeline** has the label of its class. Make it a named type
+  (`class UserOnboarding(Pipeline)`), so that the label says what it is. A
+  plain `Pipeline` that is nested has the label `Pipeline`.
+- A label is for people and for records. It does not say where the class is
+  defined, and two classes with the same name in different modules have the
+  same label.
 
-### The identity
+### What is refused when a step is added
 
-- **The filter's fully qualified symbol** (`app.filters.Validate`), plus an
-  **occurrence number only when the same identity appears more than once**
-  in one pipeline: the second is `...Validate#2`. Stable across unrelated
-  edits.
-- **Extra detail, not identity**: the source location of the `add_*` call
-  (`file:line`), for agents and reviewers.
-- **Valves**: the Filter's identity; the predicate's symbol is extra detail.
-- **Pipelines used as a step are named types**: `class UserOnboarding(Pipeline)`,
-  identified by that type's symbol exactly as a filter is. A plain, unnamed
-  `Pipeline` can run at the top level but cannot be nested.
-- Renames and moves change the identity. That is honest (it is different
-  code); cross-version comparisons follow renames from version control.
-- A filter defined in the entry script (`__main__.X`) is refused like an
-  anonymous one: its identity changes with how the program is started, and
-  tests cannot import it.
+A step must have the method of its role. `add_filter` needs `call(payload)`,
+`add_tap` needs `observe(payload)`, `add_valve` needs a predicate with
+`test(payload)` and a Filter with `call(payload)`, and `add_pipeline` needs a
+Pipeline. A value without that method (a lambda, a plain function) is
+refused with a `TypeError` that names the method.
 
-### Anonymous filters are unsupported
+### What the linter flags
 
-Lambdas, closures, classes defined inside a function, inline functions: as
-filters, taps, valve predicates or nested pipelines. They are not
-independently testable and have no stable identity. Enforced in two layers:
-
-1. **The runtime refuses them** at `add_*` time (`AnonymousStep`), with a
-   message naming the fix.
-2. **The linter flags them** at authoring time:
-   `python -m codeupipe_lint.anonymous_steps <paths...>`. One line per
-   anonymous step, `path:line:col  CUP-A00N slug  message`; exit 1 when it
-   finds any. An intentional one (a test of the refusal) is suppressed with
-   a `cup: allow-anonymous` comment. Rules and limits:
-   [packages/codeupipe-lint/README.md](../packages/codeupipe-lint/README.md).
+A step that is a lambda, a function, a class defined inside a function, or a
+plain nested `Pipeline` cannot be imported and tested alone, and its label
+says little. The linter flags these when the code is written:
+`python -m codeupipe_lint.anonymous_steps <paths...>`. One line per finding,
+`path:line:col  CUP-A00N slug  message`; exit 1 when it finds any. An
+intentional one is suppressed with a `cup: allow-anonymous` comment. Rules
+and limits:
+[packages/codeupipe-lint/README.md](../packages/codeupipe-lint/README.md).
 
 **Conformance.** The shared cases name their steps; the runner builds every
-step, so it maps each reported identity back to the case's step name. An
-identity that is wrong, or differs between the dynamic run and an export,
-does not map and fails the comparison.
+step, so it maps each reported label back to the case's step name. A label
+that is wrong, or differs between the dynamic run and compiled code, does not
+map and fails the comparison.
 
 ## Not in the contract yet
 
@@ -211,3 +232,50 @@ does not map and fails the comparison.
   it changes timing for callers who wait on a Tap's side effect.
 - **Other runtimes.** A runtime in another language is written to this
   contract and added with its conformance runner.
+
+## Runtimes
+
+| | Python | TypeScript | Rust |
+|---|---|---|---|
+| Package | `packages/codeupipe` | `packages/codeupipe-ts` | `packages/codeupipe-rs` (crate `codeupipe`) |
+| Names | snake_case | camelCase: `addFilter`, `addValve`, `toDict`, `withTrace`, `traceId`, `onError` | snake_case, as Python |
+| Run | `run` is sync. `run_async` is opt-in | One `run`. It returns a Promise. A step can be sync or async | `run` is sync, and `run_with_state` for the caller's State. No async run yet |
+| Absent | `None` | `null` | `None` from `get`; `Value::Null` is a JSON null |
+| Label of a step | `type(step).__name__` | `step.constructor.name` | The name of the step's type, from `std::any::type_name` |
+| Compile | `codeupipe.compile` | `packages/codeupipe-compile-ts` | None yet |
+| Linter | `packages/codeupipe-lint` | `packages/codeupipe-lint-ts` | None yet. The compiler refuses several of the shapes that the linters find |
+| A type of your own | Any object with `copy()` | `class Order implements PipelineData<Order>`, then `new Pipeline<Order>()`, `Filter<Order>` | `impl PipelineData for Order {}`, then `Pipeline<Order>`, `Filter<Order>` |
+
+Notes on TypeScript:
+
+- **Principle 3.** JavaScript always has an event loop, so there is no
+  second entry point. Inside `run`, a step that returns a value and not a
+  Promise is not awaited.
+- **A function is not a step.** Every JavaScript function has a `call`
+  method, so a step must be an object.
+- **Labels in minified code.** A minifier changes class names. A label is
+  then the changed name, unless the build keeps class names. A class with no
+  name has the label `anonymous`.
+- **State and concurrent runs.** Two runs of one pipeline at the same time
+  each write to their own State. `state` is the State of the run that
+  started last.
+
+Notes on Rust:
+
+- **Refused when added, at compile time.** A closure is not a step, the
+  arguments of `add_valve` are in one order only, and a Tap, a Hook or a
+  Predicate gets `&Payload`, so it cannot write. Each is a type error.
+- **A Filter changes the Payload in place.** `call(&self, &mut Payload)`
+  returns `Result<(), StepError>`. A failure is an `Err`; a panic is not a
+  failure of the step and is not caught.
+- **Values.** A value is a `Value`: null, a bool, a number (`f64`), a string,
+  a list or a map that keeps the order of its keys, as JSON has.
+- **A State for each run.** `run(&self, …)` takes the pipeline by shared
+  reference, so a step can hold the pipeline that it is in (an `Rc`) and run
+  it again. The run with the caller's State is
+  `run_with_state(&input, &mut state)`. `state()` gives an `Rc<State>`: the
+  State of the run that started last, once it has ended, as a snapshot.md](../docs/rust-plan.md) has the
+  plan.
+- **A type of your own** is a type parameter of each primitive, with
+  `Payload` as its default, so a step for one type in a pipeline of another
+  is a compile error. TypeScript does the same with its type check.

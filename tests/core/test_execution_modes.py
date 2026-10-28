@@ -20,7 +20,7 @@ class _ValuePositive:
 
 
 class SubPipeline(Pipeline):
-    """A named pipeline type, so it can be nested (conformance/API.md, step identity)."""
+    """A named pipeline type, so it can be nested (conformance/API.md, step labels)."""
 
 
 # ── Helpers ──────────────────────────────────────────────────
@@ -123,7 +123,7 @@ class TestRunSync:
         pipe = Pipeline()
         pipe.add_filter(AddTenFilter())
         result = pipe.run(Payload({"value": 0}))
-        assert f"{__name__}.AddTenFilter" in pipe.state.executed
+        assert "AddTenFilter" in pipe.state.executed
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -184,7 +184,7 @@ class TestPipelineAsStep:
         outer.add_pipeline(inner)
         await outer.run_async(Payload({"value": 0}))
 
-        assert f"{__name__}.SubPipeline" in outer.state.executed
+        assert "SubPipeline" in outer.state.executed
 
     @pytest.mark.asyncio
     async def test_nested_pipeline_error_propagates(self):

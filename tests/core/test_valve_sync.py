@@ -132,7 +132,7 @@ class TestThroughSyncPipeline:
         pipeline = Pipeline()
         pipeline.add_valve(_Predicate8(), Append())
         pipeline.run(Payload({"s": "a"}))
-        assert f"{__name__}.Append" in pipeline.state.skipped
+        assert "Append" in pipeline.state.skipped
 
     def test_valve_is_no_longer_far_slower_than_a_plain_step(self):
         """The regression guard. Not a benchmark — an order-of-magnitude

@@ -13,7 +13,7 @@ from .filter import AsyncFilter, Filter
 from .tap import AsyncTap, Tap
 from .hook import Hook
 from .state import State
-from .step_identity import add_site, identify
+from .step_label import label_of
 from .async_step_in_sync_run import AsyncStepInSyncRun
 from .valve import Valve
 
@@ -24,6 +24,7 @@ TInput = TypeVar('TInput')
 TOutput = TypeVar('TOutput')
 
 
+# cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 class Pipeline(Generic[TInput, TOutput]):
     """
     Orchestrator — runs filters in sequence with hooks, taps, and state tracking.
@@ -37,11 +38,9 @@ class Pipeline(Generic[TInput, TOutput]):
     def __init__(self):
         self._preflight_key: Any = None
         self._preflight_cache: Any = None
-        self._steps: List[Tuple[str, Any, str]] = []  # (identity, step, type)
-        # Step identity (conformance/API.md): derived from the code, #n from
-        # the second use of the same filter; the add call's file:line as detail.
-        self._occurrences: Dict[str, int] = {}
-        self._step_sites: Dict[str, str] = {}
+        self._steps: List[Tuple[str, Any, str]] = []  # (label, step, type)
+        # A step's label is its class name, with #n from the second use.
+        self._uses: Dict[str, int] = {}
         self._hooks: List[Hook] = []
         self._state: State = State()
         self._observe_timing: bool = False
@@ -49,54 +48,61 @@ class Pipeline(Generic[TInput, TOutput]):
 
     @property
     def state(self) -> State:
-        """Access pipeline execution state after run()."""
+        """The State of the run that started last.
+
+        A State belongs to one run. A caller with more than one run of this
+        Pipeline at a time gives each run its own: ``run(payload, state)``.
+        """
         return self._state
 
     @property
-    def identities(self) -> List[str]:
-        """Each step's identity, in order."""
-        return [identity for identity, _step, _type in self._steps]
+    def labels(self) -> List[str]:
+        """Each step's label, in order."""
+        return [label for label, _step, _type in self._steps]
 
-    @property
-    def step_sites(self) -> Dict[str, str]:
-        """identity -> ``file:line`` of the ``add_*`` call that added it."""
-        return dict(self._step_sites)
-
-    def _identity(self, step: Any, kind: str, base: Optional[str] = None) -> str:
-        """Derive the step's identity; number it from its second use."""
-        base = base or identify(step, kind)
-        count = self._occurrences.get(base, 0) + 1
-        self._occurrences[base] = count
-        identity = base if count == 1 else f"{base}#{count}"
-        self._step_sites[identity] = add_site(3)  # the caller of add_*
+    def _label(self, step: Any) -> str:
+        """The step's class name, numbered from its second use in this pipeline."""
+        base = label_of(step)
+        count = self._uses.get(base, 0) + 1
+        self._uses[base] = count
         self._preflight_key = None  # shape changed
-        return identity
+        return base if count == 1 else f"{base}#{count}"
+
+    @staticmethod
+    def _require(step: Any, method: str, what: str) -> None:
+        """Refuse a step that does not have the method of its kind."""
+        if not callable(getattr(step, method, None)):
+            raise TypeError(f"{what} has {method}(payload). {step!r} does not.")
 
     def add_filter(self, filter: Union[Filter[TInput, TOutput], AsyncFilter[TInput, TOutput]]) -> None:
         """Add a Filter. A filter whose ``call`` is a coroutine needs ``run_async()``."""
         if isinstance(filter, Valve):
             raise TypeError("A Valve is added with add_valve(predicate, filter), not with add_filter.")
+        self._require(filter, "call", "A Filter")
         step_type = "async_filter" if self._is_async_method(filter, "call") else "filter"
-        self._steps.append((self._identity(filter, "filter"), filter, step_type))
+        self._steps.append((self._label(filter), filter, step_type))
 
     def add_valve(self, predicate: Any, filter: Union[Filter[TInput, TOutput], AsyncFilter[TInput, TOutput]]) -> None:
         """Add a Valve: ``filter`` runs only when ``predicate.test(payload)`` is true.
 
         The condition comes first, then the Filter that it controls. When the
         test is false the Payload passes through unchanged and the step is
-        recorded as skipped. The step is identified by its Filter.
+        recorded as skipped. The step has the label of its Filter.
         """
         if not callable(getattr(predicate, "test", None)) and callable(getattr(predicate, "call", None)) \
                 and callable(getattr(filter, "test", None)):
             raise TypeError("The arguments are in the wrong order: add_valve(predicate, filter). "
                             "The condition comes first, then the Filter.")
+        self._require(predicate, "test", "A Predicate")
+        self._require(filter, "call", "A Filter")
         valve = Valve(filter, predicate)
-        self._steps.append((self._identity(valve, "filter"), valve, "async_filter"))
+        self._steps.append((self._label(valve), valve, "valve"))
 
     def add_tap(self, tap: Union[Tap, AsyncTap]) -> None:
         """Add a Tap. A tap whose ``observe`` is a coroutine needs ``run_async()``."""
+        self._require(tap, "observe", "A Tap")
         step_type = "async_tap" if self._is_async_method(tap, "observe") else "tap"
-        self._steps.append((self._identity(tap, "tap"), tap, step_type))
+        self._steps.append((self._label(tap), tap, step_type))
 
     def use_hook(self, hook: Hook) -> None:
         """Attach a lifecycle hook. A hook with coroutine methods needs ``run_async()``."""
@@ -104,8 +110,10 @@ class Pipeline(Generic[TInput, TOutput]):
         self._hooks.append(hook)
 
     def add_pipeline(self, pipeline: 'Pipeline') -> None:
-        """Nest a named Pipeline type as a single step inside this Pipeline."""
-        self._steps.append((self._identity(pipeline, "pipeline"), pipeline, "pipeline"))
+        """Nest a Pipeline as a single step inside this Pipeline."""
+        if not isinstance(pipeline, Pipeline):
+            raise TypeError(f"add_pipeline takes a Pipeline. {pipeline!r} is not one.")
+        self._steps.append((self._label(pipeline), pipeline, "pipeline"))
 
     def observe(self, *, timing: bool = True, lineage: bool = False) -> None:
         """Enable observation features (timing, lineage tracking)."""
@@ -129,36 +137,49 @@ class Pipeline(Generic[TInput, TOutput]):
         """Whether the common case can skip hooks and instrumentation."""
         return not self._hooks and not self._observe_timing and not self._observe_lineage
 
-    async def _run_fast(self, initial_payload: Payload[TInput]) -> Payload[TOutput]:
+    async def _run_fast(self, initial_payload: Payload[TInput], state: State) -> Payload[TOutput]:
         """Hot path for simple pipelines: no hooks, no timing, no lineage."""
-        self._state = State()
         payload = initial_payload.copy()  # the caller's Payload is not changed
         for name, step, step_type in self._steps:
             if step_type == "tap":
-                self._observe(name, step, payload)
-                self._state.mark_executed(name)
+                self._observe(name, step, payload, state)
+                state.mark_executed(name)
                 continue
 
             if step_type == "async_tap":
-                await self._observe_async(name, step, payload)
-                self._state.mark_executed(name)
+                await self._observe_async(name, step, payload, state)
+                state.mark_executed(name)
                 continue
 
             if step_type == "pipeline":
                 payload = await step.run_async(payload)
-                self._state.mark_executed(name)
+                state.mark_executed(name)
                 continue
 
-            if step_type == "async_filter":
+            if step_type == "valve":
+                # The Pipeline asks the Predicate itself. A flag on the Valve
+                # would be shared by each run that is in progress.
+                if not step._predicate(payload):
+                    state.mark_skipped(name)
+                    continue
+                result = step._inner.call(payload)
+                payload = await result if inspect.isawaitable(result) else result
+            elif step_type == "async_filter":
                 payload = await step.call(payload)  # type: ignore[attr-defined]
             else:
                 payload = step.call(payload)  # type: ignore[attr-defined]
-            if hasattr(step, "_last_skipped") and step._last_skipped:
-                self._state.mark_skipped(name)
-            else:
-                self._state.mark_executed(name)
+            state.mark_executed(name)
 
         return payload  # type: ignore[return-value]
+
+    @staticmethod
+    def _stamp(payload: Any, label: str) -> None:
+        """Lineage: record that a step ran. Payload keeps the label. A type of
+        your own keeps it only if it has ``_stamp(label)``; for any other type,
+        lineage does nothing. The return value of ``_stamp`` is not used."""
+        stamp = getattr(payload, "_stamp", None)
+        if stamp is not None:
+            stamp(label)
 
     @staticmethod
     async def _invoke(fn, *args):
@@ -168,12 +189,19 @@ class Pipeline(Generic[TInput, TOutput]):
             result = await result
         return result
 
-    async def run_async(self, initial_payload: Payload[TInput]) -> Payload[TOutput]:
-        """Execute with async steps allowed (opt-in). ``run()`` is the default."""
-        if self._can_run_fast():
-            return await self._run_fast(initial_payload)
+    async def run_async(self, initial_payload: Payload[TInput], state: Optional[State] = None) -> Payload[TOutput]:
+        """Execute with async steps allowed (opt-in). ``run()`` is the default.
 
-        self._state = State()
+        The run writes into ``state`` when the caller gives one, and into a
+        new State when not. It is a local of this call, so two runs that are
+        in progress at the same time never write into the same State.
+        """
+        if state is None:
+            state = State()
+        self._state = state  # the State of the run that started last
+        if self._can_run_fast():
+            return await self._run_fast(initial_payload, state)
+
         payload = initial_payload.copy()  # the caller's Payload is not changed
         _step_name: Optional[str] = None
         _step_t0: Optional[float] = None
@@ -189,13 +217,13 @@ class Pipeline(Generic[TInput, TOutput]):
                 _failing = None
 
                 if step_type == "tap":
-                    self._observe(name, step, payload)
-                    self._state.mark_executed(name)
+                    self._observe(name, step, payload, state)
+                    state.mark_executed(name)
                     continue
 
                 if step_type == "async_tap":
-                    await self._observe_async(name, step, payload)
-                    self._state.mark_executed(name)
+                    await self._observe_async(name, step, payload, state)
+                    state.mark_executed(name)
                     continue
 
                 _step_t0 = time.monotonic()
@@ -206,30 +234,32 @@ class Pipeline(Generic[TInput, TOutput]):
 
                 if step_type == "pipeline":
                     payload = await step.run_async(payload)
-                    self._state.mark_executed(name)
+                    state.mark_executed(name)
+                elif step_type == "valve":
+                    if step._predicate(payload):
+                        result = step._inner.call(payload)
+                        payload = await result if inspect.isawaitable(result) else result
+                        state.mark_executed(name)
+                    else:
+                        state.mark_skipped(name)
                 else:
-                    # filter or valve
                     if step_type == "async_filter":
                         payload = await step.call(payload)  # type: ignore[attr-defined]
                     else:
                         payload = step.call(payload)  # type: ignore[attr-defined]
-
-                    if hasattr(step, '_last_skipped') and step._last_skipped:
-                        self._state.mark_skipped(name)
-                    else:
-                        self._state.mark_executed(name)
+                    state.mark_executed(name)
 
                 for hook in self._hooks:
                     await self._invoke(hook.after, name, payload)
 
                 if self._observe_timing:
-                    self._state.record_timing(name, time.monotonic() - _step_t0)
+                    state.record_timing(name, time.monotonic() - _step_t0)
                 if self._observe_lineage:
-                    payload = payload._stamp(name)
+                    self._stamp(payload, name)
 
         except Exception as e:
             if _step_t0 is not None and _step_name is not None and self._observe_timing:
-                self._state.record_timing(_step_name, time.monotonic() - _step_t0)
+                state.record_timing(_step_name, time.monotonic() - _step_t0)
             if _failing is not None:
                 # The failing step first, then the pipeline: on_error mirrors
                 # before/after, which fire at both levels.
@@ -244,7 +274,7 @@ class Pipeline(Generic[TInput, TOutput]):
 
         return payload  # type: ignore
 
-    def _observe(self, name: str, tap: Any, payload: Payload) -> None:
+    def _observe(self, name: str, tap: Any, payload: Payload, state: State) -> None:
         """Run a sync Tap on Plane B: its failure never halts Plane A.
 
         The ``Exception`` is recorded in ``state.errors`` under the Tap's
@@ -255,23 +285,26 @@ class Pipeline(Generic[TInput, TOutput]):
         try:
             tap.observe(payload)
         except Exception as error:
-            self._state.record_error(name, error)
+            state.record_error(name, error)
 
-    async def _observe_async(self, name: str, tap: Any, payload: Payload) -> None:
+    async def _observe_async(self, name: str, tap: Any, payload: Payload, state: State) -> None:
         """``_observe`` for a Tap whose ``observe`` may be a coroutine."""
         try:
             result = tap.observe(payload)
             if inspect.isawaitable(result):
                 await result
         except Exception as error:
-            self._state.record_error(name, error)
+            state.record_error(name, error)
 
     # ------------------------------------------------------------------
     # Sync execution: the default. Never starts an event loop.
     # ------------------------------------------------------------------
 
-    def run(self, initial_payload: Payload[TInput]) -> Payload[TOutput]:
+    def run(self, initial_payload: Payload[TInput], state: Optional[State] = None) -> Payload[TOutput]:
         """Execute synchronously (the default).
+
+        The run writes into ``state`` when the caller gives one, and into a
+        new State when not (see ``run_async``).
 
         Never starts an event loop: if the pipeline contains async work (an
         async filter, tap or hook) this raises ``AsyncStepInSyncRun``; use
@@ -284,7 +317,7 @@ class Pipeline(Generic[TInput, TOutput]):
                 f"cannot run async step '{offender}' inside run(). Use "
                 f"run_async() from async code, or replace it with a sync step."
             )
-        return self._run_sync(initial_payload)
+        return self._run_sync(initial_payload, state)
 
     def _preflight(self) -> Optional[str]:
         """The first async offender in this pipeline, or None. Cached.
@@ -315,7 +348,7 @@ class Pipeline(Generic[TInput, TOutput]):
         for name, step, step_type in self._steps:
             if step_type == "async_tap":
                 return name
-            if step_type == "async_filter" and not self._has_sync_path(step):
+            if step_type == "async_filter" or (step_type == "valve" and not self._has_sync_path(step)):
                 return name
             if step_type == "pipeline" and nested:
                 inner = step._first_async_offender()
@@ -326,9 +359,8 @@ class Pipeline(Generic[TInput, TOutput]):
     def _has_sync_path(self, step: Any) -> bool:
         """True for an async-declared step that can run with no event loop.
 
-        ``Valve.call`` is async because its inner filter *may* be, so every
-        Valve registers as ``async_filter``. A Valve over a sync inner offers
-        ``call_sync``, which never touches a loop. A Valve over an async (or
+        ``Valve.call`` is async because its inner filter *may* be. A Valve
+        over a sync inner can run with no loop. A Valve over an async (or
         nested Valve) inner is async work.
         """
         if not callable(getattr(step, "call_sync", None)):
@@ -336,8 +368,10 @@ class Pipeline(Generic[TInput, TOutput]):
         inner = getattr(step, "_inner", None)
         return inner is None or not self._is_async_method(inner, "call")
 
-    def _run_sync(self, initial_payload: Payload[TInput]) -> Payload[TOutput]:
-        self._state = State()
+    def _run_sync(self, initial_payload: Payload[TInput], state: Optional[State]) -> Payload[TOutput]:
+        if state is None:
+            state = State()
+        self._state = state  # the State of the run that started last
         payload = initial_payload.copy()  # the caller's Payload is not changed
 
         # Clock reads cost ~0.1 µs each; only take them when someone reads them.
@@ -358,8 +392,8 @@ class Pipeline(Generic[TInput, TOutput]):
                 _failing = None
 
                 if step_type == "tap":
-                    self._observe(name, step, payload)
-                    self._state.mark_executed(name)
+                    self._observe(name, step, payload, state)
+                    state.mark_executed(name)
                     continue
 
                 if timed:
@@ -370,27 +404,29 @@ class Pipeline(Generic[TInput, TOutput]):
                     hook.before(name, payload)
                 if step_type == "pipeline":
                     payload = step.run(payload)
-                    self._state.mark_executed(name)
+                    state.mark_executed(name)
+                elif step_type == "valve":
+                    # The Pipeline asks the Predicate itself: a flag on the
+                    # Valve would be shared by each run that is in progress.
+                    if step._predicate(payload):
+                        payload = step._sync_inner(payload)  # admitted by _has_sync_path
+                        state.mark_executed(name)
+                    else:
+                        state.mark_skipped(name)
                 else:
-                    if step_type == "async_filter":
-                        payload = step.call_sync(payload)  # admitted by _has_sync_path
-                    else:
-                        payload = step.call(payload)  # type: ignore[attr-defined]
-                    if getattr(step, "_last_skipped", False):
-                        self._state.mark_skipped(name)
-                    else:
-                        self._state.mark_executed(name)
+                    payload = step.call(payload)  # type: ignore[attr-defined]
+                    state.mark_executed(name)
                 for hook in hooks:
                     hook.after(name, payload)
 
                 if timed:
-                    self._state.record_timing(name, time.monotonic() - _step_t0)
+                    state.record_timing(name, time.monotonic() - _step_t0)
                 if self._observe_lineage:
-                    payload = payload._stamp(name)
+                    self._stamp(payload, name)
 
         except Exception as e:
             if timed and _step_t0 is not None and _step_name is not None:
-                self._state.record_timing(_step_name, time.monotonic() - _step_t0)
+                state.record_timing(_step_name, time.monotonic() - _step_t0)
             if _failing is not None:
                 # The failing step first, then the pipeline: on_error mirrors
                 # before/after, which fire at both levels.
