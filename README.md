@@ -28,7 +28,7 @@ If you know Unix, these are close to things you know.
 | Hook | A git hook: code that runs before and after a step |
 | State | `$?` and `PIPESTATUS` |
 
-This repository has five packages.
+This repository has six packages.
 
 | Package | Contents | Reference |
 |---|---|---|
@@ -37,6 +37,7 @@ This repository has five packages.
 | `codeupipe` for TypeScript | The eight primitives. No dependencies | [packages/codeupipe-ts/README.md](packages/codeupipe-ts/README.md) |
 | `codeupipe-lint` for TypeScript | A linter for pipeline code in TypeScript | [packages/codeupipe-lint-ts/README.md](packages/codeupipe-lint-ts/README.md) |
 | `codeupipe-compile` for TypeScript | Writes a pipeline as plain TypeScript with no import of codeupipe | [packages/codeupipe-compile-ts/README.md](packages/codeupipe-compile-ts/README.md) |
+| `codeupipe` for Rust | The primitives, 0.1.0. No dependencies. No compiler or linter yet | [packages/codeupipe-rs/README.md](packages/codeupipe-rs/README.md) |
 
 ## Install
 
@@ -85,6 +86,11 @@ The TypeScript packages are new. They are version `0.1.0`. A version below
 compatible. They are not on npm yet:
 [packages/codeupipe-ts/README.md](packages/codeupipe-ts/README.md) says how to
 install them from this repository.
+
+The Rust crate is new too, version `0.1.0` on the same terms. It is not on
+crates.io yet:
+[packages/codeupipe-rs/README.md](packages/codeupipe-rs/README.md) says how to
+use it from this repository.
 
 ## Example
 
@@ -141,7 +147,7 @@ class PricingPipeline(Pipeline):
         self.add_filter(DiscountFilter(0.1))
         # MarkBulkFilter runs only when the predicate is true.
         self.add_valve(AtLeastPredicate("qty", 10), MarkBulkFilter())
-        # A Tap failure is recorded and does not stop the run.
+        # A Tap only reads. If it fails, State records the error and the run goes on.
         self.add_tap(AuditTap())
 ```
 
@@ -187,7 +193,7 @@ An editable install needs pip 21.3 or later.
 | `python -m codeupipe_lint.anonymous_steps` | Runs the anonymous-step linter. Paths come from `cup.config.json` |
 | `python -m codeupipe_lint.invariants` | Runs the invariant linter. Paths come from `cup.config.json` |
 | `python -m codeupipe.compile examples.pricing.pricing_pipeline:PricingPipeline --out build/pricing` | Compiles the example to `build/pricing/src/steps/` |
-| `python conformance/bench.py --check` | Compares benchmark numbers with the recorded baseline. Fails outside 25% |
+| `python conformance/bench.py` | Measures every target on the benchmark scenarios. It reports numbers and judges nothing |
 | `python -m scorecard.differential` | Compares the compiled code with the dynamic run on random pipelines |
 
 ## Layout
@@ -199,6 +205,7 @@ An editable install needs pip 21.3 or later.
 | `packages/codeupipe-ts/` | The TypeScript runtime, with its tests and its example |
 | `packages/codeupipe-lint-ts/` | The TypeScript linter, with its tests |
 | `packages/codeupipe-compile-ts/` | The TypeScript compiler, with its tests |
+| `packages/codeupipe-rs/` | The Rust runtime, with its tests and its example |
 | `conformance/` | The contract ([API.md](conformance/API.md)), the cases, the runners, the benchmark |
 | `tests/` | The tests for the two Python packages |
 | `examples/pricing/` | The example, with its test in `tests/examples/` |
@@ -207,14 +214,17 @@ An editable install needs pip 21.3 or later.
 
 The root `pyproject.toml` is not a package. It holds the test settings. The
 root `package.json` is not a package: it makes the three TypeScript packages
-one npm workspace.
+one npm workspace. The root `Cargo.toml` is not a package either: it makes
+the Rust runtime and its conformance runner one Cargo workspace.
 
 ## Other languages
 
 The contract and the conformance cases do not depend on a language. Python
 is the first runtime and TypeScript is the second
 ([packages/codeupipe-ts/](packages/codeupipe-ts/)), with its own linter and
-its own compiler. A runtime in another language must implement
+its own compiler. Rust is the third
+([packages/codeupipe-rs/](packages/codeupipe-rs/)); its plan is
+[docs/rust-plan.md](docs/rust-plan.md). A runtime in another language must implement
 the contract and add a conformance runner.
 
 ## License

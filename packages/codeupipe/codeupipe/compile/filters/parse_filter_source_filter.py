@@ -151,7 +151,7 @@ class ParseFilterSourceFilter:
 
     @staticmethod
     def _parse_predicate(step, predicate) -> Tuple[ast.FunctionDef, tuple]:
-        """Recover a Valve predicate object's ``test`` as a ``def`` taking ``payload``.
+        """Recover a Valve predicate object's ``test`` as a ``def`` of its Payload.
 
         Predicates are objects (conformance/API.md, "Valve"): the ``test``
         method is lowered like a filter's ``call``, the instance's literal
@@ -175,19 +175,10 @@ class ParseFilterSourceFilter:
         if not isinstance(fn, ast.FunctionDef) or len(fn.args.args) != 2:
             raise refuse("A Valve predicate's test must be a plain `def test(self, payload)`.")
         fn, config = ParseFilterSourceFilter._bind_instance_config(fn, predicate, step, prefix="_when_")
-        fn.args.args = fn.args.args[1:]  # self is gone: its reads are now constants
-        return ParseFilterSourceFilter._rename_parameter(fn, fn.args.args[0].arg, "payload"), config
-
-    @staticmethod
-    def _rename_parameter(fn: ast.FunctionDef, old: str, new: str) -> ast.FunctionDef:
-        """Rename the predicate's parameter so RewritePayloadOps recognises it."""
-        if old == new:
-            return fn
-        fn.args.args[0].arg = new
-        for node in ast.walk(fn):
-            if isinstance(node, ast.Name) and node.id == old:
-                node.id = new
-        return fn
+        # self is gone: its reads are now constants. The parameter keeps the name
+        # that the author gave it; RewritePayloadOps follows that name.
+        fn.args.args = fn.args.args[1:]
+        return fn, config
 
     @staticmethod
     def _detect_dependencies(fn: ast.FunctionDef, obj, step_name: str) -> Tuple[tuple, tuple]:

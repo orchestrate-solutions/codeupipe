@@ -9,3 +9,5 @@ conformance/results/
 .venv-*/
 scorecard/results/
 node_modules/
+
+/target/

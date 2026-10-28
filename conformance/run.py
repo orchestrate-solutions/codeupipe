@@ -3,9 +3,11 @@
     python conformance/run.py                 # all targets
     python conformance/run.py python:run python:static-inline
     python conformance/run.py typescript:run
+    python conformance/run.py rust:run
 
 With no arguments, the TypeScript target runs only when the machine has
-Node 22.18 or later. A target that is named and cannot run is a failure.
+Node 22.18 or later, and the Rust target only when it has cargo. A target
+that is named and cannot run is a failure.
 
 A runner executes cases and reports what happened. Only this file decides
 pass or fail, so every target is held to exactly the same comparison.
@@ -30,6 +32,7 @@ sys.path.insert(0, str(HERE))
 
 from codeupipe import Payload  # noqa: E402
 
+from judging.cargo_probe import CargoProbe  # noqa: E402
 from judging.default_targets_filter import DefaultTargetsFilter  # noqa: E402
 from judging.judge_pipeline import JudgePipeline  # noqa: E402
 from judging.judge_results_filter import JudgeResultsFilter  # noqa: E402
@@ -57,6 +60,16 @@ def _typescript(target):
     }
 
 
+def _rust(target):
+    # Built offline from the repository: the runner has no dependency to download.
+    return {
+        "cmd": ["cargo", "run", "--quiet", "--release", "--offline",
+                "--manifest-path", str(HERE / "runners/rust/Cargo.toml"), "--", target],
+        "env": {},
+        "cwd": REPO,
+    }
+
+
 TARGETS = {
     "python:run": _python("run"),
     "python:run_async": _python("run_async"),
@@ -65,6 +78,7 @@ TARGETS = {
     "python:static-observe": _python("static-observe"),
     "typescript:run": _typescript("run"),
     "typescript:static": _typescript("static"),
+    "rust:run": _rust("run"),
 }
 
 # The static target runs the compile package. Its dependencies must be
@@ -84,10 +98,16 @@ def _node_runs_typescript():
     return NodeProbe().runs_typescript()
 
 
+def _has_cargo():
+    """Whether there is a cargo to build and run the Rust runner."""
+    return CargoProbe().present()
+
+
 def default_targets():
-    """Every target that this machine can run. TypeScript needs Node, and the
-    static TypeScript target needs its package to be installed."""
-    return DefaultTargetsFilter(lambda: _node_runs_typescript()).choose(TARGETS, _TYPESCRIPT_NEEDS)
+    """Every target that this machine can run. TypeScript needs Node, the
+    static TypeScript target needs its package to be installed, and Rust
+    needs cargo."""
+    return DefaultTargetsFilter(lambda: _node_runs_typescript(), lambda: _has_cargo()).choose(TARGETS, _TYPESCRIPT_NEEDS)
 
 
 def load_cases():
@@ -109,7 +129,7 @@ def judge(case, result):
 
 
 def main(argv):
-    pipeline = JudgePipeline(ProcessLauncher(), lambda: _node_runs_typescript())
+    pipeline = JudgePipeline(ProcessLauncher(), lambda: _node_runs_typescript(), lambda: _has_cargo())
     out = pipeline.run(Payload({"cases_dir": CASES, "results_dir": RESULTS, "targets": TARGETS,
                                 "needs": _TYPESCRIPT_NEEDS, "names": list(argv)}))
     print(out.get("markdown"))

@@ -1,0 +1,16 @@
+# The Rust conformance runner: runner <target> < cases.json > results.json.
+# It has no dependency to download, so run.py builds it with --offline.
+[package]
+name = "cup-conformance-rust"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "Apache-2.0"
+publish = false
+
+[[bin]]
+name = "runner"
+path = "src/main.rs"
+
+[dependencies]
+codeupipe = { path = "../../../packages/codeupipe-rs" }

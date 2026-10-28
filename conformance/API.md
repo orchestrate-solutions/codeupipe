@@ -14,10 +14,10 @@ parameters, their defaults, and how they fail.
 | State | records what happened |
 | Pipeline | runs the steps in order |
 
-Python and TypeScript implement it. Each runtime has the same contract,
+Python, TypeScript and Rust implement it. Each runtime has the same contract,
 with identifier casing in the style of its language, and the same
 conformance cases judge it. The tables below show the Python names. The
-TypeScript names and differences are in "Runtimes".
+TypeScript and Rust names and differences are in "Runtimes".
 
 ## Principles
 
@@ -70,6 +70,24 @@ Rules:
   (`CUP-I004`); the runtime does not check.
 - A Tap, a Hook or a Predicate that wants its own changed version, or that
   keeps the Payload for later, takes a `copy()`.
+
+### A type of your own
+
+The Payload is the default, and the form that this contract, the
+conformance cases and the compilers use: a map that any developer can read,
+which shows that anything can go there. A pipeline can carry a type of your
+own instead, such as the class or struct that your steps would use anyway.
+Its Filters, Predicates, Taps and Hooks then take that type.
+
+- **The Pipeline asks one thing of it: `copy()`**, for the copy that `run`
+  works on. Every rule above stays the same.
+- **Lineage is kept only by a type that has `_stamp(label)`** (`stamp` in
+  Rust). For any other type, `observe(lineage=True)` does nothing: the run
+  goes on, and `state.executed` still lists the steps.
+- **The compilers read Payload operations only.** A step that uses a type of
+  your own stays dynamic; the TypeScript compiler refuses it.
+
+How each runtime spells it is in "Runtimes".
 
 ## Filter
 
@@ -217,15 +235,16 @@ map and fails the comparison.
 
 ## Runtimes
 
-| | Python | TypeScript |
-|---|---|---|
-| Package | `packages/codeupipe` | `packages/codeupipe-ts` |
-| Names | snake_case | camelCase: `addFilter`, `addValve`, `toDict`, `withTrace`, `traceId`, `onError` |
-| Run | `run` is sync. `run_async` is opt-in | One `run`. It returns a Promise. A step can be sync or async |
-| Absent | `None` | `null` |
-| Label of a step | `type(step).__name__` | `step.constructor.name` |
-| Compile | `codeupipe.compile` | `packages/codeupipe-compile-ts` |
-| Linter | `packages/codeupipe-lint` | `packages/codeupipe-lint-ts` |
+| | Python | TypeScript | Rust |
+|---|---|---|---|
+| Package | `packages/codeupipe` | `packages/codeupipe-ts` | `packages/codeupipe-rs` (crate `codeupipe`) |
+| Names | snake_case | camelCase: `addFilter`, `addValve`, `toDict`, `withTrace`, `traceId`, `onError` | snake_case, as Python |
+| Run | `run` is sync. `run_async` is opt-in | One `run`. It returns a Promise. A step can be sync or async | `run` is sync, and `run_with_state` for the caller's State. No async run yet |
+| Absent | `None` | `null` | `None` from `get`; `Value::Null` is a JSON null |
+| Label of a step | `type(step).__name__` | `step.constructor.name` | The name of the step's type, from `std::any::type_name` |
+| Compile | `codeupipe.compile` | `packages/codeupipe-compile-ts` | None yet |
+| Linter | `packages/codeupipe-lint` | `packages/codeupipe-lint-ts` | None yet. The compiler refuses several of the shapes that the linters find |
+| A type of your own | Any object with `copy()` | `class Order implements PipelineData<Order>`, then `new Pipeline<Order>()`, `Filter<Order>` | `impl PipelineData for Order {}`, then `Pipeline<Order>`, `Filter<Order>` |
 
 Notes on TypeScript:
 
@@ -240,3 +259,23 @@ Notes on TypeScript:
 - **State and concurrent runs.** Two runs of one pipeline at the same time
   each write to their own State. `state` is the State of the run that
   started last.
+
+Notes on Rust:
+
+- **Refused when added, at compile time.** A closure is not a step, the
+  arguments of `add_valve` are in one order only, and a Tap, a Hook or a
+  Predicate gets `&Payload`, so it cannot write. Each is a type error.
+- **A Filter changes the Payload in place.** `call(&self, &mut Payload)`
+  returns `Result<(), StepError>`. A failure is an `Err`; a panic is not a
+  failure of the step and is not caught.
+- **Values.** A value is a `Value`: null, a bool, a number (`f64`), a string,
+  a list or a map that keeps the order of its keys, as JSON has.
+- **A State for each run.** `run(&self, …)` takes the pipeline by shared
+  reference, so a step can hold the pipeline that it is in (an `Rc`) and run
+  it again. The run with the caller's State is
+  `run_with_state(&input, &mut state)`. `state()` gives an `Rc<State>`: the
+  State of the run that started last, once it has ended, as a snapshot.md](../docs/rust-plan.md) has the
+  plan.
+- **A type of your own** is a type parameter of each primitive, with
+  `Payload` as its default, so a step for one type in a pipeline of another
+  is a compile error. TypeScript does the same with its type check.

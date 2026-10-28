@@ -9,6 +9,7 @@ export type { Filter } from "./filter.ts";
 export { Hook } from "./hook.ts";
 export { Payload } from "./payload.ts";
 export { Pipeline } from "./pipeline.ts";
+export type { PipelineData } from "./pipeline-data.ts";
 export type { Predicate } from "./predicate.ts";
 export { State } from "./state.ts";
 export type { Tap } from "./tap.ts";

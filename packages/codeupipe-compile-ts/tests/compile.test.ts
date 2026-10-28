@@ -31,9 +31,12 @@ test("the compiled pricing example gives the same output as the pipeline", async
 });
 
 test("the compiled code passes a strict type check", async () => {
-  const file = join(project({}), "pricing.ts");
+  // Every JavaScript host has console, so a Tap may log. Nothing else of a
+  // browser or of Node is given.
+  const dir = project({ "host.d.ts": "declare const console: { log(...data: unknown[]): void };\n" });
+  const file = join(dir, "pricing.ts");
   await compile(PRICING, "PricingPipeline", { outFile: file });
-  const program = ts.createProgram([file], {
+  const program = ts.createProgram([file, join(dir, "host.d.ts")], {
     strict: true, noEmit: true, target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.NodeNext,
     moduleResolution: ts.ModuleResolutionKind.NodeNext, lib: ["lib.es2022.d.ts"], types: [],
   });

@@ -1,11 +1,11 @@
 import type { Payload, Tap } from "../../src/index.ts";
 
 /**
- * A Tap: reads the Payload and returns nothing. This one fails every time,
- * to show that a Tap failure is recorded and never stops the run.
+ * A Tap: reads the Payload and returns nothing. If it fails, State records
+ * the error and the run goes on.
  */
 export class AuditTap implements Tap {
-  observe(_payload: Payload): void {
-    throw new Error("audit sink is down");
+  observe(payload: Payload): void {
+    console.log("audit:", payload.toDict());
   }
 }

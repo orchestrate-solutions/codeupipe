@@ -12,7 +12,7 @@ from dataclasses import replace
 
 from codeupipe.core import Payload
 
-from .rewrite_payload_ops_filter import _PayloadToDictTransformer
+from .rewrite_payload_ops_filter import RewritePayloadOpsFilter, _PayloadToDictTransformer
 
 
 __all__ = ["LowerControlFlowFilter"]
@@ -29,7 +29,8 @@ class LowerControlFlowFilter:
             predicate_ast = step.predicate_ast
             if predicate_ast is not None:
                 name = getattr(predicate_ast, "name", "predicate")
-                transformer = _PayloadToDictTransformer(step.name, name, step.ident)
+                transformer = _PayloadToDictTransformer(
+                    step.name, name, step.ident, RewritePayloadOpsFilter.payload_parameter(predicate_ast, after_self=False))
                 predicate_ast = ast.fix_missing_locations(
                     transformer.visit(ast.parse(ast.unparse(predicate_ast)).body[0])
                 )

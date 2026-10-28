@@ -99,7 +99,7 @@ export class PricingPipeline extends Pipeline {
     this.addFilter(new DiscountFilter(0.1));
     // MarkBulkFilter runs only when the predicate is true.
     this.addValve(new AtLeastPredicate("qty", 10), new MarkBulkFilter());
-    // A Tap failure is recorded and does not stop the run.
+    // A Tap only reads. If it fails, State records the error and the run goes on.
     this.addTap(new AuditTap());
   }
 }
@@ -114,6 +114,36 @@ result.toDict();
 ```
 
 In this repository the example imports from `../../src/index.ts`.
+
+## A type of your own
+
+`Payload` is the default: a map that any developer can read. A class of your
+own can take its place. It needs `copy()`, and the steps of that pipeline
+take it:
+
+```ts
+class Order implements PipelineData<Order> {
+  price: number;
+  constructor(price: number) { this.price = price; }
+  copy(): Order { return new Order(this.price); }
+}
+
+class DiscountFilter implements Filter<Order> {
+  call(order: Order): Order {
+    order.price = Math.round(order.price * 90) / 100;
+    return order;
+  }
+}
+
+const pipeline = new Pipeline<Order>();
+pipeline.addFilter(new DiscountFilter());
+```
+
+A step for another type does not type-check. Lineage is kept only if the
+class has `_stamp(label)`; otherwise `observe({ lineage: true })` does
+nothing for it. The compiler reads Payload operations only, so it refuses a
+step that uses `Order`. See "A type of your own" in
+[conformance/API.md](../../conformance/API.md).
 
 ## Names
 
