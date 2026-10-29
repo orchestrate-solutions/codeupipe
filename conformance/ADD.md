@@ -146,8 +146,14 @@ The test imports the component the way that a user's test would:
 ### Rust and Go: the package
 
 - **Rust.** A new file in `src` is a module only when `lib.rs` (or
-  `main.rs`) declares it. The command does not edit another file. It writes
-  the line to add on stderr: `add to src/lib.rs: pub mod discount_filter;`.
+  `main.rs`) declares it. The command does not edit or make another file. It
+  writes the line to add on stderr: `add to src/lib.rs: pub mod discount_filter;`.
+  For a component in a directory under `src`, it writes one line for each
+  module that must declare the next, in order:
+  `add to src/lib.rs: pub mod pricing;`, then
+  `add to src/pricing.rs: pub mod discount_filter;`. It leaves out a line that
+  the file has already. The user (or the judge) adds each line, and makes a
+  file that is not there.
 - **Go.** The package of the new files is the package of the other `.go`
   files in `<dir>`. With none, it is the name of the directory, in small
   letters, with each character that a Go name cannot have removed.
