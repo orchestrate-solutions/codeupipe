@@ -13,3 +13,16 @@ node_modules/
 /target/
 /packages/codeupipe-lint-rs/target/
 /packages/codeupipe-compile-rs/target/
+/.probe/
+/.probe2/
+/packages/codeupipe-add-go/.build/
+/packages/codeupipe-add-go/.t/
+/packages/codeupipe-add-go/cup-add
+/packages/codeupipe-add-go/run-sh/
+/packages/codeupipe-add-go/codeupipe-add/src/
+/packages/codeupipe-add-go/codeupipe-add/src.stray/
+/packages/codeupipe-add-go/codeupipe-add/cmd.stray/
+/packages/codeupipe-add-go/codeupipe-add/*.stray.go.txt
+/packages/codeupipe-add-go/codeupipe-add/*.stray2.go.txt
+/packages/codeupipe-add-go/codeupipe-add/*.gen1.go.txt
+/.t2/

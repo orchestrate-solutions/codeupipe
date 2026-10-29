@@ -1,0 +1,15 @@
+{
+ "lang": "go",
+ "cmd": ["sh", "-c", "go build -o {repo}/packages/codeupipe-add-go/.build/cup-add github.com/orchestrate-solutions/codeupipe/packages/codeupipe-add-go/codeupipe-add && exec {repo}/packages/codeupipe-add-go/.build/cup-add \"$@\"", "cup-add"],
+ "env": {"GOFLAGS": "-mod=mod", "GOPROXY": "off", "GOWORK": "off"},
+ "setup": {
+  "go.mod": "module cupadd\n\ngo 1.22\n\nrequire github.com/orchestrate-solutions/codeupipe/packages/codeupipe-add-go v0.0.0\n\nreplace github.com/orchestrate-solutions/codeupipe/packages/codeupipe-add-go => {repo}/packages/codeupipe-add-go\n\nreplace github.com/orchestrate-solutions/codeupipe/packages/codeupipe-go => {repo}/packages/codeupipe-go\n"
+ },
+ "lint": [
+  {"cmd": ["gofmt", "-l", "{component}"], "env": {}, "quiet": true},
+  {"cmd": ["go", "vet", "./..."],
+   "env": {"GOFLAGS": "-mod=mod", "GOPROXY": "off", "GOWORK": "off"}}
+ ],
+ "test": {"cmd": ["go", "test", "-count=1", "./..."],
+          "env": {"GOFLAGS": "-mod=mod", "GOPROXY": "off", "GOWORK": "off"}}
+}

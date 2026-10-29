@@ -1,0 +1,3 @@
+// go.sum is empty on purpose: the command has no dependency to download.
+// The codeupipe Go runtime comes from this repository, through the replace
+// in go.mod, and the judge runs the build with GOPROXY=off.
