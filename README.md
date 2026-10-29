@@ -37,8 +37,9 @@ This repository has seven packages.
 | `codeupipe` for TypeScript | The eight primitives. No dependencies | [packages/codeupipe-ts/README.md](packages/codeupipe-ts/README.md) |
 | `codeupipe-lint` for TypeScript | A linter for pipeline code in TypeScript | [packages/codeupipe-lint-ts/README.md](packages/codeupipe-lint-ts/README.md) |
 | `codeupipe-compile` for TypeScript | Writes a pipeline as plain TypeScript with no import of codeupipe | [packages/codeupipe-compile-ts/README.md](packages/codeupipe-compile-ts/README.md) |
-| `codeupipe` for Rust | The primitives, 0.1.0. No dependencies. No compiler yet | [packages/codeupipe-rs/README.md](packages/codeupipe-rs/README.md) |
+| `codeupipe` for Rust | The primitives, 0.1.0. No dependencies | [packages/codeupipe-rs/README.md](packages/codeupipe-rs/README.md) |
 | `codeupipe-lint` for Rust | A linter for pipeline code in Rust, for the rules that the compiler does not check | [packages/codeupipe-lint-rs/README.md](packages/codeupipe-lint-rs/README.md) |
+| `codeupipe-compile` for Rust | Writes a pipeline as plain Rust: a struct and functions, with no codeupipe | [packages/codeupipe-compile-rs/README.md](packages/codeupipe-compile-rs/README.md) |
 
 ## Install
 
@@ -208,6 +209,7 @@ An editable install needs pip 21.3 or later.
 | `packages/codeupipe-compile-ts/` | The TypeScript compiler, with its tests |
 | `packages/codeupipe-rs/` | The Rust runtime, with its tests and its examples |
 | `packages/codeupipe-lint-rs/` | The Rust linter, with its tests. A Cargo workspace of its own |
+| `packages/codeupipe-compile-rs/` | The Rust compiler, with its tests. A Cargo workspace of its own |
 | `conformance/` | The contract ([API.md](conformance/API.md)), the cases, the runners, the benchmark |
 | `tests/` | The tests for the two Python packages |
 | `examples/pricing/` | The example, with its test in `tests/examples/` |
