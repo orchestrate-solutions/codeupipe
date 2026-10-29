@@ -1,0 +1,24 @@
+[package]
+name = "codeupipe-add"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "codeupipe add: makes the files of a component (conformance/ADD.md)."
+license = "Apache-2.0"
+repository = "https://github.com/orchestrate-solutions/codeupipe"
+readme = "README.md"
+keywords = ["pipeline", "filter", "scaffold", "codeupipe"]
+# Not on crates.io yet. A version below 1.0 is not stable.
+publish = false
+
+[[bin]]
+name = "codeupipe-add"
+path = "src/main.rs"
+
+[dependencies]
+codeupipe = { path = "../codeupipe-rs" }
+
+# A workspace of its own, as the linter and the compiler have theirs. The
+# command has no dependency to download beyond the runtime, so it can build
+# with --offline.
+[workspace]
