@@ -53,6 +53,22 @@ class {type_name}(Pipeline):
 ''',
 }
 
+# A pipeline of a layout, with its steps (conformance/ADD.md, "Phase 2"): {imports} and {calls} are lines.
+PIPELINE_STEPS = '''"""{type_name}: {description}"""
+
+from codeupipe import Pipeline
+
+{imports}
+
+
+class {type_name}(Pipeline):
+    """A Pipeline: its steps come from the layout."""
+
+    def __init__(self):
+        super().__init__()
+{calls}
+'''
+
 TEST = '''"""The acceptance case of {type_name}."""
 
 from {module} import {type_name}

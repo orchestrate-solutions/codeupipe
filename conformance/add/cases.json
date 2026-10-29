@@ -552,5 +552,23 @@
    },
    "message_contains": "name"
   }
+ },
+ {
+  "id": "add/an-option-is-not-read-from-its-first-letters",
+  "args": [
+   "filter",
+   "Discount",
+   "--desc",
+   "Takes a rate off the price."
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   }
+  }
  }
 ]

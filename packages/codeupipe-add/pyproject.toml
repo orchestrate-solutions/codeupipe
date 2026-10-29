@@ -21,6 +21,10 @@ classifiers = [
 ]
 dependencies = ["codeupipe==2.0.0b1"]
 
+[project.optional-dependencies]
+# Only `--layout` with a YAML file reads YAML (conformance/ADD.md, decision 3).
+layout = ["PyYAML>=6"]
+
 [project.scripts]
 codeupipe-add = "codeupipe_add.__main__:main"
 

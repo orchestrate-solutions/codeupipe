@@ -243,20 +243,22 @@ The judge has tests of its own, with a fake command:
 
 | Target | Command | State |
 |---|---|---|
-| `python:add` | `python -m codeupipe_add` ([packages/codeupipe-add/](../packages/codeupipe-add/)) | Passes the 22 cases |
-| `typescript:add` | `node packages/codeupipe-add-ts/src/cli.ts` ([packages/codeupipe-add-ts/](../packages/codeupipe-add-ts/)) | Passes the 22 cases |
-| `rust:add` | `cargo run` in [packages/codeupipe-add-rs/](../packages/codeupipe-add-rs/) | Passes the 22 cases |
-| `go:add` | `go build` of [packages/codeupipe-add-go/](../packages/codeupipe-add-go/) | Passes the 22 cases |
+| `python:add` | `python -m codeupipe_add` ([packages/codeupipe-add/](../packages/codeupipe-add/)) | Passes the 23 cases |
+| `typescript:add` | `node packages/codeupipe-add-ts/src/cli.ts` ([packages/codeupipe-add-ts/](../packages/codeupipe-add-ts/)) | Passes the 23 cases |
+| `rust:add` | `cargo run` in [packages/codeupipe-add-rs/](../packages/codeupipe-add-rs/) | Passes the 23 cases |
+| `go:add` | `go build` of [packages/codeupipe-add-go/](../packages/codeupipe-add-go/) | Passes the 23 cases |
 
 ## Phase 2: a layout
 
-Phase 2 is not in the cases yet. This is the form that it will have.
+Phase 2 is in Python first ([packages/codeupipe-add/](../packages/codeupipe-add/)),
+with unit tests. It is not in the cases yet; the cases come when a second
+runtime starts phase 2.
 
 ```
 codeupipe add --layout cup.layout.yaml
 ```
 
-The layout file names the language, the directories, the components, and the
+The layout file names the language, the directory, the components, and the
 steps of each pipeline:
 
 ```yaml
@@ -272,27 +274,110 @@ components:
     name: MarkBulk
   - kind: tap
     name: Audit
+  - kind: hook
+    name: PrintSteps
   - kind: pipeline
     name: Pricing
     steps:
       - Discount
       - valve: [AtLeast, MarkBulk]
       - Audit
+    hooks:
+      - PrintSteps
 ```
 
-- Each component is made as in phase 1, with the same names, files and
-  tests.
-- **The steps of a pipeline** become its `add_filter`, `add_valve`,
-  `add_tap` and `add_pipeline` calls, in order. A name in `steps` is a
-  component of the file; its kind gives the call. `valve: [Predicate, Filter]`
-  gives `add_valve`. A pipeline in `steps` is nested with `add_pipeline`.
-- **A name in `steps` that is not a component of the file is refused** (exit
-  2), as is a `valve` whose first name is not a Predicate or whose second
-  name is not a Filter.
-- **A file that exists is kept**, and the command says so. So a layout can
-  grow: add a component to the file and run the command again. The pipeline
-  file is not written again either; a change of steps in an existing
-  pipeline is the user's work.
+### The keys
+
+| Key | Meaning |
+|---|---|
+| `lang` | Required. The language of the command that reads the file. The Python command refuses a layout for `go` |
+| `root` | The directory of the component files, as `dir` in phase 1. The default is that of phase 1 |
+| `components` | Required. A list with one component or more, made in the order of the list |
+| `kind`, `name`, `description` | As in phase 1. `kind` and `name` are required |
+| `steps` | Only for a pipeline. Each step is a name, or `valve: [Predicate, Filter]` |
+| `hooks` | Only for a pipeline. Names of hooks |
+
+A key that is not in this table is refused, so that a typing error (`step:`)
+does not go by with no message.
+
+### The steps
+
+- **A name in `steps` or `hooks` is a component of the file**: its `name`
+  (`Discount`) or its type name (`DiscountFilter`).
+- **The kind of the step gives the call**, in order: a filter gives
+  `add_filter`, a tap `add_tap`, a pipeline `add_pipeline` (a nested
+  pipeline), `valve: [Predicate, Filter]` gives `add_valve`. A name in
+  `hooks` gives `use_hook`.
+- **Each step is made with no arguments**, as each component of phase 1 is:
+  `self.add_filter(DiscountFilter())`.
+- **The pipeline file imports each step** by its module path, as the test
+  does in phase 1: `from src.pricing.discount_filter import DiscountFilter`.
+
+In Python, the layout above gives this pipeline file:
+
+```python
+"""PricingPipeline: TODO: say what PricingPipeline does."""
+
+from codeupipe import Pipeline
+
+from src.pricing.at_least_predicate import AtLeastPredicate
+from src.pricing.audit_tap import AuditTap
+from src.pricing.discount_filter import DiscountFilter
+from src.pricing.mark_bulk_filter import MarkBulkFilter
+from src.pricing.print_steps_hook import PrintStepsHook
+
+
+class PricingPipeline(Pipeline):
+    """A Pipeline: its steps come from the layout."""
+
+    def __init__(self):
+        super().__init__()
+        self.add_filter(DiscountFilter())
+        self.add_valve(AtLeastPredicate(), MarkBulkFilter())
+        self.add_tap(AuditTap())
+        self.use_hook(PrintStepsHook())
+```
+
+The test of each component, the pipeline too, is the test of phase 1: it
+fails with `Write the acceptance case for <TypeName>.`
+
+### Files that exist
+
+- **A file that exists is kept**, and the command says so on stderr:
+  `src/pricing/discount_filter.py exists, kept`. So a layout can grow: add a
+  component to the file and run the command again.
+- **Each file is kept or written by itself.** If the component file exists
+  and its test does not, the test is written.
+- **A pipeline file that exists is not written again.** A change of the
+  steps of an existing pipeline is the user's work.
+
+The exit code is 0 when the command keeps a file: the layout is done.
+
+### Refused (exit 2, nothing written)
+
+The command checks the whole layout before it writes a file. It refuses:
+
+- a file that it cannot read, or that is not a YAML (or JSON) mapping;
+- a layout with no `lang`, or for another language;
+- a key that is not in the table, a missing `kind` or `name`, or an empty
+  `components`;
+- a kind or a name that phase 1 refuses;
+- two components with the same type name;
+- `steps` or `hooks` on a component that is not a pipeline;
+- a name in `steps` or `hooks` that is not a component of the file;
+- a predicate or a hook as a step (a predicate goes in a `valve`, a hook in
+  `hooks`), a `valve` whose first name is not a predicate or whose second
+  name is not a filter, a name in `hooks` that is not a hook;
+- a pipeline that has itself as a step, directly or through a nested
+  pipeline;
+- `--layout` with a kind, a name, a dir or `--description`.
+
+### The YAML reader
+
+A layout in JSON is read with the standard library. A layout in YAML needs a
+YAML reader (decision 3): in Python, `pip install codeupipe-add[layout]`
+(PyYAML). With no reader, a YAML layout is refused with exit 2, and the
+message says what to install.
 
 An ASCII tree (the output of `tree`) can come later as a second form of the
 same layout. It has no place for the steps of a pipeline, so YAML is the

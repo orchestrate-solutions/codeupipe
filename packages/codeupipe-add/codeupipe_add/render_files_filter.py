@@ -2,13 +2,15 @@
 
 from codeupipe import Payload
 
-from .templates import COMPONENTS, TEST
+from .templates import COMPONENTS, PIPELINE_STEPS, TEST
 
 
 class RenderFilesFilter:
     """Filter (sync).
 
-    Input keys: ``kind``, ``type_name``, ``snake``, ``module``, ``description``.
+    Input keys: ``kind``, ``type_name``, ``snake``, ``module``, ``description``;
+    for a pipeline of a layout, also ``calls`` and ``imports``
+    (ResolveStepsFilter).
     Output keys: ``component_text``, ``test_text``. With no description, the
     header says ``TODO: say what <type_name> does.``
     """
@@ -20,5 +22,12 @@ class RenderFilesFilter:
         description = description.replace("\\", "\\\\").replace('"""', '\\"\\"\\"')
         values = {"type_name": type_name, "description": description,
                   "module": payload.get("module"), "snake": payload.get("snake")}
-        return (payload.insert("component_text", COMPONENTS[payload.get("kind")].format(**values))
-                .insert("test_text", TEST.format(**values)))
+        calls = payload.get("calls") or []
+        if calls:
+            values["imports"] = "\n".join("from %s import %s" % pair for pair in payload.get("imports"))
+            values["calls"] = "\n".join("        self.%s(%s)" % (method, ", ".join(name + "()" for name in names))
+                                        for method, names in calls)
+            component = PIPELINE_STEPS.format(**values)
+        else:
+            component = COMPONENTS[payload.get("kind")].format(**values)
+        return payload.insert("component_text", component).insert("test_text", TEST.format(**values))
