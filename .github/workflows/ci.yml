@@ -215,7 +215,7 @@ jobs:
       - name: Build the wheels
         run: |
           python -m pip install --upgrade pip
-          python -m pip wheel --no-deps -w dist packages/codeupipe packages/codeupipe-lint
+          python -m pip wheel --no-deps -w dist packages/codeupipe packages/codeupipe-lint packages/codeupipe-add
       - name: Install the wheels in a new environment
         run: |
           python -m venv /tmp/installed
@@ -226,6 +226,8 @@ jobs:
           /tmp/installed/bin/python -c "import codeupipe, codeupipe_lint; print(sorted(codeupipe.__all__))"
           /tmp/installed/bin/python -m codeupipe_lint.invariants --rules
           /tmp/installed/bin/python -m codeupipe_lint.anonymous_steps --rules
+          mkdir /tmp/added && cd /tmp/added && /tmp/installed/bin/codeupipe-add filter Discount
+          /tmp/installed/bin/python -m codeupipe_lint.invariants --strict discount_filter.py
 
   benchmark:
     name: Benchmark (numbers only, never fails the run)

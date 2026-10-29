@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "codeupipe-add"
+version = "0.1.0"
+description = "codeupipe add: make the files of a component, ready for the linter and the first test."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{name = "Joshua Wink"}]
+keywords = ["codeupipe", "scaffold", "pipeline"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Code Generators",
+]
+dependencies = ["codeupipe==2.0.0b1"]
+
+[project.scripts]
+codeupipe-add = "codeupipe_add.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/orchestrate-solutions/codeupipe"
+Repository = "https://github.com/orchestrate-solutions/codeupipe"
+Issues = "https://github.com/orchestrate-solutions/codeupipe/issues"
+
+[tool.setuptools.packages.find]
+include = ["codeupipe_add*"]

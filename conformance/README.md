@@ -4,8 +4,8 @@ The rules are in **[API.md](API.md)**, the CUP API contract. This suite
 checks them.
 
 **[ADD.md](ADD.md)** is the contract of `codeupipe add`, the command that
-adds components to a project, with its cases in [add/](add/). No runtime
-has the command yet, so no target runs those cases yet.
+adds components to a project, with its cases in [add/](add/) and its own
+judge, `python conformance/add.py`.
 
 One set of language-neutral cases, a runner, and **one judge** (`run.py`).
 The judge is itself a codeupipe pipeline, in [judging/](judging/): one step

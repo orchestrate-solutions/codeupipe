@@ -196,14 +196,33 @@ runtime: `python:add`, `typescript:add`, `rust:add`, `go:add`.
 | `expect.contains` | A list of texts that the component file has, such as the description. Optional |
 | `expect.message_contains` | Text that stderr has. Optional |
 
-The judge runs each case in a new, empty project of the language, which has
-the runtime package as a dependency. For a case with exit 0, the judge also
-checks that:
+The judge is `python conformance/add.py` (or `python conformance/add.py
+python:add`). It runs each case in a new, empty project of the language. Each
+target is a file in [add/targets/](add/targets/), with these keys:
 
-1. **The linter finds nothing**, in strict mode, in the files that the
-   command made: `python -m codeupipe_lint.invariants --strict`, the
-   TypeScript linter, `codeupipe-lint --strict` for Rust. Go has no linter
-   yet; for Go the judge checks `gofmt -l` and `go vet`.
+| Key | Meaning |
+|---|---|
+| `lang` | `python`, `typescript`, `rust` or `go`: the key of `expect.files` |
+| `cmd` | The command; the `args` of the case come after it |
+| `env` | The environment of the command |
+| `setup` | `{path: text}`: the files of a new, empty project of the language, such as `Cargo.toml` and `src/lib.rs`, or `go.mod` |
+| `lint` | A list of steps, each `{"cmd", "env", "quiet"}`. Each must exit 0; with `"quiet": true`, it must also print nothing (`gofmt -l`) |
+| `test` | One step, `{"cmd", "env"}`: it runs the test file that the command made |
+
+In a text of a target, `{repo}` is the root of this repository, `{project}`
+the project of the case, `{python}` the Python that runs the judge,
+`{pathsep}` the separator of a path list, and, in `lint` and `test`,
+`{component}`, `{test}`, `{test_stem}` and `{component_dir}` the files that
+the command printed. A target uses the packages of this repository, so the
+judge checks the code of the branch, with no download.
+
+For a case with exit 0, the judge also checks that:
+
+1. **The linter finds nothing**, in strict mode, in the component file:
+   `python -m codeupipe_lint.invariants --strict` and
+   `python -m codeupipe_lint.anonymous_steps`, the TypeScript linter,
+   `codeupipe-lint --strict` for Rust. Go has no linter yet; for Go the judge
+   checks `gofmt -l` and `go vet`.
 2. **The component builds**, or imports.
 3. **The test fails with the known message.** One test runs, and it fails
    with `Write the acceptance case for <TypeName>.` Any other failure, such as
@@ -212,6 +231,16 @@ checks that:
 
 For a case with an exit code other than 0, the judge checks that no file was
 written, and that each file of `given` did not change.
+
+The judge has tests of its own, with a fake command:
+`tests/conformance/test_add_judge.py`.
+
+| Target | Command | State |
+|---|---|---|
+| `python:add` | `python -m codeupipe_add`, in [packages/codeupipe-add/](../packages/codeupipe-add/) | Passes the 22 cases |
+| `typescript:add` | `packages/codeupipe-add-ts` | Not yet |
+| `rust:add` | `packages/codeupipe-add-rs` | Not yet |
+| `go:add` | `packages/codeupipe-add-go` | Not yet |
 
 ## Phase 2: a layout
 
