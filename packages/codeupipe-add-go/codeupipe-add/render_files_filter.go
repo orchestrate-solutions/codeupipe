@@ -53,15 +53,6 @@ func fill(template string, values map[string]string) string {
 	return template
 }
 
-// moduleImport gives the path that the test of a root package imports: the
-// module of the project, or "" with none, which means the directory itself.
-func moduleImport(module string) string {
-	if module == "" {
-		return ""
-	}
-	return module
-}
-
 // ModuleOfGoMod gives the module of the text of a go.mod, or "" when it has
 // none. It is the text of the “module“ line, without its spaces and its
 // quotes.
@@ -97,17 +88,6 @@ func moduleOfGoMod(text string) string {
 		}
 	}
 	return ""
-}
-
-// importDir gives the path that the test of the component imports: the module
-// of the project with the directory of the component and its file after it.
-// The test is beside the component, so a test in the same package needs no
-// import at all: the empty string says so.
-func importDir(module, dir, snake string) string {
-	if module == "" || dir == "" {
-		return ""
-	}
-	return module + "/" + dir + "/" + snake
 }
 
 // moduleOf gives the module of the project: the module key when the caller
