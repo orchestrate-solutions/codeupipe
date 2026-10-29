@@ -32,6 +32,11 @@ fn the_signup_pipeline_compiles_to_the_expected_module() {
     expect_module("signup", "SignupPipeline", "signup.rs");
 }
 
+#[test]
+fn the_greet_pipeline_compiles_to_the_expected_module() {
+    expect_module("greet", "GreetPipeline", "greet.rs");
+}
+
 /// A project of one step file and a pipeline file, in a new directory. The step is `step` added with `add`.
 fn refused(step: &str, add: &str) -> String {
     let directory =

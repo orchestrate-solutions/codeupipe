@@ -15,15 +15,23 @@ const USE_ONLY: &str =
 
 /// Rewrites the body of a step for the compiled struct: a key of the Payload
 /// becomes a field, and `self.setting` becomes the literal that the pipeline
-/// gave it. Each other use of the Payload, of `self` or of `Value` is refused.
+/// gave it. A `String` setting is made once, by a function of its own, and
+/// not at each run. Each other use of the Payload, of `self` or of `Value`
+/// is refused.
 pub struct PayloadRewriter<'a> {
     pub path: &'a str,
     pub step: &'a str,
+    /// The name of the compiled function of the step.
+    pub function: &'a str,
     /// The name of the Payload parameter of the step.
     pub payload: String,
     pub settings: &'a [(String, Expr)],
     pub writes: bool,
     pub uses: Vec<KeyUse>,
+    /// The function of each `String` setting that the step uses.
+    pub constants: Vec<syn::ItemFn>,
+    /// True while the rewriter reads a key: a setting is then its literal.
+    pub in_key: bool,
     pub refusal: Option<Refusal>,
 }
 
@@ -130,10 +138,37 @@ impl PayloadRewriter<'_> {
         });
     }
 
+    /// The value of a setting in the function: its literal, or for a `String` setting
+    /// (`String::from(literal)`), the `String` that a function of its own makes once.
+    fn setting(&mut self, name: &str, value: &Expr) -> Expr {
+        let is_text = matches!(value, Expr::Call(call) if matches!(&*call.func, Expr::Path(p) if p.path.segments.len() == 2 && p.path.segments[0].ident == "String"));
+        if self.in_key || !is_text {
+            return value.clone();
+        }
+        let function = format_ident!("{}_{}", self.function, name);
+        if !self.constants.iter().any(|made| made.sig.ident == function) {
+            let doc = format!(
+                " The setting `{name}` of {}, made once and not at each run.",
+                self.step
+            );
+            self.constants.push(syn::parse_quote! {
+                #[doc = #doc]
+                fn #function() -> &'static String {
+                    static VALUE: ::std::sync::OnceLock<String> = ::std::sync::OnceLock::new();
+                    VALUE.get_or_init(|| #value)
+                }
+            });
+        }
+        // A place of type String, as `self.text` is: each use of it is the same.
+        syn::parse_quote!((*#function()))
+    }
+
     /// The text of a key: a literal, perhaps behind `&`, `.to_string()`, `String::from(..)`. Settings are put in first.
     fn key_of(&mut self, arg: &Expr) -> Option<String> {
         let mut arg = arg.clone();
+        let in_key = std::mem::replace(&mut self.in_key, true);
         self.visit_expr_mut(&mut arg);
+        self.in_key = in_key;
         let mut at = &arg;
         loop {
             match at {
@@ -271,7 +306,7 @@ impl VisitMut for PayloadRewriter<'_> {
                     return;
                 };
                 match self.settings.iter().find(|(setting, _)| name == setting) {
-                    Some((_, value)) => *expr = value.clone(),
+                    Some((setting, value)) => *expr = self.setting(setting, value),
                     None => {
                         let span = field.span();
                         self.refuse(

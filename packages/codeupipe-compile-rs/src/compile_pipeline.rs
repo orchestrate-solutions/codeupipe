@@ -1,5 +1,6 @@
 use codeupipe::{NamedPipeline, Pipeline};
 
+use crate::borrow_text_filter::BorrowTextFilter;
 use crate::compile_run::CompileRun;
 use crate::emit_module_filter::EmitModuleFilter;
 use crate::lower_steps_filter::LowerStepsFilter;
@@ -16,6 +17,7 @@ impl NamedPipeline<CompileRun> for CompilePipeline {
         pipeline.add_filter(ResolvePipelineFilter); // the pipeline to a list of steps, with their settings
         pipeline.add_filter(LowerStepsFilter); // each step to a plain function on the struct
         pipeline.add_filter(TypeKeysFilter); // each key to a field with one type
+        pipeline.add_filter(BorrowTextFilter); // with text keys, the steps borrow the caller's text
         pipeline.add_filter(EmitModuleFilter); // the struct and the functions to one module
     }
 }

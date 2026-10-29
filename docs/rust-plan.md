@@ -445,6 +445,13 @@ refusal with the place, a codeupipe pipeline itself. It is in
 `packages/codeupipe-compile-rs/` ([README](../packages/codeupipe-compile-rs/README.md)).
 Not in it yet: the conformance target `rust:static`, and nested pipelines.
 
+The next gain was measured by hand before it was built: the compiled code
+reads the caller's text where it is, and copies only the text that no step
+writes, so signup went from 3.1 to 5.9 times faster than `Pipeline::run`.
+Computing only the keys that the caller keeps would gain more where an
+output that nobody keeps is expensive. It waits for a real pipeline that
+shows the need: [#25](https://github.com/orchestrate-solutions/codeupipe/issues/25).
+
 ### The value type in compiled code
 
 Plain Python has `dict`, and plain TypeScript has `Map`. Plain Rust has no

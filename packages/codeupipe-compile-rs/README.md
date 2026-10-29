@@ -66,6 +66,13 @@ gives is not changed. The body of each step is its own code, with each key
 of the Payload as a field and each setting as its literal, so the Rust
 compiler sees all of it.
 
+**Text is not copied.** When a key is text, the steps work on a second
+struct that borrows the caller's text (`SignupWork`, with a `Cow` for each
+text field). A step that writes text owns it. At the end, `run` copies into
+the output only the caller's text that no step wrote. A `String` setting is
+made once, by a function of its own, and not at each run. See
+[tests/expected/signup.rs](tests/expected/signup.rs).
+
 ## What compiles
 
 | Shape | Plain form |
@@ -74,7 +81,7 @@ compiler sees all of it.
 | Filter (`call`) | A function on `&mut PData` |
 | Valve | `if predicate(&payload) { filter(&mut payload)?; }` |
 | Tap (`observe`) | `let _ = tap(&payload);`: a failure does not stop the run |
-| A step made as `T`, `T { field: literal }` or `T::new(literal, ...)` | Each field of the step is a constant, from the literal. `new` may keep a parameter as it is, or with `.to_string()`, `.into()`, `.to_owned()` or `String::from(..)` |
+| A step made as `T`, `T { field: literal }` or `T::new(literal, ...)` | Each field of the step is a constant, from the literal; a `String` field is made once. `new` may keep a parameter as it is, or with `.to_string()`, `.into()`, `.to_owned()` or `String::from(..)` |
 | `payload.get(K).and_then(Value::as_f64)` (or `as_bool`, `as_str`, or a closure `\|v\| v.as_f64()`) | `payload.k` (`payload.k.as_deref()` for text) |
 | `payload.has(K)` | `payload.k.is_some()` |
 | `payload.insert(K, v)` | `payload.k = Some(v.into())` |
@@ -133,19 +140,25 @@ two alternated):
 
 | Pipeline | `Pipeline::run` | Compiled | |
 |---|---|---|---|
-| pricing: 3 steps of arithmetic | 0.237 µs | 0.0016 µs | 150x |
-| signup: 4 steps of text (trim, lower case, format) | 0.504 µs | 0.164 µs | 3.1x |
+| pricing: 3 steps of arithmetic | 0.237 µs | 0.0017 µs | 140x |
+| signup: 4 steps of text (trim, lower case, format) | 0.50 µs | 0.086 µs | 5.9x |
 
 The more a step does, the less the pipeline costs next to it: with steps
 of real work the gain is small. The large gain is for many runs of light
-steps.
+steps. Before the compiled code borrowed the caller's text, signup ran in
+0.164 µs (3.1x): it copied the email and the coupon, and made the setting
+"Welcome", at each run.
 
 ## How it is checked
 
 - [tests/same_output.rs](tests/same_output.rs): the modules of
   [tests/expected/](tests/expected/) are compiled into the test and give
   the output and the errors of the pipelines that they come from, on many
-  inputs, and do not change their input.
+  inputs, and do not change their input. The greet fixture gives back the
+  caller's note when its Valve does not run.
+- [tests/allocations.rs](tests/allocations.rs): a compiled run allocates
+  only for the text that its steps make, and for the caller's text that it
+  gives back as it is.
 - [tests/compile.rs](tests/compile.rs): the compiler writes those modules
   (the code is compared, not its layout; `UPDATE_EXPECTED=1` writes them
   again), and refuses each shape above with its place.
@@ -156,6 +169,8 @@ steps.
   `conformance/cases/` as `typescript:static` is.
 - Nested pipelines.
 - A `from_map`/`to_map` for a caller that has a Payload.
+- `--keep`, to compute only the keys that the caller keeps
+  ([#25](https://github.com/orchestrate-solutions/codeupipe/issues/25)).
 
 ## Development
 

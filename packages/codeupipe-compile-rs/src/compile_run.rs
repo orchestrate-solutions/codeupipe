@@ -26,8 +26,13 @@ pub struct CompileRun {
     pub uses: Vec<KeyUse>,
     /// The `use` items of the step files that the functions need (LowerStepsFilter).
     pub imports: Vec<syn::ItemUse>,
+    /// A function for each text setting, which makes it once (LowerStepsFilter).
+    pub constants: Vec<syn::ItemFn>,
     /// Each key with its field and its type, in the order of first use (TypeKeysFilter).
     pub keys: Vec<(String, String, KeyType)>,
+    /// The struct that the steps work on when a key is text: `SignupWork`, which borrows the caller's
+    /// text. With no text, the steps work on the struct of the data (BorrowTextFilter).
+    pub work: Option<String>,
     /// The compiled module (EmitModuleFilter).
     pub module: String,
 }

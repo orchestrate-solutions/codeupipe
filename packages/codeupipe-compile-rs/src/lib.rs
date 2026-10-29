@@ -3,6 +3,7 @@
 //! no codeupipe. Code that compiles gives the output of the pipeline. A
 //! pipeline for which the compiler cannot keep that rule is refused, with
 //! the place.
+mod borrow_text_filter;
 mod compile_pipeline;
 mod compile_run;
 mod emit_module_filter;
@@ -17,6 +18,7 @@ mod refusal;
 mod resolve_pipeline_filter;
 mod source;
 mod step;
+mod text_write_rewriter;
 mod type_keys_filter;
 
 pub use compile_pipeline::CompilePipeline;

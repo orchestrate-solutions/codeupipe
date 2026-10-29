@@ -106,10 +106,13 @@ impl LowerStepsFilter {
         let mut rewriter = PayloadRewriter {
             path: &source.path,
             step: &step.type_name,
+            function: &name,
             payload: payload.clone(),
             settings: &step.settings,
             writes: step.role == Role::Filter,
             uses: Vec::new(),
+            constants: Vec::new(),
+            in_key: false,
             refusal: None,
         };
         let mut block = method.block.clone();
@@ -119,6 +122,7 @@ impl LowerStepsFilter {
             return Err(refusal);
         }
         run.uses.extend(rewriter.uses);
+        run.constants.extend(rewriter.constants);
         let data = format_ident!("{}", run.data);
         let payload = format_ident!("{}", payload);
         let function = format_ident!("{}", name);
