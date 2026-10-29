@@ -105,25 +105,6 @@ func ({type_name}) AddSteps(pipeline *codeupipe.Pipeline) {
 `,
 }
 
-// testTemplateImport is the test file with the import of the component: for a
-// component in a directory of the project, the module path of that directory.
-const testTemplateImport = `// The acceptance case of {type_name}.
-package {package_name}
-
-import (
-	"testing"
-
-	"{import_dir}"
-)
-
-func Test{type_name}(t *testing.T) {
-	if (&{type_name}{}) == nil {
-		t.Fatal("Write the acceptance case for {type_name}.")
-	}
-	t.Fatal("Write the acceptance case for {type_name}.")
-}
-`
-
 // testTemplateSame is the test file with no import: the test is beside the
 // component, in the package of the component, so it needs nothing to make it.
 const testTemplateSame = `// The acceptance case of {type_name}.
