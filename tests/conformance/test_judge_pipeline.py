@@ -67,6 +67,14 @@ def test_a_rust_target_needs_cargo():
     assert DefaultTargetsFilter(lambda: False, lambda: False).choose(targets, {}) == ["python:run"]
 
 
+def test_a_go_target_needs_go():
+    targets = {"python:run": {}, "rust:run": {}, "go:run": {}}
+    assert DefaultTargetsFilter(lambda: False, lambda: False, has_go=lambda: True).choose(targets, {}) == [
+        "python:run", "go:run"]
+    assert DefaultTargetsFilter(lambda: False, lambda: True, has_go=lambda: False).choose(targets, {}) == [
+        "python:run", "rust:run"]
+
+
 def test_two_cases_with_one_id_stop_the_run(tmp_path):
     (tmp_path / "a.json").write_text(json.dumps([{"id": "x"}, {"id": "x"}]))
     with pytest.raises(SystemExit, match="duplicate case ids"):

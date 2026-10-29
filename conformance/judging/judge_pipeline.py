@@ -22,14 +22,14 @@ class JudgePipeline(Pipeline):
     Output keys: ``report``, ``matrix``, ``markdown``, ``exit_code``.
 
     ``launcher`` starts the runner of a target. ``node_runs_typescript`` says
-    if the machine can run the TypeScript targets, and ``has_cargo`` if it
-    can run the Rust targets.
+    if the machine can run the TypeScript targets, ``has_cargo`` if it can
+    run the Rust targets, and ``has_go`` if it can run the Go targets.
     """
 
-    def __init__(self, launcher, node_runs_typescript, has_cargo=lambda: False):
+    def __init__(self, launcher, node_runs_typescript, has_cargo=lambda: False, has_go=lambda: False):
         super().__init__()
         self.add_filter(LoadCasesFilter())
-        self.add_valve(NoTargetsNamedPredicate(), DefaultTargetsFilter(node_runs_typescript, has_cargo))
+        self.add_valve(NoTargetsNamedPredicate(), DefaultTargetsFilter(node_runs_typescript, has_cargo, has_go))
         self.add_filter(RunTargetsFilter(launcher))
         self.add_filter(JudgeResultsFilter())
         self.add_filter(SummarizeFilter())

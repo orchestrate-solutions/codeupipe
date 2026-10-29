@@ -45,8 +45,9 @@ behind function calls) that the runner times beside it, so the check does
 not depend on how fast the machine is. Slower than the band is a regression.
 Faster than the band also fails, with the instruction to record again:
 otherwise the next regression would hide inside the gain. There is one
-baseline for each Python version, and one for the Rust run, which does not
-depend on Python (the Rust runner times a reference of map writes of its own).
+baseline for each Python version, and one each for the Rust and Go runs,
+which do not depend on Python (each of those runners times a reference of map
+writes of its own).
 `--record` with targets named replaces only those targets. Run it on a quiet machine: under heavy
 load a number can leave the band.
 
@@ -58,6 +59,7 @@ load a number can leave the band.
 | `typescript:run` | `packages/codeupipe-ts` Pipeline. Node runs the `.ts` runner as it is (Node 22.18 or later). With no arguments, `run.py` leaves this target out when the machine has no such Node |
 | `typescript:static` | `packages/codeupipe-compile-ts`: the pipeline as plain code, written to a file and imported (no State or Hooks: ✅\*). Needs `npm ci` in that package and a built core package; `run.py` leaves it out when they are not there |
 | `rust:run` | `packages/codeupipe-rs` Pipeline. `cargo run --release --offline` builds the runner, which has no dependency to download. With no arguments, `run.py` leaves this target out when the machine has no `cargo` |
+| `go:run` | `packages/codeupipe-go` Pipeline. `go run` builds the runner with `GOPROXY=off`: its `go.mod` points at the package with a `replace`, and it reads JSON with `encoding/json`, so it has nothing to download. With no arguments, `run.py` leaves this target out when the machine has no `go` |
 
 ## Statuses
 
@@ -143,8 +145,9 @@ never halts the pipeline). Where it is silent, they encode Python
    when the Valve skips its filter.
 3. **`equals` across types.** Python's `==` makes `1 == true`; JSON does not.
    TypeScript uses `===`, which does not compare lists or maps by content.
-   Rust compares `Value` by content, and a number is never equal to a
+   Rust and Go compare by content, and a number is never equal to a
    boolean. No case depends on it yet.
 4. **`truthy` across languages.** An empty list or map is false in Python
    and true in JavaScript. Each runner uses the rule of its language; Rust
-   has no rule of its own and follows Python. No case depends on it yet.
+   and Go have no rule of their own and follow Python. No case depends on it
+   yet.

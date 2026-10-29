@@ -115,6 +115,26 @@
       }
     }
   },
+  "go": {
+    "relative": {
+      "go:run": {
+        "heavy-allocation": 7.22516617444385,
+        "hook": 2.0373805764732418,
+        "micro-pass": 1.8168370390948165,
+        "taps": 1.898800986070889,
+        "valve-gated": 1.9851746428675332
+      }
+    },
+    "us_per_run": {
+      "go:run": {
+        "heavy-allocation": 2.2582312499999997,
+        "hook": 0.60133125,
+        "micro-pass": 0.5425,
+        "taps": 0.5583541499999999,
+        "valve-gated": 0.5827229
+      }
+    }
+  },
   "rust": {
     "relative": {
       "rust:run": {

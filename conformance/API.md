@@ -14,10 +14,10 @@ parameters, their defaults, and how they fail.
 | State | records what happened |
 | Pipeline | runs the steps in order |
 
-Python, TypeScript and Rust implement it. Each runtime has the same contract,
-with identifier casing in the style of its language, and the same
+Python, TypeScript, Rust and Go implement it. Each runtime has the same
+contract, with identifier casing in the style of its language, and the same
 conformance cases judge it. The tables below show the Python names. The
-TypeScript and Rust names and differences are in "Runtimes".
+TypeScript, Rust and Go names and differences are in "Runtimes".
 
 ## Principles
 
@@ -235,16 +235,16 @@ map and fails the comparison.
 
 ## Runtimes
 
-| | Python | TypeScript | Rust |
-|---|---|---|---|
-| Package | `packages/codeupipe` | `packages/codeupipe-ts` | `packages/codeupipe-rs` (crate `codeupipe`) |
-| Names | snake_case | camelCase: `addFilter`, `addValve`, `toDict`, `withTrace`, `traceId`, `onError` | snake_case, as Python |
-| Run | `run` is sync. `run_async` is opt-in | One `run`. It returns a Promise. A step can be sync or async | `run` is sync, and `run_with_state` for the caller's State. No async run yet |
-| Absent | `None` | `null` | `None` from `get`; `Value::Null` is a JSON null |
-| Label of a step | `type(step).__name__` | `step.constructor.name` | The name of the step's type, from `std::any::type_name` |
-| Compile | `codeupipe.compile` | `packages/codeupipe-compile-ts` | `packages/codeupipe-compile-rs`: a struct with one field for each key. No conformance target yet |
-| Linter | `packages/codeupipe-lint` | `packages/codeupipe-lint-ts` | None yet. The compiler refuses several of the shapes that the linters find |
-| A type of your own | Any object with `copy()` | `class Order implements PipelineData<Order>`, then `new Pipeline<Order>()`, `Filter<Order>` | `impl PipelineData for Order {}`, then `Pipeline<Order>`, `Filter<Order>` |
+| | Python | TypeScript | Rust | Go |
+|---|---|---|---|---|
+| Package | `packages/codeupipe` | `packages/codeupipe-ts` | `packages/codeupipe-rs` (crate `codeupipe`) | `packages/codeupipe-go` (package `codeupipe`) |
+| Names | snake_case | camelCase: `addFilter`, `addValve`, `toDict`, `withTrace`, `traceId`, `onError` | snake_case, as Python | PascalCase: `AddFilter`, `AddValve`, `ToDict`, `WithTrace`, `TraceID`, `OnError` |
+| Run | `run` is sync. `run_async` is opt-in | One `run`. It returns a Promise. A step can be sync or async | `run` is sync, and `run_with_state` for the caller's State. No async run yet | `Run(ctx, p)` is sync, and `RunWithState(ctx, p, state)` for the caller's State. Go needs no async run |
+| Absent | `None` | `null` | `None` from `get`; `Value::Null` is a JSON null | `nil` from `Get`, for an absent key and for a JSON null; `Has` tells them apart |
+| Label of a step | `type(step).__name__` | `step.constructor.name` | The name of the step's type, from `std::any::type_name` | The name of the step's type, from `reflect` |
+| Compile | `codeupipe.compile` | `packages/codeupipe-compile-ts` | `packages/codeupipe-compile-rs`: a struct with one field for each key. No conformance target yet | None yet |
+| Linter | `packages/codeupipe-lint` | `packages/codeupipe-lint-ts` | `packages/codeupipe-lint-rs` | None yet |
+| A type of your own | Any object with `copy()` | `class Order implements PipelineData<Order>`, then `new Pipeline<Order>()`, `Filter<Order>` | `impl PipelineData for Order {}`, then `Pipeline<Order>`, `Filter<Order>` | A type with `Copy() *Order`, then `NewPipelineOf[*Order]()`, `FilterOf[*Order]` |
 
 Notes on TypeScript:
 
@@ -274,8 +274,30 @@ Notes on Rust:
   reference, so a step can hold the pipeline that it is in (an `Rc`) and run
   it again. The run with the caller's State is
   `run_with_state(&input, &mut state)`. `state()` gives an `Rc<State>`: the
-  State of the run that started last, once it has ended, as a snapshot.md](../docs/rust-plan.md) has the
-  plan.
+  State of the run that started last, once it has ended, as a snapshot.
+  [docs/rust-plan.md](../docs/rust-plan.md) has the plan.
 - **A type of your own** is a type parameter of each primitive, with
   `Payload` as its default, so a step for one type in a pipeline of another
   is a compile error. TypeScript does the same with its type check.
+
+Notes on Go:
+
+- **`ctx` comes first.** Each step method and `Run` take a
+  `context.Context`, as Go code that can wait does. The Pipeline gives it to
+  each step and does nothing else with it: a cancelled `ctx` does not stop a
+  run between steps. So the contract does not change.
+- **Refused when added, at compile time.** A function is not a step, and the
+  arguments of `AddValve` are in one order only: each is a type error. A nil
+  step compiles, and is refused with a panic when it is added. Go has no
+  pointer that only reads, so a Tap, a Hook or a Predicate that writes is the
+  linter's rule (`CUP-I004`), as in Python and TypeScript.
+- **Values.** A value is an `any` in the shapes that `encoding/json` gives:
+  `nil`, `bool`, `float64`, `string`, `[]any`, `map[string]any`. A number of
+  another Go type is kept as a `float64`. The keys have no order.
+- **A State for each run.** A Pipeline can be run from many goroutines at
+  the same time, and each run writes into a State of its own. `State()` is
+  the State of the run that started last, once it has ended, as in Rust.
+- **A type of your own.** Go has no default type parameter, so each
+  primitive has a generic form (`FilterOf[P]`) and a short name for the
+  Payload (`Filter` is `FilterOf[*Payload]`, the same type).
+  [docs/go-plan.md](../docs/go-plan.md) has the plan.
