@@ -13,3 +13,4 @@ node_modules/
 /target/
 /packages/codeupipe-lint-rs/target/
 /packages/codeupipe-compile-rs/target/
+/packages/codeupipe-add-rs/target/
