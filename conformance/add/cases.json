@@ -1,0 +1,556 @@
+[
+ {
+  "id": "add/a-filter-gets-its-suffix",
+  "args": [
+   "filter",
+   "Discount"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "DiscountFilter",
+   "files": {
+    "python": [
+     "discount_filter.py",
+     "tests/test_discount_filter.py"
+    ],
+    "typescript": [
+     "discount-filter.ts",
+     "tests/discount-filter.test.ts"
+    ],
+    "rust": [
+     "src/discount_filter.rs",
+     "tests/discount_filter.rs"
+    ],
+    "go": [
+     "discount_filter.go",
+     "discount_filter_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/a-name-with-its-suffix-keeps-it",
+  "args": [
+   "filter",
+   "DiscountFilter"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "DiscountFilter",
+   "files": {
+    "python": [
+     "discount_filter.py",
+     "tests/test_discount_filter.py"
+    ],
+    "typescript": [
+     "discount-filter.ts",
+     "tests/discount-filter.test.ts"
+    ],
+    "rust": [
+     "src/discount_filter.rs",
+     "tests/discount_filter.rs"
+    ],
+    "go": [
+     "discount_filter.go",
+     "discount_filter_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/a-snake-case-name-becomes-pascal-case",
+  "args": [
+   "predicate",
+   "at_least"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "AtLeastPredicate",
+   "files": {
+    "python": [
+     "at_least_predicate.py",
+     "tests/test_at_least_predicate.py"
+    ],
+    "typescript": [
+     "at-least-predicate.ts",
+     "tests/at-least-predicate.test.ts"
+    ],
+    "rust": [
+     "src/at_least_predicate.rs",
+     "tests/at_least_predicate.rs"
+    ],
+    "go": [
+     "at_least_predicate.go",
+     "at_least_predicate_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/a-kebab-case-name-becomes-pascal-case",
+  "args": [
+   "tap",
+   "audit-log"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "AuditLogTap",
+   "files": {
+    "python": [
+     "audit_log_tap.py",
+     "tests/test_audit_log_tap.py"
+    ],
+    "typescript": [
+     "audit-log-tap.ts",
+     "tests/audit-log-tap.test.ts"
+    ],
+    "rust": [
+     "src/audit_log_tap.rs",
+     "tests/audit_log_tap.rs"
+    ],
+    "go": [
+     "audit_log_tap.go",
+     "audit_log_tap_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/capitals-together-are-one-word",
+  "args": [
+   "filter",
+   "HTTPGet"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "HTTPGetFilter",
+   "files": {
+    "python": [
+     "http_get_filter.py",
+     "tests/test_http_get_filter.py"
+    ],
+    "typescript": [
+     "http-get-filter.ts",
+     "tests/http-get-filter.test.ts"
+    ],
+    "rust": [
+     "src/http_get_filter.rs",
+     "tests/http_get_filter.rs"
+    ],
+    "go": [
+     "http_get_filter.go",
+     "http_get_filter_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/a-predicate",
+  "args": [
+   "predicate",
+   "AtLeast"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "AtLeastPredicate",
+   "files": {
+    "python": [
+     "at_least_predicate.py",
+     "tests/test_at_least_predicate.py"
+    ],
+    "typescript": [
+     "at-least-predicate.ts",
+     "tests/at-least-predicate.test.ts"
+    ],
+    "rust": [
+     "src/at_least_predicate.rs",
+     "tests/at_least_predicate.rs"
+    ],
+    "go": [
+     "at_least_predicate.go",
+     "at_least_predicate_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/a-tap",
+  "args": [
+   "tap",
+   "Audit"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "AuditTap",
+   "files": {
+    "python": [
+     "audit_tap.py",
+     "tests/test_audit_tap.py"
+    ],
+    "typescript": [
+     "audit-tap.ts",
+     "tests/audit-tap.test.ts"
+    ],
+    "rust": [
+     "src/audit_tap.rs",
+     "tests/audit_tap.rs"
+    ],
+    "go": [
+     "audit_tap.go",
+     "audit_tap_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/a-hook",
+  "args": [
+   "hook",
+   "PrintSteps"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "PrintStepsHook",
+   "files": {
+    "python": [
+     "print_steps_hook.py",
+     "tests/test_print_steps_hook.py"
+    ],
+    "typescript": [
+     "print-steps-hook.ts",
+     "tests/print-steps-hook.test.ts"
+    ],
+    "rust": [
+     "src/print_steps_hook.rs",
+     "tests/print_steps_hook.rs"
+    ],
+    "go": [
+     "print_steps_hook.go",
+     "print_steps_hook_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/a-pipeline",
+  "args": [
+   "pipeline",
+   "Pricing"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "PricingPipeline",
+   "files": {
+    "python": [
+     "pricing_pipeline.py",
+     "tests/test_pricing_pipeline.py"
+    ],
+    "typescript": [
+     "pricing-pipeline.ts",
+     "tests/pricing-pipeline.test.ts"
+    ],
+    "rust": [
+     "src/pricing_pipeline.rs",
+     "tests/pricing_pipeline.rs"
+    ],
+    "go": [
+     "pricing_pipeline.go",
+     "pricing_pipeline_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/the-component-goes-in-the-dir",
+  "args": [
+   "filter",
+   "Discount",
+   "src/pricing"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "DiscountFilter",
+   "files": {
+    "python": [
+     "src/pricing/discount_filter.py",
+     "tests/test_discount_filter.py"
+    ],
+    "typescript": [
+     "src/pricing/discount-filter.ts",
+     "tests/discount-filter.test.ts"
+    ],
+    "rust": [
+     "src/pricing/discount_filter.rs",
+     "tests/discount_filter.rs"
+    ],
+    "go": [
+     "src/pricing/discount_filter.go",
+     "src/pricing/discount_filter_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/the-description-goes-in-the-header",
+  "args": [
+   "filter",
+   "Discount",
+   "--description",
+   "Takes a rate off the price."
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "DiscountFilter",
+   "files": {
+    "python": [
+     "discount_filter.py",
+     "tests/test_discount_filter.py"
+    ],
+    "typescript": [
+     "discount-filter.ts",
+     "tests/discount-filter.test.ts"
+    ],
+    "rust": [
+     "src/discount_filter.rs",
+     "tests/discount_filter.rs"
+    ],
+    "go": [
+     "discount_filter.go",
+     "discount_filter_test.go"
+    ]
+   },
+   "contains": [
+    "Takes a rate off the price."
+   ]
+  }
+ },
+ {
+  "id": "add/with-no-description-the-header-says-todo",
+  "args": [
+   "tap",
+   "Audit"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "AuditTap",
+   "files": {
+    "python": [
+     "audit_tap.py",
+     "tests/test_audit_tap.py"
+    ],
+    "typescript": [
+     "audit-tap.ts",
+     "tests/audit-tap.test.ts"
+    ],
+    "rust": [
+     "src/audit_tap.rs",
+     "tests/audit_tap.rs"
+    ],
+    "go": [
+     "audit_tap.go",
+     "audit_tap_test.go"
+    ]
+   },
+   "contains": [
+    "TODO: say what AuditTap does."
+   ]
+  }
+ },
+ {
+  "id": "add/an-existing-component-file-is-not-overwritten",
+  "args": [
+   "filter",
+   "Discount"
+  ],
+  "given": {
+   "python": {
+    "discount_filter.py": "existing\n"
+   },
+   "typescript": {
+    "discount-filter.ts": "existing\n"
+   },
+   "rust": {
+    "src/discount_filter.rs": "existing\n"
+   },
+   "go": {
+    "discount_filter.go": "existing\n"
+   }
+  },
+  "expect": {
+   "exit": 1,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "exists"
+  }
+ },
+ {
+  "id": "add/an-existing-test-file-stops-both-files",
+  "args": [
+   "filter",
+   "Discount"
+  ],
+  "given": {
+   "python": {
+    "tests/test_discount_filter.py": "existing\n"
+   },
+   "typescript": {
+    "tests/discount-filter.test.ts": "existing\n"
+   },
+   "rust": {
+    "tests/discount_filter.rs": "existing\n"
+   },
+   "go": {
+    "discount_filter_test.go": "existing\n"
+   }
+  },
+  "expect": {
+   "exit": 1,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "exists"
+  }
+ },
+ {
+  "id": "add/a-valve-is-not-a-type",
+  "args": [
+   "valve",
+   "AtLeast"
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "add_valve(predicate, filter)"
+  }
+ },
+ {
+  "id": "add/a-payload-is-not-made-by-a-user",
+  "args": [
+   "payload",
+   "Order"
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "runtime"
+  }
+ },
+ {
+  "id": "add/state-is-not-made-by-a-user",
+  "args": [
+   "state",
+   "Run"
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "runtime"
+  }
+ },
+ {
+  "id": "add/an-unknown-kind-is-refused",
+  "args": [
+   "widget",
+   "Thing"
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "filter, predicate, tap, hook"
+  }
+ },
+ {
+  "id": "add/a-name-that-starts-with-a-digit-is-refused",
+  "args": [
+   "filter",
+   "2Fast"
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "2Fast"
+  }
+ },
+ {
+  "id": "add/a-name-with-a-space-is-refused",
+  "args": [
+   "filter",
+   "Take Rate"
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "Take Rate"
+  }
+ },
+ {
+  "id": "add/an-empty-name-is-refused",
+  "args": [
+   "filter",
+   ""
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "name"
+  }
+ },
+ {
+  "id": "add/a-missing-name-is-refused",
+  "args": [
+   "filter"
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "name"
+  }
+ }
+]
