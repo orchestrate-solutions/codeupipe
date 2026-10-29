@@ -47,7 +47,7 @@ impl Filter<AddRun> for ModuleLineFilter {
 
 /// The one note that asks for `line` in `file`, with nothing when the file
 /// has that line already.
-// cup: allow-plain the reading of one line of a file: it is a check of text, not a step
+// cup: allow-plain the note of one module line: it is a rule of the step, not a step
 fn kept(run: &AddRun, file: &str, line: &str) -> Vec<String> {
     if has_line(run, file, line) {
         return Vec::new();
@@ -56,7 +56,6 @@ fn kept(run: &AddRun, file: &str, line: &str) -> Vec<String> {
 }
 
 /// The text of `file` in the project, or nothing when it is not there.
-// cup: allow-plain the reading of a file of the project: it is an input of the step, not a step
 fn text_of(run: &AddRun, file: &str) -> String {
     let path = std::path::Path::new(&run.root).join(file);
     std::fs::read_to_string(path).unwrap_or_default()
@@ -64,7 +63,6 @@ fn text_of(run: &AddRun, file: &str) -> String {
 
 /// A file of the project that has `line` at its start, with no space before
 /// it. A comment or a `mod` in a function does not count.
-// cup: allow-plain a check of the text of a file: it is a rule of the step, not a step
 fn has_line(run: &AddRun, file: &str, line: &str) -> bool {
     text_of(run, file)
         .lines()

@@ -179,7 +179,7 @@ fn a_directory_that_goes_out_of_the_project_is_refused() {
 
 #[test]
 fn each_kind_returns_the_data_unchanged_or_does_nothing() {
-    use codeupipe::{Filter, Hook, NamedPipeline, Payload, Pipeline, Predicate, Tap};
+    use codeupipe::{Payload, Pipeline};
     let directory = project();
     for kind in ["filter", "predicate", "tap", "hook", "pipeline"] {
         let run = run(&directory, kind, "Sample").expect("the files are made");
@@ -190,33 +190,6 @@ fn each_kind_returns_the_data_unchanged_or_does_nothing() {
     }
     // The five texts are Rust: each declares its type and implements its role.
     let mut pipeline = Pipeline::new();
-    struct NoFilter;
-    impl Filter for NoFilter {
-        fn call(&self, payload: &mut Payload) -> Result<(), codeupipe::StepError> {
-            let _ = payload;
-            Ok(())
-        }
-    }
-    struct NoPredicate;
-    impl Predicate for NoPredicate {
-        fn test(&self, payload: &Payload) -> bool {
-            let _ = payload;
-            false
-        }
-    }
-    struct NoTap;
-    impl Tap for NoTap {
-        fn observe(&self, payload: &Payload) -> Result<(), codeupipe::StepError> {
-            let _ = payload;
-            Ok(())
-        }
-    }
-    struct NoHook;
-    impl Hook for NoHook {}
-    struct NoPipeline;
-    impl NamedPipeline for NoPipeline {
-        fn add_steps(&self, _pipeline: &mut Pipeline) {}
-    }
     pipeline.add_filter(NoFilter);
     pipeline.add_valve(NoPredicate, NoFilter);
     pipeline.add_tap(NoTap);
@@ -224,4 +197,44 @@ fn each_kind_returns_the_data_unchanged_or_does_nothing() {
     pipeline.use_hook(NoHook);
     let out = pipeline.run(&Payload::new()).expect("the run goes through");
     assert!(!out.has("anything"));
+}
+
+/// The five kinds of step, as plain no-op types, at the top of the file so
+/// that each can be tested on its own (CUP-A003). The pipeline that the test
+/// runs is only there to show that the five texts are Rust that compiles.
+struct NoFilter;
+
+impl codeupipe::Filter for NoFilter {
+    fn call(&self, payload: &mut codeupipe::Payload) -> Result<(), codeupipe::StepError> {
+        let _ = payload;
+        Ok(())
+    }
+}
+
+struct NoPredicate;
+
+impl codeupipe::Predicate for NoPredicate {
+    fn test(&self, payload: &codeupipe::Payload) -> bool {
+        let _ = payload;
+        false
+    }
+}
+
+struct NoTap;
+
+impl codeupipe::Tap for NoTap {
+    fn observe(&self, payload: &codeupipe::Payload) -> Result<(), codeupipe::StepError> {
+        let _ = payload;
+        Ok(())
+    }
+}
+
+struct NoHook;
+
+impl codeupipe::Hook for NoHook {}
+
+struct NoPipeline;
+
+impl codeupipe::NamedPipeline for NoPipeline {
+    fn add_steps(&self, _pipeline: &mut codeupipe::Pipeline) {}
 }

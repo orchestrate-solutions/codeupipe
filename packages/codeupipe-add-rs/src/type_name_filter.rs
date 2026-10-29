@@ -28,7 +28,6 @@ pub fn role_of(kind: &str) -> Option<&'static str> {
 }
 
 /// The words of a name: each `_` and `-` starts a new one.
-// cup: allow-plain a naming rule shared by the steps: it splits text, and is not a step
 fn words_of(name: &str) -> Vec<&str> {
     name.split(['_', '-'])
         .filter(|word| !word.is_empty())

@@ -88,7 +88,6 @@ fn fill(template: &str, run: &AddRun, description: &str, module: &str) -> String
 
 /// A placeholder name: not empty, and nothing but letters, digits and `_`.
 /// So `{Filter, Payload}` and `{{` are not placeholders.
-// cup: allow-plain the shape of a placeholder: it reads text, and is not a step
 fn is_placeholder(name: &str) -> bool {
     !name.is_empty() && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
 }
