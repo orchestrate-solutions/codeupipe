@@ -25,8 +25,9 @@ its baseline, in either direction: slower is a regression, and faster means
 the baseline is out of date and must be recorded again, or the next
 regression would hide inside the gain. A baseline is kept for each Python
 version (bench/baseline.json), because interpreters differ in what they make
-fast. The Rust run does not depend on Python, so it has one baseline, under
-"rust". --record replaces only the targets that it measured.
+fast. The Rust and Go runs do not depend on Python, so each has one
+baseline, under "rust" and "go". --record replaces only the targets that it
+measured.
 """
 
 import json
@@ -47,6 +48,7 @@ BENCH_TARGETS = {
     "python:static-inline": ("python:static-inline", "bench:static-inline"),
     "python:static-observe": ("python:static-observe", "bench:static-observe"),
     "rust:run": ("rust:run", "bench:run"),
+    "go:run": ("go:run", "bench:run"),
 }
 
 
@@ -71,8 +73,10 @@ def load_baseline():
 # cup: allow-plain the speed check of the conformance suite: it times the scenarios and compares them with the baseline
 def baseline_key(target, python):
     """Where the baseline of ``target`` is kept. A Python target is kept per
-    Python version; the Rust run does not depend on Python and has its own."""
-    return "rust" if target.startswith("rust:") else python
+    Python version; the Rust and Go runs do not depend on Python, and each
+    has its own."""
+    runtime = target.split(":")[0]
+    return runtime if runtime in ("rust", "go") else python
 
 
 # cup: allow-plain the speed check of the conformance suite: it times the scenarios and compares them with the baseline

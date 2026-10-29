@@ -28,7 +28,7 @@ If you know Unix, these are close to things you know.
 | Hook | A git hook: code that runs before and after a step |
 | State | `$?` and `PIPESTATUS` |
 
-This repository has seven packages.
+This repository has nine packages.
 
 | Package | Contents | Reference |
 |---|---|---|
@@ -40,6 +40,7 @@ This repository has seven packages.
 | `codeupipe` for Rust | The primitives, 0.1.0. No dependencies | [packages/codeupipe-rs/README.md](packages/codeupipe-rs/README.md) |
 | `codeupipe-lint` for Rust | A linter for pipeline code in Rust, for the rules that the compiler does not check | [packages/codeupipe-lint-rs/README.md](packages/codeupipe-lint-rs/README.md) |
 | `codeupipe-compile` for Rust | Writes a pipeline as plain Rust: a struct and functions, with no codeupipe | [packages/codeupipe-compile-rs/README.md](packages/codeupipe-compile-rs/README.md) |
+| `codeupipe` for Go | The eight primitives, 0.1.0. No dependencies | [packages/codeupipe-go/README.md](packages/codeupipe-go/README.md) |
 
 ## Install
 
@@ -93,6 +94,11 @@ The Rust crate is new too, version `0.1.0` on the same terms. It is not on
 crates.io yet:
 [packages/codeupipe-rs/README.md](packages/codeupipe-rs/README.md) says how to
 use it from this repository.
+
+The Go package is new too, version `0.1.0` on the same terms. No version is
+tagged yet:
+[packages/codeupipe-go/README.md](packages/codeupipe-go/README.md) says how to
+use it from the `main` branch.
 
 ## Example
 
@@ -210,6 +216,7 @@ An editable install needs pip 21.3 or later.
 | `packages/codeupipe-rs/` | The Rust runtime, with its tests and its examples |
 | `packages/codeupipe-lint-rs/` | The Rust linter, with its tests. A Cargo workspace of its own |
 | `packages/codeupipe-compile-rs/` | The Rust compiler, with its tests. A Cargo workspace of its own |
+| `packages/codeupipe-go/` | The Go runtime, with its tests and its example. A Go module of its own |
 | `conformance/` | The contract ([API.md](conformance/API.md)), the cases, the runners, the benchmark |
 | `tests/` | The tests for the two Python packages |
 | `examples/pricing/` | The example, with its test in `tests/examples/` |
@@ -221,7 +228,8 @@ root `package.json` is not a package: it makes the three TypeScript packages
 one npm workspace. The root `Cargo.toml` is not a package either: it makes
 the Rust runtime and its conformance runner one Cargo workspace, which
 builds with no download. The Rust linter needs `syn`, so it is a workspace
-of its own.
+of its own. The Go runtime and the Go conformance runner are two Go modules;
+the runner's `go.mod` points at the runtime with a `replace`.
 
 ## Other languages
 
@@ -229,9 +237,11 @@ The contract and the conformance cases do not depend on a language. Python
 is the first runtime and TypeScript is the second
 ([packages/codeupipe-ts/](packages/codeupipe-ts/)), with its own linter and
 its own compiler. Rust is the third
-([packages/codeupipe-rs/](packages/codeupipe-rs/)), with its own linter; its plan is
-[docs/rust-plan.md](docs/rust-plan.md). A runtime in another language must implement
-the contract and add a conformance runner.
+([packages/codeupipe-rs/](packages/codeupipe-rs/)), with its own linter and
+its own compiler; its plan is [docs/rust-plan.md](docs/rust-plan.md). Go is
+the fourth ([packages/codeupipe-go/](packages/codeupipe-go/)); its plan is
+[docs/go-plan.md](docs/go-plan.md). A runtime in another language must
+implement the contract and add a conformance runner.
 
 ## License
 

@@ -66,7 +66,7 @@ def test_the_baseline_file_holds_a_ratio_for_every_number():
     baseline = bench.load_baseline()
     assert baseline, "run: python conformance/bench.py --record"
     for key, recorded in baseline.items():
-        runtime = "rust" if key == "rust" else "python"   # the other keys are Python versions
+        runtime = key if key in ("rust", "go") else "python"   # the other keys are Python versions
         want = {target for target in bench.BENCH_TARGETS if target.split(":")[0] == runtime}
         assert set(recorded["relative"]) == want, key
         for target, row in recorded["relative"].items():
@@ -77,6 +77,10 @@ def test_a_rust_number_is_kept_apart_from_the_python_version():
     # The speed of the Rust runtime does not depend on the Python that runs bench.py.
     assert bench.baseline_key("python:run", python="3.12") == "3.12"
     assert bench.baseline_key("rust:run", python="3.12") == "rust"
+
+
+def test_a_go_number_is_kept_apart_from_the_python_version():
+    assert bench.baseline_key("go:run", python="3.12") == "go"
 
 
 def test_the_check_compares_each_target_with_its_own_baseline():

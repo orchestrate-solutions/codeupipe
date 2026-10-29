@@ -4,10 +4,12 @@
     python conformance/run.py python:run python:static-inline
     python conformance/run.py typescript:run
     python conformance/run.py rust:run
+    python conformance/run.py go:run
 
 With no arguments, the TypeScript target runs only when the machine has
-Node 22.18 or later, and the Rust target only when it has cargo. A target
-that is named and cannot run is a failure.
+Node 22.18 or later, the Rust target only when it has cargo, and the Go
+target only when it has go. A target that is named and cannot run is a
+failure.
 
 A runner executes cases and reports what happened. Only this file decides
 pass or fail, so every target is held to exactly the same comparison.
@@ -34,6 +36,7 @@ from codeupipe import Payload  # noqa: E402
 
 from judging.cargo_probe import CargoProbe  # noqa: E402
 from judging.default_targets_filter import DefaultTargetsFilter  # noqa: E402
+from judging.go_probe import GoProbe  # noqa: E402
 from judging.judge_pipeline import JudgePipeline  # noqa: E402
 from judging.judge_results_filter import JudgeResultsFilter  # noqa: E402
 from judging.load_cases_filter import LoadCasesFilter  # noqa: E402
@@ -70,6 +73,16 @@ def _rust(target):
     }
 
 
+def _go(target):
+    # Built from the repository: the runner's go.mod points at the runtime
+    # with a replace, and GOPROXY=off makes sure that nothing is downloaded.
+    return {
+        "cmd": ["go", "run", ".", target],
+        "env": {"GOFLAGS": "-mod=mod", "GOPROXY": "off", "GOWORK": "off"},
+        "cwd": HERE / "runners/go",
+    }
+
+
 TARGETS = {
     "python:run": _python("run"),
     "python:run_async": _python("run_async"),
@@ -79,6 +92,7 @@ TARGETS = {
     "typescript:run": _typescript("run"),
     "typescript:static": _typescript("static"),
     "rust:run": _rust("run"),
+    "go:run": _go("run"),
 }
 
 # The static target runs the compile package. Its dependencies must be
@@ -103,11 +117,17 @@ def _has_cargo():
     return CargoProbe().present()
 
 
+def _has_go():
+    """Whether there is a go to build and run the Go runner."""
+    return GoProbe().present()
+
+
 def default_targets():
     """Every target that this machine can run. TypeScript needs Node, the
-    static TypeScript target needs its package to be installed, and Rust
-    needs cargo."""
-    return DefaultTargetsFilter(lambda: _node_runs_typescript(), lambda: _has_cargo()).choose(TARGETS, _TYPESCRIPT_NEEDS)
+    static TypeScript target needs its package to be installed, Rust needs
+    cargo, and Go needs go."""
+    return DefaultTargetsFilter(lambda: _node_runs_typescript(), lambda: _has_cargo(),
+                                lambda: _has_go()).choose(TARGETS, _TYPESCRIPT_NEEDS)
 
 
 def load_cases():
@@ -129,7 +149,8 @@ def judge(case, result):
 
 
 def main(argv):
-    pipeline = JudgePipeline(ProcessLauncher(), lambda: _node_runs_typescript(), lambda: _has_cargo())
+    pipeline = JudgePipeline(ProcessLauncher(), lambda: _node_runs_typescript(), lambda: _has_cargo(),
+                             lambda: _has_go())
     out = pipeline.run(Payload({"cases_dir": CASES, "results_dir": RESULTS, "targets": TARGETS,
                                 "needs": _TYPESCRIPT_NEEDS, "names": list(argv)}))
     print(out.get("markdown"))

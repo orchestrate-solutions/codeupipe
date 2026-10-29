@@ -148,6 +148,47 @@ jobs:
           rustup toolchain install 1.75 --profile minimal
           cargo +1.75 test --locked
 
+  go:
+    name: Go package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      # The package and the runner have no dependencies, and no go.sum to
+      # cache. Only staticcheck, a tool, is downloaded.
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+          cache: false
+      - name: Format
+        run: test -z "$(gofmt -l packages/codeupipe-go conformance/runners/go)"
+      - name: Vet
+        run: |
+          (cd packages/codeupipe-go && go vet ./...)
+          (cd conformance/runners/go && go vet ./...)
+      - name: Staticcheck
+        run: |
+          (cd packages/codeupipe-go && go run honnef.co/go/tools/cmd/staticcheck@2026.2.2 ./...)
+          (cd conformance/runners/go && go run honnef.co/go/tools/cmd/staticcheck@2026.2.2 ./...)
+      - name: Tests
+        working-directory: packages/codeupipe-go
+        run: go test -race ./...
+      - name: Example
+        working-directory: packages/codeupipe-go
+        run: go run ./examples/pricing
+      - name: Install the Python package, for the judge
+        # conformance/run.py is a codeupipe pipeline (conformance/judging/).
+        run: python -m pip install -e packages/codeupipe
+      - name: Conformance
+        run: python conformance/run.py go:run
+      - name: The oldest Go that the package supports (go.mod)
+        working-directory: packages/codeupipe-go
+        env:
+          GOTOOLCHAIN: go1.22.12
+        run: go test -race ./...
+
   export:
     name: Export against dynamic run
     runs-on: ubuntu-latest
