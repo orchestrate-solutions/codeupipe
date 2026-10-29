@@ -66,6 +66,8 @@ jobs:
         run: python -m pip install -e packages/codeupipe
       - name: Conformance
         run: python conformance/run.py typescript:run typescript:static
+      - name: codeupipe add, judged by the cases of conformance/ADD.md
+        run: python conformance/add.py typescript:add
       - name: The packages as npm makes them
         run: npm pack --workspaces --dry-run
 
@@ -120,6 +122,7 @@ jobs:
           cargo run --locked -q -- --strict src tests ../codeupipe-rs/src
           ../codeupipe-rs/examples ../codeupipe-rs/tests ../../conformance/runners/rust/src
           ../codeupipe-compile-rs/src ../codeupipe-compile-rs/tests ../codeupipe-compile-rs/examples
+          ../codeupipe-add-rs/src ../codeupipe-add-rs/tests
       - name: The oldest Rust that the crate supports (rust-version)
         run: |
           rustup toolchain install 1.75 --profile minimal
@@ -163,18 +166,21 @@ jobs:
           go-version: stable
           cache: false
       - name: Format
-        run: test -z "$(gofmt -l packages/codeupipe-go conformance/runners/go)"
+        run: test -z "$(gofmt -l packages/codeupipe-go conformance/runners/go packages/codeupipe-add-go)"
       - name: Vet
         run: |
           (cd packages/codeupipe-go && go vet ./...)
           (cd conformance/runners/go && go vet ./...)
+          (cd packages/codeupipe-add-go && go vet ./...)
       - name: Staticcheck
         run: |
           (cd packages/codeupipe-go && go run honnef.co/go/tools/cmd/staticcheck@2026.2.2 ./...)
           (cd conformance/runners/go && go run honnef.co/go/tools/cmd/staticcheck@2026.2.2 ./...)
+          (cd packages/codeupipe-add-go && go run honnef.co/go/tools/cmd/staticcheck@2026.2.2 ./...)
       - name: Tests
-        working-directory: packages/codeupipe-go
-        run: go test -race ./...
+        run: |
+          (cd packages/codeupipe-go && go test -race ./...)
+          (cd packages/codeupipe-add-go && go test -race ./...)
       - name: Example
         working-directory: packages/codeupipe-go
         run: go run ./examples/pricing
@@ -183,11 +189,45 @@ jobs:
         run: python -m pip install -e packages/codeupipe
       - name: Conformance
         run: python conformance/run.py go:run
-      - name: The oldest Go that the package supports (go.mod)
-        working-directory: packages/codeupipe-go
+      - name: codeupipe add, judged by the cases of conformance/ADD.md
+        run: python conformance/add.py go:add
+      - name: The oldest Go that the packages support (go.mod)
         env:
           GOTOOLCHAIN: go1.22.12
-        run: go test -race ./...
+        run: |
+          (cd packages/codeupipe-go && go test -race ./...)
+          (cd packages/codeupipe-add-go && go test -race ./...)
+
+  rust-add:
+    name: Rust codeupipe add
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/codeupipe-add-rs
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      # A workspace of its own, with no dependency to download. The judge
+      # runs the Rust linter on what the command makes, so its crates are
+      # fetched first.
+      - name: Format
+        run: cargo fmt --check
+      - name: Clippy
+        run: cargo clippy --offline --all-targets -- -D warnings
+      - name: Tests
+        run: cargo test --offline
+      - name: Install the Python package, for the judge
+        run: python -m pip install -e ../codeupipe
+      - name: codeupipe add, judged by the cases of conformance/ADD.md
+        run: |
+          cargo fetch --locked --manifest-path ../codeupipe-lint-rs/Cargo.toml
+          python ../../conformance/add.py rust:add
+      - name: The oldest Rust that the crate supports (rust-version)
+        run: |
+          rustup toolchain install 1.75 --profile minimal
+          cargo +1.75 test --offline
 
   export:
     name: Export against dynamic run

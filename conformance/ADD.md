@@ -243,10 +243,10 @@ The judge has tests of its own, with a fake command:
 
 | Target | Command | State |
 |---|---|---|
-| `python:add` | `python -m codeupipe_add`, in [packages/codeupipe-add/](../packages/codeupipe-add/) | Passes the 22 cases |
-| `typescript:add` | `packages/codeupipe-add-ts` | Not yet |
-| `rust:add` | `packages/codeupipe-add-rs` | Not yet |
-| `go:add` | `packages/codeupipe-add-go` | Not yet |
+| `python:add` | `python -m codeupipe_add` ([packages/codeupipe-add/](../packages/codeupipe-add/)) | Passes the 22 cases |
+| `typescript:add` | `node packages/codeupipe-add-ts/src/cli.ts` ([packages/codeupipe-add-ts/](../packages/codeupipe-add-ts/)) | Passes the 22 cases |
+| `rust:add` | `cargo run` in [packages/codeupipe-add-rs/](../packages/codeupipe-add-rs/) | Passes the 22 cases |
+| `go:add` | `go build` of [packages/codeupipe-add-go/](../packages/codeupipe-add-go/) | Passes the 22 cases |
 
 ## Phase 2: a layout
 
