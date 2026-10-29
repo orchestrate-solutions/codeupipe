@@ -35,6 +35,9 @@ def test_a_yaml_layout_with_no_yaml_reader_says_what_to_install(tmp_path, monkey
     (None, "cannot be read"),
     ("- kind: filter\n", "mapping"),
     ("lang: [python\n", "cannot be read"),
+    ("lang: python\ncomponents:\n  - kind: filter\n    name: A\n    description: One.\n    description: Two.\n",
+     "description two times"),
+    ('{"lang": "python", "lang": "go"}', "lang two times"),
 ])
 def test_a_file_that_cannot_be_read_or_is_not_a_mapping_is_refused(tmp_path, text, wanted):
     if text is not None:

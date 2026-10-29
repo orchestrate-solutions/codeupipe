@@ -84,6 +84,16 @@ def test_a_layout_that_grows_keeps_each_file_that_exists_and_says_so(project, ca
     assert "src/pricing/discount_filter.py exists, kept" in err.splitlines()
 
 
+def test_a_kept_pipeline_whose_steps_changed_in_the_layout_is_named_on_stderr(project, capsys):
+    main(["--layout", "cup.layout.yaml"])
+    capsys.readouterr()
+    (project / "cup.layout.yaml").write_text(LAYOUT.replace("      - Audit\n", ""))
+    assert main(["--layout", "cup.layout.yaml"]) == 0
+    err = capsys.readouterr().err
+    assert ("src/pricing/pricing_pipeline.py exists, kept, and its steps are not those of the layout. "
+            "Change the file: the command does not write it again.") in err.splitlines()
+
+
 def test_a_layout_in_json_works_too(project, capsys):
     (project / "cup.layout.json").write_text(json.dumps({"lang": "python", "components": [
         {"kind": "filter", "name": "Discount"}]}))

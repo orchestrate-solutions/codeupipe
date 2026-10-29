@@ -308,6 +308,9 @@ does not go by with no message.
   `add_filter`, a tap `add_tap`, a pipeline `add_pipeline` (a nested
   pipeline), `valve: [Predicate, Filter]` gives `add_valve`. A name in
   `hooks` gives `use_hook`.
+- **A valve guards one filter**, which runs only when the predicate is true
+  (API.md). To guard two filters with one question, a layout has two valves
+  with the same predicate.
 - **Each step is made with no arguments**, as each component of phase 1 is:
   `self.add_filter(DiscountFilter())`.
 - **The pipeline file imports each step** by its module path, as the test
@@ -349,7 +352,13 @@ fails with `Write the acceptance case for <TypeName>.`
 - **Each file is kept or written by itself.** If the component file exists
   and its test does not, the test is written.
 - **A pipeline file that exists is not written again.** A change of the
-  steps of an existing pipeline is the user's work.
+  steps of an existing pipeline is the user's work. The command shows that
+  work: when the steps of a kept pipeline file are not those of the layout,
+  the line on stderr is
+  `src/pricing/pricing_pipeline.py exists, kept, and its steps are not those of the layout. Change the file: the command does not write it again.`
+  A step is its call and the types in it, in order: the arguments and the
+  comments do not count, so a file that the user filled in is not named while
+  its steps are the same.
 
 The exit code is 0 when the command keeps a file: the layout is done.
 
@@ -358,6 +367,8 @@ The exit code is 0 when the command keeps a file: the layout is done.
 The command checks the whole layout before it writes a file. It refuses:
 
 - a file that it cannot read, or that is not a YAML (or JSON) mapping;
+- a key that is two times in one mapping (a YAML or JSON reader keeps the
+  last one with no message);
 - a layout with no `lang`, or for another language;
 - a key that is not in the table, a missing `kind` or `name`, or an empty
   `components`;

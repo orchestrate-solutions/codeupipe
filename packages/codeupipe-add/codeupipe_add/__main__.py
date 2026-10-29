@@ -50,8 +50,13 @@ def main(argv=None) -> int:
     except Refusal as refusal:
         print(str(refusal), file=sys.stderr)
         return refusal.exit_code
+    stale = out.get("stale") or []
     for path in out.get("kept") or []:
-        print("%s exists, kept" % path, file=sys.stderr)
+        if path in stale:
+            print("%s exists, kept, and its steps are not those of the layout. Change the file: the command does "
+                  "not write it again." % path, file=sys.stderr)
+        else:
+            print("%s exists, kept" % path, file=sys.stderr)
     for path in out.get("written"):
         print(path)
     return 0
