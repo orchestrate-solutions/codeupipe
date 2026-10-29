@@ -1,0 +1,28 @@
+[package]
+name = "codeupipe-compile"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "Writes a codeupipe pipeline in Rust as plain Rust: a struct and functions, with no codeupipe."
+license = "Apache-2.0"
+repository = "https://github.com/orchestrate-solutions/codeupipe"
+readme = "README.md"
+keywords = ["pipeline", "filter", "payload", "compiler"]
+# Not on crates.io yet. A version below 1.0 is not stable.
+publish = false
+
+[[bin]]
+name = "codeupipe-compile"
+path = "src/main.rs"
+
+[dependencies]
+codeupipe = { path = "../codeupipe-rs" }
+# Lines and columns of the syntax tree, outside a procedural macro.
+proc-macro2 = { version = "1.0.80", default-features = false, features = ["span-locations"] }
+quote = { version = "1.0.35", default-features = false }
+syn = { version = "2.0.60", default-features = false, features = ["full", "parsing", "printing", "clone-impls", "visit", "visit-mut"] }
+prettyplease = "0.2.20"
+
+# A workspace of its own, as the linter: the crates of the root workspace
+# have no dependencies and build with no download.
+[workspace]

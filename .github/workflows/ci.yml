@@ -119,6 +119,30 @@ jobs:
         run: >-
           cargo run --locked -q -- --strict src tests ../codeupipe-rs/src
           ../codeupipe-rs/examples ../codeupipe-rs/tests ../../conformance/runners/rust/src
+          ../codeupipe-compile-rs/src ../codeupipe-compile-rs/tests ../codeupipe-compile-rs/examples
+      - name: The oldest Rust that the crate supports (rust-version)
+        run: |
+          rustup toolchain install 1.75 --profile minimal
+          cargo +1.75 test --locked
+
+  rust-compile:
+    name: Rust compiler
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/codeupipe-compile-rs
+    steps:
+      - uses: actions/checkout@v5
+      # A workspace of its own: it downloads syn, quote and prettyplease
+      # from crates.io, at the versions in its Cargo.lock.
+      - name: Format
+        run: cargo fmt --check
+      - name: Clippy
+        run: cargo clippy --locked --all-targets -- -D warnings
+      - name: Tests
+        run: cargo test --locked
+      - name: Compiled against the pipeline (numbers only)
+        run: cargo run --locked --release -q --example bench
       - name: The oldest Rust that the crate supports (rust-version)
         run: |
           rustup toolchain install 1.75 --profile minimal

@@ -432,6 +432,19 @@ core, a dynamic step costs about 25 ns, and the dynamic run is faster than
 compiled Python in four of the five scenarios. The compiler waits until a
 real pipeline shows a need.
 
+**Started (2026-10-28), as a struct and not a value type.** Hand-compiled
+forms were measured against `Pipeline::run`, on the five scenarios, the
+pricing example and a step of real text work. Plain functions on a Payload
+(the shape that this plan first had in mind, with a `Value` in the module)
+gain 1.1 to 1.7 times: about 10 ns a step. A static pipeline from generics
+reaches the same with no compiler. The large gain is the data: with a struct
+that has one field for each key, the pricing example runs in about 2 ns, and
+work on text 3 times faster. So the first version of the compiler writes a
+struct, and keeps the rest of this section's rules: the same output, a
+refusal with the place, a codeupipe pipeline itself. It is in
+`packages/codeupipe-compile-rs/` ([README](../packages/codeupipe-compile-rs/README.md)).
+Not in it yet: the conformance target `rust:static`, and nested pipelines.
+
 ### The value type in compiled code
 
 Plain Python has `dict`, and plain TypeScript has `Map`. Plain Rust has no
@@ -537,7 +550,7 @@ correctness. The others are about form.
 | 0 | Settle D1 to D10 | One review of this page |
 | 1 | Core crate, example, README | About 600 lines with tests (TypeScript: 415 lines of source) |
 | 2 | Runner, `run.py`, bench, CI, documents | About 400 lines, most of it the JSON reader and the `cup_ops` |
-| 3 | Compiler and `rust:static`, if the benchmark says so | About 1,000 lines (TypeScript: 851 lines of source) |
+| 3 | Compiler and `rust:static`. **Started**: the compiler, as a struct; `rust:static` not yet | About 1,000 lines (TypeScript: 851 lines of source). Written: 1,471 of source, 268 of tests |
 | 4 | Linter. **Done** | About 1,200 lines (written: 2,060 of source with its comments, 950 of tests) |
 
 Phases 1 and 2 are one release: `codeupipe` 0.1.0 for Rust, in the

@@ -242,7 +242,7 @@ map and fails the comparison.
 | Run | `run` is sync. `run_async` is opt-in | One `run`. It returns a Promise. A step can be sync or async | `run` is sync, and `run_with_state` for the caller's State. No async run yet |
 | Absent | `None` | `null` | `None` from `get`; `Value::Null` is a JSON null |
 | Label of a step | `type(step).__name__` | `step.constructor.name` | The name of the step's type, from `std::any::type_name` |
-| Compile | `codeupipe.compile` | `packages/codeupipe-compile-ts` | None yet |
+| Compile | `codeupipe.compile` | `packages/codeupipe-compile-ts` | `packages/codeupipe-compile-rs`: a struct with one field for each key. No conformance target yet |
 | Linter | `packages/codeupipe-lint` | `packages/codeupipe-lint-ts` | None yet. The compiler refuses several of the shapes that the linters find |
 | A type of your own | Any object with `copy()` | `class Order implements PipelineData<Order>`, then `new Pipeline<Order>()`, `Filter<Order>` | `impl PipelineData for Order {}`, then `Pipeline<Order>`, `Filter<Order>` |
 
