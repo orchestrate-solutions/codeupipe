@@ -1,0 +1,14 @@
+{
+ "lang": "typescript",
+ "cmd": ["node", "{repo}/packages/codeupipe-add-ts/src/cli.ts"],
+ "env": {},
+ "setup": {
+  "package.json": "{\"name\":\"cup-add-project\",\"private\":true,\"type\":\"module\"}\n",
+  "node_modules/codeupipe/package.json": "{\"name\":\"codeupipe\",\"private\":true,\"type\":\"module\",\"exports\":{\".\":\"./index.js\"}}\n",
+  "node_modules/codeupipe/index.js": "export * from \"{repo}/packages/codeupipe-ts/src/index.ts\";\n"
+ },
+ "lint": [
+  {"cmd": ["node", "{repo}/packages/codeupipe-lint-ts/src/cli.ts", "--strict", "{component}"], "env": {}}
+ ],
+ "test": {"cmd": ["node", "--test", "--test-reporter=spec", "{test}"], "env": {}}
+}

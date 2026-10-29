@@ -5,7 +5,8 @@
   "workspaces": [
     "packages/codeupipe-ts",
     "packages/codeupipe-lint-ts",
-    "packages/codeupipe-compile-ts"
+    "packages/codeupipe-compile-ts",
+    "packages/codeupipe-add-ts"
   ],
   "scripts": {
     "build": "npm run build --workspaces",
