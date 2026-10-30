@@ -100,7 +100,14 @@ Things to do after the command:
 
 - **Python.** The test imports `from src.pricing.discount_filter import
   DiscountFilter`, so the root must be on the import path: run
-  `PYTHONPATH=. python -m pytest`. The command makes no `__init__.py`.
+  `PYTHONPATH=. python -m pytest`. The command makes no `__init__.py`. To
+  record this in the project, so that `python -m pytest` works with no
+  variable, put it in `pyproject.toml` (pytest 7 or later):
+
+  ```toml
+  [tool.pytest.ini_options]
+  pythonpath = ["."]
+  ```
 - **Rust.** A new file is a module only when a parent declares it. The
   command prints the lines to add on stderr, such as
   `add to src/lib.rs: pub mod pricing;` and
@@ -163,10 +170,10 @@ The keys:
 | Key | Where | Meaning |
 |---|---|---|
 | `lang` | top, required | Must be the language of the command |
-| `root` | top | The directory of the component files |
+| `root` | top | The directory of the component files. Use a package name (`checkout`, `src/pricing`), so that the imports say where a component is: `from checkout.add_tax_filter import AddTaxFilter`. With `.`, the files go beside `cup.layout.yaml` |
 | `components` | top, required | One or more, made in this order |
 | `kind`, `name` | each, required | As on the command line |
-| `description` | each | The header comment. Write it: it is the first thing a reader sees |
+| `description` | each | The header comment of the component file (in Python, the module docstring: `"""AddTaxFilter: <description>"""`). Write it: it is the first thing a reader sees |
 | `steps` | pipeline only | In order. A name, or `valve: [Predicate, Filter]` |
 | `hooks` | pipeline only | Names of hooks |
 
@@ -203,8 +210,26 @@ How steps become code:
     - valve: [HasError, PutInOutbox]
   ```
 
-  The predicate is asked again before each filter. A pipeline cannot go in a
+  The predicate is asked again before each filter, so keep it a question
+  about the Payload, with no slow work in it. A pipeline cannot go in a
   valve.
+- **"This, else that" is two valves with opposite predicates**, one for each
+  path:
+
+  ```yaml
+  steps:
+    - valve: [NotShipped, PayRefund]
+    - valve: [Shipped, MakeReturnLabel]
+    - AddHistoryNote        # both paths
+  ```
+
+  The second predicate is asked after the first filter ran. If that filter
+  can change what the second predicate reads, both paths can run: test the
+  pipeline with both cases.
+- **A name with `Not` is correct when that is the case where the filter
+  runs.** The rule is "true when the filter must run", not "no negative
+  names": `NotShipped` before `PayRefund` is right; `Shipped` before
+  `PayRefund` is wrong.
 - A step names a component **of the same file**, by its `name` or its type
   name (`Discount` or `DiscountFilter`).
 - Each step is made with **no arguments**. If a component needs a setting
