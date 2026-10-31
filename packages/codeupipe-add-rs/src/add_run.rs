@@ -38,6 +38,11 @@ pub struct AddRun {
     pub directory_module_path: String,
     /// The files that the command made, component first (WriteFilesFilter).
     pub written: Vec<String>,
+    /// Only for a pipeline of a layout: the method and the type names of
+    /// each call. With calls, RenderFilesFilter writes the steps.
+    pub calls: Vec<(String, Vec<String>)>,
+    /// Only for a pipeline of a layout: the module and the type of each step.
+    pub uses: Vec<(String, String)>,
 }
 
 impl PipelineData for AddRun {}

@@ -15,10 +15,16 @@ publish = false
 name = "codeupipe-add"
 path = "src/main.rs"
 
+[features]
+default = ["layout"]
+# `--layout` reads YAML, and Rust has no YAML or JSON reader in its standard
+# library (conformance/ADD.md, decision 3). Without the feature, the command
+# makes one component, with no dependency beyond the runtime.
+layout = ["dep:yaml-rust2"]
+
 [dependencies]
 codeupipe = { path = "../codeupipe-rs" }
+yaml-rust2 = { version = "0.10", optional = true }
 
-# A workspace of its own, as the linter and the compiler have theirs. The
-# command has no dependency to download beyond the runtime, so it can build
-# with --offline.
+# A workspace of its own, as the linter and the compiler have theirs.
 [workspace]

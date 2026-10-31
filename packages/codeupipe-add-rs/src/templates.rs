@@ -73,6 +73,24 @@ impl NamedPipeline for {type_name} {
 }
 "#;
 
+/// The component file of a pipeline of a layout, with its steps
+/// (conformance/ADD.md, "The steps"). `{uses}` and `{calls}` are lines that
+/// RenderFilesFilter makes.
+pub const PIPELINE_STEPS: &str = r#"//! {type_name}: {description}
+
+use codeupipe::{NamedPipeline, Pipeline};
+
+{uses}
+
+pub struct {type_name};
+
+impl NamedPipeline for {type_name} {
+    fn add_steps(&self, pipeline: &mut Pipeline) {
+{calls}
+    }
+}
+"#;
+
 /// The test file: one test that makes the component and fails with the
 /// message of the contract, so that the work starts at RED.
 pub const TEST: &str = r#"//! The acceptance case of {type_name}.
