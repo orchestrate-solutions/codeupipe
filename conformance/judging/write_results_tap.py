@@ -15,6 +15,6 @@ class WriteResultsTap:
 
     def observe(self, payload: Payload) -> None:
         directory = pathlib.Path(payload.get("results_dir"))
-        directory.mkdir(exist_ok=True)
+        directory.mkdir(parents=True, exist_ok=True)
         (directory / "latest.json").write_text(json.dumps(payload.get("report"), indent=2))
         (directory / "latest.md").write_text(payload.get("markdown"))

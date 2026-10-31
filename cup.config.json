@@ -1,6 +1,6 @@
 {
   "lint": {
-    "paths": ["packages/codeupipe/codeupipe", "packages/codeupipe-lint/codeupipe_lint", "scorecard", "conformance/runners/python", "conformance/judging", "conformance/run.py", "examples"],
+    "paths": ["packages/codeupipe/codeupipe", "packages/codeupipe-lint/codeupipe_lint", "packages/codeupipe-add/codeupipe_add", "scorecard", "conformance/runners/python", "conformance/judging", "conformance/run.py", "conformance/add.py", "examples"],
     "exclude": ["*/tests/lint/fixtures/*"]
   }
 }
