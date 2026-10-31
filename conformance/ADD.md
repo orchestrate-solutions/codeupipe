@@ -196,10 +196,13 @@ runtime: `python:add`, `typescript:add`, `rust:add`, `go:add`.
 |---|---|
 | `args` | The arguments after `add` |
 | `given` | Files that exist before the command runs, as `{language: {path: text}}`. Optional |
+| `layout` | A layout file for a phase 2 case: `{"path", "text"}`. The judge writes it before the command runs, with `{lang}` in the text replaced by the language of the target. Optional |
 | `expect.exit` | The exit code |
-| `expect.type` | The type name that the component file declares |
+| `expect.type` | The type name that the component file declares (phase 1) |
+| `expect.types` | For a layout: the type name of each component that the command makes, in order (phase 2) |
 | `expect.files` | For each language, the files that the command prints, in order. Each one must exist after the run |
-| `expect.contains` | A list of texts that the component file has, such as the description. Optional |
+| `expect.contains` | A list of texts that the first component file has, such as the description. Optional |
+| `expect.steps` | For a layout: `{pipeline type: [step types]}`. The pipeline file names each step type, in order, after its own type name. Optional |
 | `expect.message_contains` | Text that stderr has. Optional |
 
 The judge is `python conformance/add.py` (or `python conformance/add.py
@@ -222,7 +225,8 @@ the project of the case, `{python}` the Python that runs the judge,
 the command printed. A target uses the packages of this repository, so the
 judge checks the code of the branch, with no download.
 
-For a case with exit 0, the judge also checks that:
+For a case with exit 0, the judge also checks, for each component that the
+command made (each pair of printed files, component then test), that:
 
 1. **The linter finds nothing**, in strict mode, in the component file:
    `python -m codeupipe_lint.invariants --strict` and
@@ -243,16 +247,16 @@ The judge has tests of its own, with a fake command:
 
 | Target | Command | State |
 |---|---|---|
-| `python:add` | `python -m codeupipe_add` ([packages/codeupipe-add/](../packages/codeupipe-add/)) | Passes the 23 cases |
-| `typescript:add` | `node packages/codeupipe-add-ts/src/cli.ts` ([packages/codeupipe-add-ts/](../packages/codeupipe-add-ts/)) | Passes the 23 cases |
-| `rust:add` | `cargo run` in [packages/codeupipe-add-rs/](../packages/codeupipe-add-rs/) | Passes the 23 cases |
-| `go:add` | `go build` of [packages/codeupipe-add-go/](../packages/codeupipe-add-go/) | Passes the 23 cases |
+| `python:add` | `python -m codeupipe_add` ([packages/codeupipe-add/](../packages/codeupipe-add/)) | Passes the 47 cases |
+| `typescript:add` | `node packages/codeupipe-add-ts/src/cli.ts` ([packages/codeupipe-add-ts/](../packages/codeupipe-add-ts/)) | Passes the 47 cases |
+| `rust:add` | `cargo run` in [packages/codeupipe-add-rs/](../packages/codeupipe-add-rs/) | Passes the 47 cases |
+| `go:add` | `go build` of [packages/codeupipe-add-go/](../packages/codeupipe-add-go/) | Passes the 47 cases |
+
+There are 23 cases of phase 1 and 24 of phase 2 (`add/layout-...`).
 
 ## Phase 2: a layout
 
-Phase 2 is in Python first ([packages/codeupipe-add/](../packages/codeupipe-add/)),
-with unit tests. It is not in the cases yet; the cases come when a second
-runtime starts phase 2.
+Phase 2 is in each runtime, and the cases `add/layout-...` judge it.
 
 ```
 codeupipe add --layout cup.layout.yaml
@@ -291,7 +295,7 @@ components:
 | Key | Meaning |
 |---|---|
 | `lang` | Required. The language of the command that reads the file. The Python command refuses a layout for `go` |
-| `root` | The directory of the component files, as `dir` in phase 1. The default is that of phase 1 |
+| `root` | The directory of the component files, as `dir` in phase 1. The default is that of phase 1: `.`, and `src` for Rust |
 | `components` | Required. A list with one component or more, made in the order of the list |
 | `kind`, `name`, `description` | As in phase 1. `kind` and `name` are required |
 | `steps` | Only for a pipeline. Each step is a name, or `valve: [Predicate, Filter]` |
@@ -313,8 +317,20 @@ does not go by with no message.
   with the same predicate.
 - **Each step is made with no arguments**, as each component of phase 1 is:
   `self.add_filter(DiscountFilter())`.
-- **The pipeline file imports each step** by its module path, as the test
-  does in phase 1: `from src.pricing.discount_filter import DiscountFilter`.
+- **The pipeline file imports each step**, as the language finds a file
+  beside it (the table below).
+
+The calls in each language:
+
+| Language | Import | Step | Nested pipeline |
+|---|---|---|---|
+| Python | `from src.pricing.discount_filter import DiscountFilter` (the module path, as the test of phase 1) | `self.add_filter(DiscountFilter())` | `self.add_pipeline(CleanPipeline())` |
+| TypeScript | `import { DiscountFilter } from "./discount-filter.ts"` | `this.addFilter(new DiscountFilter())` | `this.addPipeline(new CleanPipeline())` |
+| Rust | `use crate::pricing::discount_filter::DiscountFilter;` | `pipeline.add_filter(DiscountFilter)` | `pipeline.add_pipeline(Pipeline::named(CleanPipeline))` |
+| Go | None: the components of a layout are in one directory, so in one package | `pipeline.AddFilter(DiscountFilter{})` | `pipeline.AddPipeline(codeupipe.NewNamedPipeline(CleanPipeline{}))` |
+
+For Rust, the command writes the `add to ...: pub mod ...;` lines of each
+component on stderr, as in phase 1, each line once.
 
 In Python, the layout above gives this pipeline file:
 
@@ -385,10 +401,19 @@ The command checks the whole layout before it writes a file. It refuses:
 
 ### The YAML reader
 
-A layout in JSON is read with the standard library. A layout in YAML needs a
-YAML reader (decision 3): in Python, `pip install codeupipe-add[layout]`
-(PyYAML). With no reader, a YAML layout is refused with exit 2, and the
-message says what to install.
+A layout in YAML needs a YAML reader (decision 3). JSON is YAML, so the
+reader reads a layout in JSON too, and refuses a key two times in one
+mapping in both:
+
+| Language | Reader | How it comes |
+|---|---|---|
+| Python | PyYAML | `pip install codeupipe-add[layout]`. JSON is read with the standard library, so a layout in JSON needs no extra |
+| TypeScript | `yaml` | A dependency of `codeupipe-add-ts`, loaded only by `--layout` |
+| Rust | `yaml-rust2` | The `layout` feature, on by default. Without it, the command makes one component and has no dependency beyond the runtime |
+| Go | `gopkg.in/yaml.v3` | A dependency in `go.mod`, used only by `--layout` |
+
+With no reader, a layout is refused with exit 2, and the message says what
+to install.
 
 An ASCII tree (the output of `tree`) can come later as a second form of the
 same layout. It has no place for the steps of a pipeline, so YAML is the
@@ -406,10 +431,10 @@ needs a change of this document and of the cases.
 2. **The templates are in each package**, in the form of its language. The
    cases, not shared template files, keep the four the same: a shared
    template would need a template language that each runtime reads.
-3. **Phase 1 reads no YAML.** Phase 2 reads YAML. Python, Rust and Go have no
-   YAML reader in their standard library, so the YAML reader is a declared
-   dependency of the phase 2 command only. JSON is YAML, so a layout in JSON
-   works too.
+3. **Phase 1 reads no YAML.** Phase 2 reads YAML. No language has a YAML
+   reader in its standard library, so the YAML reader is a declared
+   dependency of the phase 2 command only (see "The YAML reader"). JSON is
+   YAML, so a layout in JSON works too.
 
 ## Not in this contract yet
 

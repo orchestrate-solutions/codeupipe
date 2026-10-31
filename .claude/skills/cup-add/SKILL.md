@@ -24,7 +24,7 @@ Two forms:
 
 ```
 codeupipe add <kind> <name> [dir] [--description TEXT]   # one component
-codeupipe add --layout cup.layout.yaml                    # each component of a layout (Python now)
+codeupipe add --layout cup.layout.yaml                    # each component of a layout
 ```
 
 ## What you get
@@ -53,9 +53,9 @@ the same thing with them.
 | Language | The command | Install |
 |---|---|---|
 | Python | `codeupipe-add` or `python -m codeupipe_add` | `pip install codeupipe-add` (`codeupipe-add[layout]` for a YAML layout) |
-| TypeScript | `node packages/codeupipe-add-ts/src/cli.ts` (in this repository) | the `codeupipe-add` workspace package |
-| Rust | `cargo run --manifest-path packages/codeupipe-add-rs/Cargo.toml --` | build the `codeupipe-add` crate |
-| Go | build `packages/codeupipe-add-go/codeupipe-add`, then run the binary | `go build` |
+| TypeScript | `node packages/codeupipe-add-ts/src/cli.ts` (in this repository) | the `codeupipe-add` workspace package (`npm ci` gets its `yaml` reader) |
+| Rust | `cargo run --manifest-path packages/codeupipe-add-rs/Cargo.toml --` | build the `codeupipe-add` crate (its `layout` feature, on by default, reads YAML) |
+| Go | build `packages/codeupipe-add-go/codeupipe-add`, then run the binary | `go build` (it gets gopkg.in/yaml.v3) |
 
 In this repository, the packages are not on a registry yet; run them from
 their directories.
@@ -111,7 +111,8 @@ Things to do after the command:
 - **Rust.** A new file is a module only when a parent declares it. The
   command prints the lines to add on stderr, such as
   `add to src/lib.rs: pub mod pricing;` and
-  `add to src/pricing.rs: pub mod discount_filter;`. Add each one.
+  `add to src/pricing.rs: pub mod discount_filter;`. Add each one. With a
+  layout, the lines of all the components come together, each line once.
 - **Go.** The package is that of the other `.go` files in the directory, or
   the directory name.
 
@@ -125,13 +126,13 @@ Things to do after the command:
 
 Options are written in full: `--desc` is refused. Use `--description`.
 
-## The layout (Python now)
+## The layout
 
 A layout is the plan of a project in one file. It stays in the project as a
 record of its structure. Write it first, then run the command.
 
 ```yaml
-lang: python            # the language of the command; python for now
+lang: python            # the language of the command: python, typescript, rust or go
 root: checkout          # the directory of the component files (default: .)
 components:
   - kind: filter
@@ -186,7 +187,8 @@ quotes starts a mapping: `description: Prices an order: validate, tax` is
 refused by the YAML reader. `description: "Prices an order: validate, tax"`
 is correct.
 
-How steps become code:
+How steps become code (Python; the other languages make the same calls in
+their own form):
 
 | In the layout | In the pipeline |
 |---|---|
@@ -195,6 +197,12 @@ How steps become code:
 | a pipeline name | `self.add_pipeline(TaxPipeline())` (nested) |
 | `valve: [IsMember, MemberDiscount]` | `self.add_valve(IsMemberPredicate(), MemberDiscountFilter())` |
 | a name in `hooks` | `self.use_hook(TimingHook())` |
+
+| Language | A valve in the pipeline file | Imports of the steps |
+|---|---|---|
+| TypeScript | `this.addValve(new IsMemberPredicate(), new MemberDiscountFilter());` in the constructor | `import { IsMemberPredicate } from "./is-member-predicate.ts";` |
+| Rust | `pipeline.add_valve(IsMemberPredicate, MemberDiscountFilter);` in `add_steps`; a nested pipeline is `Pipeline::named(TaxPipeline)` | `use crate::checkout::is_member_predicate::IsMemberPredicate;` (the `root` must be under `src`; the default is `src`) |
+| Go | `pipeline.AddValve(IsMemberPredicate{}, MemberDiscountFilter{})` in `AddSteps`; a nested pipeline is `codeupipe.NewNamedPipeline(TaxPipeline{})` | None: the components of a layout are in one package |
 
 - **A valve runs its filter only when the predicate is true.** When it is
   false, the filter is skipped and the run goes on. So name the predicate for
@@ -306,7 +314,6 @@ so `DiscountFilter(0.1)` is the same step as `DiscountFilter()`.
 
 ## Not yet
 
-- `--layout` in TypeScript, Rust and Go (Python only now).
 - Acceptance cases as data in the layout.
 - A type of your own (`add data Order`).
 - A rule for an absolute `dir` or a `dir` with `..`.

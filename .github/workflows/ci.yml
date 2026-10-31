@@ -37,6 +37,9 @@ jobs:
         run: python -m codeupipe_lint.invariants --strict
       - name: Conformance
         run: python conformance/run.py
+      - name: codeupipe add, judged by the cases of conformance/ADD.md
+        # requirements-dev.txt has PyYAML, the reader of the layout cases.
+        run: python conformance/add.py python:add
 
   typescript:
     name: TypeScript packages
@@ -159,8 +162,9 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      # The package and the runner have no dependencies, and no go.sum to
-      # cache. Only staticcheck, a tool, is downloaded.
+      # The package and the runner have no dependencies. codeupipe add has
+      # one, gopkg.in/yaml.v3, for --layout; staticcheck, a tool, is also
+      # downloaded.
       - uses: actions/setup-go@v7
         with:
           go-version: stable
@@ -190,7 +194,10 @@ jobs:
       - name: Conformance
         run: python conformance/run.py go:run
       - name: codeupipe add, judged by the cases of conformance/ADD.md
-        run: python conformance/add.py go:add
+        # The judge builds with GOPROXY=off, so the module is downloaded first.
+        run: |
+          (cd packages/codeupipe-add-go && go mod download)
+          python conformance/add.py go:add
       - name: The oldest Go that the packages support (go.mod)
         env:
           GOTOOLCHAIN: go1.22.12

@@ -2,14 +2,17 @@
 
 `codeupipe add` makes the files of a component: the component file and one
 test that fails, so that the work starts at RED. The contract is
-[conformance/ADD.md](../../conformance/ADD.md), and the same 22 cases judge
+[conformance/ADD.md](../../conformance/ADD.md), and the same 47 cases judge
 each language (`python conformance/add.py rust:add`).
 
 The command is a codeupipe pipeline:
-[src/add_pipeline.rs](src/add_pipeline.rs). Its steps carry a type of their
-own, `AddRun`, in place of a `Payload`, because a run holds paths and text
-rather than JSON-shaped values. It depends on `codeupipe` only: nothing to
-download, so it builds with `--offline`.
+[src/add_pipeline.rs](src/add_pipeline.rs), and
+[src/layout_pipeline.rs](src/layout_pipeline.rs) for a layout. Its steps
+carry types of their own, `AddRun` and `LayoutRun`, in place of a `Payload`,
+because a run holds paths and text rather than JSON-shaped values. It
+depends on `codeupipe`, and, for `--layout`, on `yaml-rust2` (the `layout`
+feature, on by default). With `--no-default-features` it has nothing to
+download.
 
 The version is below 1.0: the package is not stable yet, and a new version
 can change in a way that is not compatible. It is not on crates.io yet.
@@ -72,8 +75,24 @@ cargo fmt
 cargo clippy -- --strict
 ```
 
-## Not here yet
+## A layout
 
-A layout file (`add --layout cup.layout.yaml`), which makes all the
-components of a project at once, is phase 2 of the contract. It needs a YAML
-reader, and this package has no dependency to download.
+`codeupipe add --layout cup.layout.yaml` makes the files of each component
+in the file, and the steps of each pipeline (ADD.md, "Phase 2: a layout"):
+
+```yaml
+lang: rust
+root: src/pricing
+components:
+  - {kind: filter, name: Discount, description: "Takes a rate off the price."}
+  - {kind: predicate, name: AtLeast}
+  - {kind: filter, name: MarkBulk}
+  - kind: pipeline
+    name: Pricing
+    steps: [Discount, {valve: [AtLeast, MarkBulk]}]
+```
+
+The pipeline file has `use crate::pricing::discount_filter::DiscountFilter;`
+for each step, and `pipeline.add_valve(AtLeastPredicate, MarkBulkFilter);`.
+The lines for the crate come on stderr, each once. A file that exists is
+kept, so a layout can grow: add a component and run the command again.

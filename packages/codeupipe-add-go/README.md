@@ -29,10 +29,35 @@ The package of the new files is the package of the other `.go` files in the
 directory, or else the name of the directory (ADD.md, "Rust and Go: the
 package").
 
+## A layout
+
+`go run ./codeupipe-add --layout cup.layout.yaml` makes the files of each
+component in the file, and the steps of each pipeline (ADD.md, "Phase 2: a
+layout"):
+
+```yaml
+lang: go
+root: pricing
+components:
+  - {kind: filter, name: Discount, description: "Takes a rate off the price."}
+  - {kind: predicate, name: AtLeast}
+  - {kind: filter, name: MarkBulk}
+  - kind: pipeline
+    name: Pricing
+    steps: [Discount, {valve: [AtLeast, MarkBulk]}]
+```
+
+The components are in one directory, so in one package, and the pipeline
+needs no import for its steps: `pipeline.AddValve(AtLeastPredicate{},
+MarkBulkFilter{})`. gopkg.in/yaml.v3 reads the file (YAML or JSON). A file
+that exists is kept, so a layout can grow: add a component and run the
+command again.
+
 ## How it is made
 
 `codeupipe-add/` is the command: a codeupipe pipeline of six Filters, one in
-each file, run by `main.go`.
+each file, run by `main.go`. With `--layout`, `main.go` runs `Layout`
+([codeupipe-add/layout.go](codeupipe-add/layout.go)), a pipeline of eight.
 
 | Step | What it does |
 |---|---|
