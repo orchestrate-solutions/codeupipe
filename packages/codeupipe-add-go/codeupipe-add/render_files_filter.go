@@ -14,9 +14,11 @@ import (
 // Filter (sync).
 //
 // Input keys: “kind“, “type_name“, “snake“, “package_name“,
-// “module“, “description“.
+// “module“, “description“, and, for a pipeline of a layout, “calls“ (a
+// []LayoutCall).
 // Output keys: “component_text“ and “test_text“. With no description, the
-// header says “TODO: say what <type_name> does.“
+// header says “TODO: say what <type_name> does.“ A pipeline with calls gets
+// its steps.
 type RenderFilesFilter struct{}
 
 // Call fills the template of the kind, and the template of the test.
@@ -31,18 +33,42 @@ func (RenderFilesFilter) Call(ctx context.Context, payload *codeupipe.Payload) e
 	if description == "" {
 		description = "TODO: say what " + typeName + " does."
 	}
+	calls, _ := payload.Get("calls").([]LayoutCall)
+	if len(calls) > 0 {
+		template = pipelineSteps
+	}
 	values := map[string]string{
 		"type_name":    typeName,
 		"description":  description,
 		"package_name": stringOf(payload, "package_name"),
 		"snake":        stringOf(payload, "snake"),
 		"module":       moduleOf(payload),
+		"calls":        callLines(calls),
 	}
 	// The test is beside the component, in the package of the component, so it
 	// needs no import: a test cannot import its own package.
 	payload.Insert("component_text", fill(template, values)).
 		Insert("test_text", fill(testTemplateSame, values))
 	return nil
+}
+
+// callLines gives the line of each call of a pipeline of a layout. Each step
+// is made with no arguments, as each component of phase 1 is: a composite
+// literal. A nested pipeline is codeupipe.NewNamedPipeline(...).
+func callLines(calls []LayoutCall) string {
+	lines := make([]string, 0, len(calls))
+	for _, call := range calls {
+		arguments := make([]string, 0, len(call.Types))
+		for _, typeName := range call.Types {
+			if call.Method == "AddPipeline" {
+				arguments = append(arguments, "codeupipe.NewNamedPipeline("+typeName+"{})")
+			} else {
+				arguments = append(arguments, typeName+"{}")
+			}
+		}
+		lines = append(lines, "\tpipeline."+call.Method+"("+strings.Join(arguments, ", ")+")")
+	}
+	return strings.Join(lines, "\n")
 }
 
 // fill replaces each {key} in the template with its value.

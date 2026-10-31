@@ -105,6 +105,24 @@ func ({type_name}) AddSteps(pipeline *codeupipe.Pipeline) {
 `,
 }
 
+// pipelineSteps is the component file of a pipeline of a layout, with its
+// steps (ADD.md, "The steps"). {calls} are lines that RenderFilesFilter makes.
+const pipelineSteps = `// {type_name}: {description}
+package {package_name}
+
+import (
+	"github.com/orchestrate-solutions/codeupipe/packages/codeupipe-go"
+)
+
+// {type_name} is a Pipeline: its steps come from the layout.
+type {type_name} struct{}
+
+// AddSteps adds the steps of the layout, in order.
+func ({type_name}) AddSteps(pipeline *codeupipe.Pipeline) {
+{calls}
+}
+`
+
 // testTemplateSame is the test file with no import: the test is beside the
 // component, in the package of the component, so it needs nothing to make it.
 const testTemplateSame = `// The acceptance case of {type_name}.
