@@ -45,7 +45,8 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "codeupipe": "0.1.0"
+    "codeupipe": "0.1.0",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

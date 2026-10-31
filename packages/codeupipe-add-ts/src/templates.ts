@@ -53,6 +53,25 @@ export const COMPONENTS: Record<string, string> = {
   ].join("\n"),
 };
 
+/**
+ * The component file of a pipeline of a layout, with its steps (ADD.md, "The
+ * steps"). `{imports}` and `{calls}` are lines that RenderFilesFilter makes.
+ */
+export const PIPELINE_STEPS = [
+  "// {type_name}: {description}",
+  'import { Pipeline } from "codeupipe";',
+  "",
+  "{imports}",
+  "",
+  "export class {type_name} extends Pipeline {",
+  "  constructor() {",
+  "    super();",
+  "{calls}",
+  "  }",
+  "}",
+  "",
+].join("\n");
+
 /** The test file: one test that makes the component and fails with the known message. */
 export const TEST = [
   "// The acceptance case of {type_name}.",
