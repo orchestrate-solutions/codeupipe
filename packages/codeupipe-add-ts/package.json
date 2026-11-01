@@ -1,0 +1,61 @@
+{
+  "name": "codeupipe-add",
+  "version": "0.1.0",
+  "private": true,
+  "description": "codeupipe add for TypeScript: the component file and the test file of one component.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orchestrate-solutions/codeupipe.git",
+    "directory": "packages/codeupipe-add-ts"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "codeupipe-add": "./src/cli.ts"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "core": "npm --prefix ../codeupipe-ts run build",
+    "pretest": "npm run core",
+    "test": "node --test \"tests/*.test.ts\"",
+    "pretypecheck": "npm run core",
+    "typecheck": "tsc --noEmit",
+    "prebuild": "npm run core",
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "codeupipe": "0.1.0",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  },
+  "keywords": [
+    "pipeline",
+    "filter",
+    "codeupipe",
+    "scaffolding"
+  ]
+}
