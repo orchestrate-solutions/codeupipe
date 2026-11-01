@@ -15,7 +15,9 @@ concurrency:
 jobs:
   test:
     name: Tests, Python ${{ matrix.python }}
-    runs-on: ubuntu-latest
+    # Python 3.9, the oldest that the packages support, has builds for
+    # Ubuntu 24.04 and older only; ubuntu-latest is 26.04.
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
