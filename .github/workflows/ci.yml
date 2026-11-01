@@ -236,9 +236,11 @@ jobs:
           cargo fetch --locked --manifest-path ../codeupipe-lint-rs/Cargo.toml
           python ../../conformance/add.py rust:add
       - name: The oldest Rust that the crate supports (rust-version)
+        # Cargo 1.75 cannot read the index that a newer Cargo fetched, so it
+        # fetches its own, at the versions in Cargo.lock.
         run: |
           rustup toolchain install 1.75 --profile minimal
-          cargo +1.75 test --offline
+          cargo +1.75 test --locked
 
   export:
     name: Export against dynamic run
