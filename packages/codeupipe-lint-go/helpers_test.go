@@ -1,6 +1,7 @@
 package codeupipelint
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -84,7 +85,7 @@ func TestAMarkerAloneAboveAllowsTheFindingBelow(t *testing.T) {
 		Sources:  []Source{{Path: "x.go", Markers: []Marker{{Line: 2, Col: 1, Kind: "allow-plain", Alone: true}}}},
 		Findings: []Finding{{Path: source.Path, Line: 3, Rule: LogicOutsidePrimitive}, {Path: "x.go", Line: 3, Rule: LocalTypeStep}},
 	}
-	if err := (ApplySuppressionsFilter{}).Call(nil, run); err != nil {
+	if err := (ApplySuppressionsFilter{}).Call(context.Background(), run); err != nil {
 		t.Fatal(err)
 	}
 	if len(run.Suppressed) != 1 || len(run.Findings) != 1 || run.Findings[0].Rule != LocalTypeStep {

@@ -21,6 +21,7 @@ type Finding struct {
 
 // Format gives "path:line:col  RULE slug  message", with "warning: " before
 // the message of a warning.
+// cup: allow-plain the text of one finding, for the report
 func (f Finding) Format() string {
 	warning := ""
 	if f.Warning {

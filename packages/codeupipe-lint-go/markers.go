@@ -10,6 +10,7 @@ import (
 // MarkersOf gives each line of a comment of file that starts with
 // "cup: allow-...". Text in a string is not a comment, so it is not a
 // marker. A doc comment is a comment, so a marker can be its last line.
+// cup: allow-plain used by the parse Filter: it finds the comments of a file
 func MarkersOf(fset *token.FileSet, file *ast.File, text string) []Marker {
 	lines := strings.Split(text, "\n")
 	var markers []Marker
@@ -38,6 +39,7 @@ func MarkersOf(fset *token.FileSet, file *ast.File, text string) []Marker {
 
 // stripCommentLead gives piece without the space and the comment characters
 // at its start: "//", "/*", or the "*" of a line inside a block comment.
+// cup: allow-plain used by the parse Filter: it finds the comments of a file
 func stripCommentLead(piece string) string {
 	piece = strings.TrimLeft(piece, " \t")
 	switch {
@@ -53,6 +55,7 @@ func stripCommentLead(piece string) string {
 
 // markerKind gives "allow-plain" for "cup: allow-plain the reason", and ""
 // for text that is not a marker.
+// cup: allow-plain used by the parse Filter: it finds the comments of a file
 func markerKind(text string) string {
 	rest, ok := strings.CutPrefix(text, "cup:")
 	if !ok {

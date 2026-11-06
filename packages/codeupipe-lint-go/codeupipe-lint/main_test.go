@@ -169,10 +169,17 @@ func TestStrictWithNoWarning(t *testing.T) {
 	}
 }
 
-// A warning fails the run only with --strict. No rule of this part gives a
-// warning, so this test waits for CUP-I008 or CUP-I009.
+// A warning fails the run only with --strict.
 func TestStrictMakesAWarningFail(t *testing.T) {
-	t.Skip("waits for a rule that gives a warning (CUP-I008 or CUP-I009)")
+	dir := writeProject(t, map[string]string{
+		"plain.go": "package demo\n\nfunc plain(n int) int {\n\tif n > 0 {\n\t\treturn n\n\t}\n\treturn 0\n}\n",
+	})
+	if got := execute(t, dir, "."); got.code != 0 {
+		t.Fatalf("a warning without --strict: exit %d, want 0", got.code)
+	}
+	if got := execute(t, dir, "--strict", "."); got.code != 1 {
+		t.Fatalf("a warning with --strict: exit %d, want 1", got.code)
+	}
 }
 
 func TestWithNoPathsTheyComeFromTheConfigFile(t *testing.T) {

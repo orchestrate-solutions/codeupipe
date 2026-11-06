@@ -50,6 +50,7 @@ var primitiveMethods = map[string]struct {
 
 // KindOfMethod gives the primitive kind that the method makes its receiver,
 // and false for a method that makes no primitive.
+// cup: allow-plain shared by the analysis Filters: it says which primitive a type is, from its methods
 func KindOfMethod(method *ast.FuncDecl) (PrimitiveKind, bool) {
 	wanted, ok := primitiveMethods[method.Name.Name]
 	if !ok || method.Recv == nil {
@@ -64,6 +65,7 @@ func KindOfMethod(method *ast.FuncDecl) (PrimitiveKind, bool) {
 // ReceiverName gives the name of the type of a method's receiver:
 // "DiscountFilter" for (f DiscountFilter), (f *DiscountFilter) and
 // (f *Wrapper[P]). It is "" for a function.
+// cup: allow-plain shared by the analysis Filters: it says which primitive a type is, from its methods
 func ReceiverName(function *ast.FuncDecl) string {
 	if function.Recv == nil || len(function.Recv.List) == 0 {
 		return ""
@@ -73,6 +75,7 @@ func ReceiverName(function *ast.FuncDecl) string {
 
 // typeName gives the name of a named type, without a pointer, a package or
 // type arguments, and "" for a type with no name.
+// cup: allow-plain shared by the analysis Filters: it says which primitive a type is, from its methods
 func typeName(expr ast.Expr) string {
 	switch expr := expr.(type) {
 	case *ast.Ident:
@@ -92,6 +95,7 @@ func typeName(expr ast.Expr) string {
 }
 
 // countFields counts the parameters or results of a list: "a, b int" is two.
+// cup: allow-plain shared by the analysis Filters: it says which primitive a type is, from its methods
 func countFields(fields *ast.FieldList) int {
 	if fields == nil {
 		return 0
@@ -105,6 +109,7 @@ func countFields(fields *ast.FieldList) int {
 
 // embedsHookBase is true for a struct that embeds codeupipe.HookBase or
 // HookBaseOf[P].
+// cup: allow-plain shared by the analysis Filters: it says which primitive a type is, from its methods
 func embedsHookBase(spec *ast.TypeSpec) bool {
 	structType, ok := spec.Type.(*ast.StructType)
 	if !ok {
@@ -123,6 +128,7 @@ func embedsHookBase(spec *ast.TypeSpec) bool {
 // type is a primitive when the file has one of its primitive methods
 // (AddSteps, Before, After, OnError, Call, Observe, Test, with the shape of
 // the interface), or when its struct embeds HookBase.
+// cup: allow-plain shared by the analysis Filters: it says which primitive a type is, from its methods
 func PrimitivesIn(file *ast.File) []Primitive {
 	declared := map[string]token.Pos{}
 	found := map[string]*Primitive{}

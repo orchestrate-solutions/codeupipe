@@ -70,6 +70,7 @@ var Rules = []Rule{
 }
 
 // RuleOf gives the rule with the id, and false when there is none.
+// cup: allow-plain shared by the analysis Filters: a rule and its finding
 func RuleOf(id string) (Rule, bool) {
 	for _, rule := range Rules {
 		if rule.ID == id {
@@ -83,6 +84,7 @@ func RuleOf(id string) (Rule, bool) {
 // reads "<what>. <fix>". callLine is the line of the Add... call around the
 // finding, or 0; it is kept only when it is not the line of the finding.
 // It panics for an id that is not a rule of this linter.
+// cup: allow-plain shared by the analysis Filters: a rule and its finding
 func MakeFinding(source Source, pos token.Pos, id, what string, callLine int) Finding {
 	rule, ok := RuleOf(id)
 	if !ok {
