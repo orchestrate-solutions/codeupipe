@@ -38,6 +38,7 @@ func SetRunAgain(run func(ctx context.Context, input map[string]any) error) {
 }
 
 // RunAgain runs the pipeline of the case again, with input and a new State.
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 func RunAgain(ctx context.Context, input map[string]any) error {
 	if runAgain == nil {
 		return errors.New("no pipeline to run again")

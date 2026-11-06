@@ -9,6 +9,7 @@ import (
 	"github.com/orchestrate-solutions/codeupipe/packages/codeupipe-go"
 )
 
+// cup: allow-plain the entry of the program: it builds the pipeline, runs it and prints the result
 func main() {
 	pipeline := codeupipe.NewNamedPipeline(PricingPipeline{})
 	pipeline.UseHook(PrintStepsHook{})
