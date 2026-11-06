@@ -424,9 +424,23 @@ that the runner catches a broken runtime, the runtime is broken on purpose
 Phases 1 and 2 are one release: `codeupipe` 0.1.0 for Go, in the conformance
 matrix.
 
-## Phase 3: compile, and phase 4: the linter
+## Phase 4: the linter
 
-Later versions, each with a plan of its own when it starts. Both use only the
+**Done** (2026-11-05): `packages/codeupipe-lint-go`, a module of its own
+with no dependency but the runtime (a `replace`). It is a codeupipe pipeline
+of 13 Filters over a `*LintRun`, with 12 rules: the rules of the Rust linter,
+and CUP-A001, A008 and I004, which the Go compiler does not check (D3, D6).
+About 2,000 lines of source and 90 tests in about 1,950 lines. `go test
+-race`, `go vet`, `gofmt` and `staticcheck` are clean on Go 1.22.12 and
+1.25.0. The Go code of this repository (the runtime, its example, the
+runner and the linter) passes `--strict`, with a marker that says why on
+each of 66 places. To check that the tests catch a broken linter, two rules
+were broken on purpose: not checking a Tap for writes failed 5 tests, and
+not reading a marker on the line above failed 8. CI has a `go-lint` job.
+
+## Phase 3: compile
+
+A later version, with a plan of its own when it starts. Both use only the
 standard library (`go/parser`, `go/ast`, `go/types`, `go/format`). The compiler
 starts only after phase 2 measures `go:run`, as the Rust compiler waited for
 `rust:run`: it is worth writing only if the number leaves room for a gain.
@@ -439,4 +453,4 @@ starts only after phase 2 measures `go:run`, as the Rust compiler waited for
 | 1 | Core package, example, README | About 500 lines of source and 600 of tests (TypeScript: 450 lines of source) |
 | 2 | Runner, `run.py`, bench, CI, documents | About 300 lines: no JSON reader to write |
 | 3 | Compiler | Later |
-| 4 | Linter | Later |
+| 4 | Linter. **Done** (2026-11-05) | About 2,000 lines of source and 1,950 of tests |
