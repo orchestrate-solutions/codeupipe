@@ -57,7 +57,7 @@ func (h LogHook) After(ctx context.Context, step string, payload *codeupipe.Payl
 	fmt.Println(h.pipeline.State().Executed())
 }
 `,
-	}, LintOptions{})
+	}, otherRulesOff)
 	sameFound(t, got,
 		"count_filter.go:10 CUP-I003",
 		"count_filter.go:11 CUP-I003",
@@ -98,7 +98,7 @@ func (x Fields) Call(ctx context.Context, payload *codeupipe.Payload) error {
 	return nil
 }
 `,
-	}, LintOptions{})
+	}, otherRulesOff)
 	sameFound(t, got,
 		"fields.go:13 CUP-I003",
 		"fields.go:14 CUP-I003",
@@ -122,7 +122,7 @@ func (r Remote) Call(ctx context.Context, payload *codeupipe.Payload) error {
 	return nil
 }
 `,
-	}, LintOptions{})
+	}, otherRulesOff)
 	sameFound(t, got)
 }
 
@@ -138,7 +138,7 @@ func run(h Holder) {
 	h.pipeline.State()
 }
 `,
-	}, LintOptions{})
+	}, otherRulesOff)
 	sameFound(t, got)
 }
 
@@ -156,9 +156,13 @@ func (c Count) Call(ctx context.Context, payload *codeupipe.Payload) error {
 	return nil
 }
 `,
-	}, LintOptions{})
+	}, otherRulesOff)
 	sameFound(t, got)
 	if got.suppressed != 1 {
 		t.Fatalf("suppressed %d, want 1", got.suppressed)
 	}
 }
+
+// otherRulesOff switches off the file and name rules, so that the example
+// files of these tests can be short.
+var otherRulesOff = disable(OnePrimitivePerFile, PrimitiveFileName, PrimitiveRoleSuffix, LogicOutsidePrimitive)

@@ -34,7 +34,7 @@ func (s Seen) OnError(ctx context.Context, step string, err error, payload *code
 	payload.Insert("seen", true)
 }
 `,
-	}, LintOptions{})
+	}, otherRulesOff)
 	sameFound(t, got,
 		"seen.go:6 CUP-I004",
 		"seen.go:11 CUP-I004",
@@ -56,7 +56,7 @@ func (m Mark) Call(ctx context.Context, payload *codeupipe.Payload) error {
 	return nil
 }
 `,
-	}, LintOptions{})
+	}, otherRulesOff)
 	sameFound(t, got)
 }
 
@@ -72,7 +72,7 @@ func (a Audit) Observe(ctx context.Context, payload *codeupipe.Payload) error {
 	return nil
 }
 `,
-	}, LintOptions{})
+	}, otherRulesOff)
 	sameFound(t, got)
 }
 
@@ -96,7 +96,7 @@ func (u Unnamed) Observe(context.Context, *codeupipe.Payload) error {
 	return nil
 }
 `,
-	}, LintOptions{})
+	}, otherRulesOff)
 	sameFound(t, got)
 }
 
@@ -111,7 +111,7 @@ func (a Audit) Observe(ctx context.Context, payload *codeupipe.Payload) error {
 	return nil
 }
 `,
-	}, LintOptions{})
+	}, otherRulesOff)
 	sameFound(t, got, "audit.go:6 CUP-I004")
 	if !strings.HasPrefix(got.findings[0].Message, "Tap `Audit` writes to its payload in `Observe`: `payload.Insert(\"a\", 1)`. Only a Filter writes") {
 		t.Fatalf("message %q", got.findings[0].Message)
@@ -139,7 +139,7 @@ func (t OrderTap) Observe(ctx context.Context, order *Order) error {
 	return nil
 }
 `,
-	}, LintOptions{})
+	}, otherRulesOff)
 	sameFound(t, got,
 		"order_tap.go:12 CUP-I004",
 		"order_tap.go:13 CUP-I004",
@@ -170,7 +170,7 @@ func (a Audit) Observe(ctx context.Context, payload *codeupipe.Payload) error {
 	return nil
 }
 `,
-	}, LintOptions{})
+	}, otherRulesOff)
 	sameFound(t, got, "audit.go:11 CUP-I004")
 }
 
@@ -185,7 +185,7 @@ func (s Store) Save(ctx context.Context, payload *codeupipe.Payload) error {
 	return nil
 }
 `,
-	}, LintOptions{})
+	}, otherRulesOff)
 	sameFound(t, got)
 }
 
@@ -202,10 +202,37 @@ func (a Audit) Observe(ctx context.Context, payload *codeupipe.Payload) error {
 	return nil
 }
 `,
-		}, LintOptions{})
+		}, otherRulesOff)
 		sameFound(t, got)
 		if got.suppressed != 1 {
 			t.Fatalf("%s: suppressed %d, want 1", marker, got.suppressed)
 		}
 	}
+}
+
+// An assignment to the payload parameter itself changes only the local
+// variable: the payload is not written.
+func TestI004AnAssignmentToTheParameterIsNotAWrite(t *testing.T) {
+	got := lintIn(t, map[string]string{
+		"audit_tap.go": `package demo
+
+import (
+	"context"
+
+	"github.com/orchestrate-solutions/codeupipe/packages/codeupipe-go"
+)
+
+type AuditTap struct{}
+
+func (AuditTap) Observe(ctx context.Context, payload *codeupipe.Payload) error {
+	payload = payload.Copy()
+	if payload != nil {
+		payload := payload.Copy()
+		_ = payload
+	}
+	return nil
+}
+`,
+	}, otherRulesOff)
+	sameFound(t, got)
 }

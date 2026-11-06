@@ -16,7 +16,7 @@ var payloadWrites = []string{"Insert", "Remove", "Merge", "WithTrace", "Stamp"}
 // In the body of a Predicate's Test, a Tap's Observe, and a Hook's Before,
 // After and OnError, it flags a call of a write method of the payload (the
 // last parameter), and an assignment or ++ or -- whose left side starts at
-// the payload. A chain of writes is one finding, at its first call. A
+// the payload (p.Bulk = true, not p = other). A chain of writes is one finding, at its first call. A
 // function literal with a parameter of the same name is another value.
 //
 // Reads Sources. Writes Findings.
@@ -81,13 +81,13 @@ func (f AnalyzePayloadWritesFilter) writes(source Source, function *ast.FuncDecl
 			}
 		case *ast.AssignStmt:
 			for _, left := range node.Lhs {
-				if f.rootName(left) == payload {
+				if f.writesThrough(left, payload) {
 					flag(left.Pos(), f.text(source, node))
 					break
 				}
 			}
 		case *ast.IncDecStmt:
-			if f.rootName(node.X) == payload {
+			if f.writesThrough(node.X, payload) {
 				flag(node.X.Pos(), f.text(source, node))
 			}
 		}
@@ -111,6 +111,16 @@ func (AnalyzePayloadWritesFilter) declares(function *ast.FuncType, name string) 
 		}
 	}
 	return false
+}
+
+// writesThrough is true when an assignment to expr writes to the value
+// that payload points to: p.Bulk, p.Items[0], *p. An assignment to p itself
+// changes only the local variable, so it is not a write.
+func (f AnalyzePayloadWritesFilter) writesThrough(expr ast.Expr, payload string) bool {
+	if _, bare := expr.(*ast.Ident); bare {
+		return false
+	}
+	return f.rootName(expr) == payload
 }
 
 // rootName gives the variable at the start of an expression: "p" for
