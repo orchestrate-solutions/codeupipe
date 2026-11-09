@@ -1,0 +1,14 @@
+{
+ "lang": "python",
+ "cmd": ["{python}", "-m", "codeupipe_add"],
+ "env": {"PYTHONPATH": "{repo}/packages/codeupipe-add{pathsep}{repo}/packages/codeupipe"},
+ "setup": {},
+ "lint": [
+  {"cmd": ["{python}", "-m", "codeupipe_lint.invariants", "--strict", "{component}"],
+   "env": {"PYTHONPATH": "{repo}/packages/codeupipe-lint{pathsep}{repo}/packages/codeupipe"}},
+  {"cmd": ["{python}", "-m", "codeupipe_lint.anonymous_steps", "{component}"],
+   "env": {"PYTHONPATH": "{repo}/packages/codeupipe-lint{pathsep}{repo}/packages/codeupipe"}}
+ ],
+ "test": {"cmd": ["{python}", "-m", "pytest", "-q", "-p", "no:cacheprovider", "{test}"],
+          "env": {"PYTHONPATH": "{project}{pathsep}{repo}/packages/codeupipe"}}
+}
