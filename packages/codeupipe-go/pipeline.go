@@ -62,6 +62,7 @@ func NewPipelineOf[P PipelineData[P]]() *PipelineOf[P] {
 // A State belongs to one run, and this is for a caller with one run at a
 // time. A caller with more than one run at a time gives each run its own
 // State (RunWithState). Before the first run has ended, the State is empty.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (p *PipelineOf[P]) State() *State {
 	p.runs.Lock()
 	defer p.runs.Unlock()
@@ -72,6 +73,7 @@ func (p *PipelineOf[P]) State() *State {
 }
 
 // Labels gives the label of each step, in order.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (p *PipelineOf[P]) Labels() []string {
 	labels := make([]string, len(p.steps))
 	for i := range p.steps {
@@ -81,6 +83,7 @@ func (p *PipelineOf[P]) Labels() []string {
 }
 
 // AddFilter adds a Filter.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (p *PipelineOf[P]) AddFilter(filter FilterOf[P]) {
 	if filter == nil {
 		panic("codeupipe: AddFilter needs a Filter, a value with Call(ctx, payload). It was given nil")
@@ -93,6 +96,7 @@ func (p *PipelineOf[P]) AddFilter(filter FilterOf[P]) {
 // The condition comes first, then the Filter that it controls. When the
 // test is false the data passes through unchanged and the step is recorded
 // as skipped. The step has the label of its Filter.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (p *PipelineOf[P]) AddValve(predicate PredicateOf[P], filter FilterOf[P]) {
 	if predicate == nil {
 		panic("codeupipe: AddValve needs a Predicate, a value with Test(ctx, payload). It was given nil")
@@ -104,6 +108,7 @@ func (p *PipelineOf[P]) AddValve(predicate PredicateOf[P], filter FilterOf[P]) {
 }
 
 // AddTap adds a Tap.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (p *PipelineOf[P]) AddTap(tap TapOf[P]) {
 	if tap == nil {
 		panic("codeupipe: AddTap needs a Tap, a value with Observe(ctx, payload). It was given nil")
@@ -113,6 +118,7 @@ func (p *PipelineOf[P]) AddTap(tap TapOf[P]) {
 
 // AddPipeline nests a Pipeline as one step of this Pipeline. Its label is
 // the name of its NamedPipeline type, or "Pipeline".
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (p *PipelineOf[P]) AddPipeline(pipeline *PipelineOf[P]) {
 	if pipeline == nil {
 		panic("codeupipe: AddPipeline needs a Pipeline. It was given nil")
@@ -121,6 +127,7 @@ func (p *PipelineOf[P]) AddPipeline(pipeline *PipelineOf[P]) {
 }
 
 // UseHook adds a Hook.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (p *PipelineOf[P]) UseHook(hook HookOf[P]) {
 	if hook == nil {
 		panic("codeupipe: UseHook needs a Hook, a value with Before, After and OnError. It was given nil")
@@ -138,6 +145,7 @@ func (p *PipelineOf[P]) Observe(timing, lineage bool) {
 
 // push adds a step, with the label base, numbered from its second use in
 // this pipeline: "AddFilter", "AddFilter#2".
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (p *PipelineOf[P]) push(base string, s step[P]) {
 	if p.uses == nil {
 		p.uses = make(map[string]int)
@@ -165,6 +173,7 @@ func (p *PipelineOf[P]) Run(ctx context.Context, input P) (P, error) {
 
 // RunWithState is Run, writing into state, which the caller gives. A caller
 // with more than one run at a time gives each run its own State.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (p *PipelineOf[P]) RunWithState(ctx context.Context, input P, state *State) (P, error) {
 	if state == nil {
 		panic("codeupipe: RunWithState needs a State. NewState makes one")
@@ -193,6 +202,7 @@ func (p *PipelineOf[P]) start() uint64 {
 
 // end keeps state as the State of the pipeline, unless a run that started
 // later has ended already (a run inside this run, or in another goroutine).
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (p *PipelineOf[P]) end(ticket uint64, state *State) {
 	p.runs.Lock()
 	defer p.runs.Unlock()
@@ -201,6 +211,7 @@ func (p *PipelineOf[P]) end(ticket uint64, state *State) {
 	}
 }
 
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (p *PipelineOf[P]) runSteps(ctx context.Context, payload P, state *State) (P, error) {
 	for _, hook := range p.hooks {
 		hook.Before(ctx, "", payload)
@@ -266,6 +277,7 @@ func (p *PipelineOf[P]) runSteps(ctx context.Context, payload P, state *State) (
 
 // run runs a step that Hooks see. It is false for a Valve that skipped its
 // Filter.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (s *step[P]) run(ctx context.Context, payload *P) (bool, error) {
 	switch {
 	case s.filter != nil:

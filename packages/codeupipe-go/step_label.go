@@ -9,6 +9,7 @@ import (
 // is the type that it points to, and type arguments are dropped
 // (Wrapper[pkg.Inner] gives Wrapper). A type with no name gives "anonymous".
 // State and Hooks report a step by this label.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func labelOf(step any) string {
 	t := reflect.TypeOf(step)
 	for t != nil && t.Kind() == reflect.Pointer {

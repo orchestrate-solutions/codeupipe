@@ -29,6 +29,7 @@ type unsupported string
 
 func (u unsupported) Error() string { return string(u) }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 func field(spec map[string]any, name string) (any, error) {
 	value, ok := spec[name]
 	if !ok {
@@ -37,6 +38,7 @@ func field(spec map[string]any, name string) (any, error) {
 	return value, nil
 }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 func text(spec map[string]any, name string) (string, error) {
 	value, err := field(spec, name)
 	if err != nil {
@@ -49,6 +51,7 @@ func text(spec map[string]any, name string) (string, error) {
 	return s, nil
 }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 func number(spec map[string]any, name string) (float64, error) {
 	value, err := field(spec, name)
 	if err != nil {
@@ -61,6 +64,7 @@ func number(spec map[string]any, name string) (float64, error) {
 	return n, nil
 }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 func object(spec map[string]any, name string) (map[string]any, error) {
 	value, err := field(spec, name)
 	if err != nil {
@@ -74,6 +78,7 @@ func object(spec map[string]any, name string) (map[string]any, error) {
 }
 
 // filterOf gives the Filter of a step of the case.
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 func filterOf(spec map[string]any) (codeupipe.Filter, error) {
 	op, err := text(spec, "op")
 	if err != nil {
@@ -140,6 +145,7 @@ func filterOf(spec map[string]any) (codeupipe.Filter, error) {
 }
 
 // tapOf gives the Tap of a step of the case.
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 func tapOf(spec map[string]any) (codeupipe.Tap, error) {
 	op, err := text(spec, "op")
 	if err != nil {
@@ -159,6 +165,7 @@ func tapOf(spec map[string]any) (codeupipe.Tap, error) {
 }
 
 // predicateOf gives the Predicate of the "when" of a valve.
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 func predicateOf(when map[string]any) (codeupipe.Predicate, error) {
 	op, err := text(when, "op")
 	if err != nil {
@@ -178,6 +185,7 @@ func predicateOf(when map[string]any) (codeupipe.Predicate, error) {
 	return nil, unsupported(fmt.Sprintf("unknown valve op '%s'", op))
 }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 func stepsOf(spec map[string]any) ([]any, error) {
 	value, err := field(spec, "steps")
 	if err != nil {
@@ -191,6 +199,7 @@ func stepsOf(spec map[string]any) ([]any, error) {
 }
 
 // build adds the steps of the case to pipeline.
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 func build(steps []any, pipeline *codeupipe.Pipeline) error {
 	for _, item := range steps {
 		spec, ok := item.(map[string]any)
@@ -254,6 +263,7 @@ func build(steps []any, pipeline *codeupipe.Pipeline) error {
 // steps are added in the order of the case, so the two lists are side by
 // side. A label that the runtime reports and that is not in this map stays
 // as it is, and fails the comparison.
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 func namesByLabel(pipeline *codeupipe.Pipeline, steps []any) func(string) string {
 	names := make(map[string]string)
 	for i, label := range pipeline.Labels() {
@@ -269,6 +279,7 @@ func namesByLabel(pipeline *codeupipe.Pipeline, steps []any) func(string) string
 	}
 }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 func named(labels []string, name func(string) string) []any {
 	out := make([]any, len(labels))
 	for i, label := range labels {
@@ -277,6 +288,7 @@ func named(labels []string, name func(string) string) []any {
 	return out
 }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 func report(state *codeupipe.State, name func(string) string) map[string]any {
 	var errors []string
 	for _, failure := range state.Errors() {
@@ -289,6 +301,7 @@ func report(state *codeupipe.State, name func(string) string) map[string]any {
 	}
 }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 func runCase(spec map[string]any) (map[string]any, error) {
 	ctx := context.Background()
 	steps, err := stepsOf(spec)
@@ -364,6 +377,7 @@ func runCase(spec map[string]any) (map[string]any, error) {
 	return result, nil
 }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 func benchCase(spec map[string]any) (map[string]any, error) {
 	steps, err := stepsOf(spec)
 	if err != nil {
@@ -383,6 +397,7 @@ func benchCase(spec map[string]any) (map[string]any, error) {
 	return bench(spec["id"], pipeline, codeupipe.NewPayload(data)), nil
 }
 
+// cup: allow-plain the entry of the runner: it builds each case's pipeline from the JSON vocabulary and reports the result
 func main() {
 	target := ""
 	if len(os.Args) > 1 {

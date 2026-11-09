@@ -5,8 +5,9 @@ This is the Go runtime. It has no dependencies.
 
 It implements the same contract as the Python, TypeScript and Rust packages:
 [conformance/API.md](../../conformance/API.md), and passes all its
-conformance cases (`python conformance/run.py go:run`). There is no linter
-and no compiler for Go yet ([docs/go-plan.md](../../docs/go-plan.md)).
+conformance cases (`python conformance/run.py go:run`). Its linter is
+[codeupipe-lint for Go](../codeupipe-lint-go/README.md). There is no
+compiler for Go yet ([docs/go-plan.md](../../docs/go-plan.md)).
 
 The version is below 1.0: the package is not stable yet, and a new version
 can change in a way that is not compatible.

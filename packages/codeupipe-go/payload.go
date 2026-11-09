@@ -19,6 +19,7 @@ type Payload struct {
 
 // NewPayload gives a Payload with the keys of data. The map is copied, so
 // the Payload does not change it. It can be nil.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func NewPayload(data map[string]any) *Payload {
 	payload := &Payload{data: make(map[string]any, len(data))}
 	for key, value := range data {
@@ -41,6 +42,7 @@ func (p *Payload) Has(key string) bool {
 
 // Insert sets key to value in this Payload, and returns it. A number of
 // another Go type (int, int64, float32 and the others) is kept as a float64.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (p *Payload) Insert(key string, value any) *Payload {
 	if p.data == nil {
 		p.data = make(map[string]any)
@@ -59,6 +61,7 @@ func (p *Payload) Remove(key string) *Payload {
 // Merge writes every key of other into this Payload (other wins), and
 // returns it. It keeps its trace id, or takes the trace id of other when it
 // has none, and adds the lineage of other to its own.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (p *Payload) Merge(other *Payload) *Payload {
 	if p.data == nil {
 		p.data = make(map[string]any, len(other.data))
@@ -76,6 +79,7 @@ func (p *Payload) Merge(other *Payload) *Payload {
 // Copy gives a separate Payload with the same contents, trace id and
 // lineage. The copy is shallow: the two Payloads have separate keys and
 // share their values. Copy a nested list or map before you change it.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (p *Payload) Copy() *Payload {
 	data := maps.Clone(p.data)
 	if data == nil {
@@ -85,6 +89,7 @@ func (p *Payload) Copy() *Payload {
 }
 
 // ToDict gives the contents as a new map.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (p *Payload) ToDict() map[string]any {
 	if p.data == nil {
 		return map[string]any{}
@@ -117,6 +122,7 @@ func (p *Payload) Stamp(label string) {
 
 // number gives a number of any Go type as a float64, the one number type of
 // a Payload, and any other value as it is.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func number(value any) any {
 	switch n := value.(type) {
 	case int:

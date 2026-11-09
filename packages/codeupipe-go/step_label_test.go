@@ -39,6 +39,7 @@ func TestAValveHasTheLabelOfItsFilter(t *testing.T) {
 func TestANestedPipelineHasTheLabelOfItsType(t *testing.T) {
 	pipeline := codeupipe.NewPipeline()
 	pipeline.AddPipeline(codeupipe.NewNamedPipeline(InnerPipeline{}))
+	// cup: allow-anonymous the test checks the label of this step
 	pipeline.AddPipeline(codeupipe.NewPipeline())
 	same(t, pipeline.Labels(), []string{"InnerPipeline", "Pipeline"})
 }
@@ -52,12 +53,14 @@ func TestTheLabelOfAGenericTypeHasNoTypeArguments(t *testing.T) {
 func TestATypeDeclaredInAFunctionWorks(t *testing.T) {
 	type LocalFilter struct{ AddFilter }
 	pipeline := codeupipe.NewPipeline()
+	// cup: allow-anonymous the test checks the label of this step
 	pipeline.AddFilter(LocalFilter{})
 	same(t, pipeline.Labels(), []string{"LocalFilter"})
 }
 
 func TestAStepOfATypeWithNoNameHasTheLabelAnonymous(t *testing.T) {
 	pipeline := codeupipe.NewPipeline()
+	// cup: allow-anonymous the test checks the label of this step
 	pipeline.AddFilter(struct{ AddFilter }{})
 	same(t, pipeline.Labels(), []string{"anonymous"})
 }

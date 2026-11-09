@@ -27,6 +27,7 @@ func referenceWrite(data map[string]float64, key string) {
 
 // reference is the reference workload: ten map writes behind ten function
 // calls, with no framework. A pipeline's time is reported relative to it.
+// cup: allow-plain the timing loop of the bench target: it measures the pipeline, so it is not a step of it
 func reference() map[string]float64 {
 	data := map[string]float64{"a": 1}
 	for _, key := range referenceKeys {
@@ -35,6 +36,7 @@ func reference() map[string]float64 {
 	return data
 }
 
+// cup: allow-plain the timing loop of the bench target: it measures the pipeline, so it is not a step of it
 func timed(f func()) time.Duration {
 	started := time.Now()
 	for i := 0; i < runs; i++ {
@@ -46,6 +48,7 @@ func timed(f func()) time.Duration {
 // measure gives µs per run, the best of repeats × runs, and the time
 // relative to the reference workload. Each repeat times the reference and
 // then f, back to back, and the median of the ratios is given.
+// cup: allow-plain the timing loop of the bench target: it measures the pipeline, so it is not a step of it
 func measure(f func()) (float64, float64) {
 	// runtime.KeepAlive keeps each result, so that the compiler cannot drop the work.
 	referenceRun := func() { runtime.KeepAlive(reference()) }
@@ -69,6 +72,7 @@ func measure(f func()) (float64, float64) {
 
 // bench times one scenario. pipeline is built from its steps; input is its
 // input.
+// cup: allow-plain the timing loop of the bench target: it measures the pipeline, so it is not a step of it
 func bench(id any, pipeline *codeupipe.Pipeline, input *codeupipe.Payload) map[string]any {
 	ctx := context.Background()
 	output, err := pipeline.Run(ctx, input)

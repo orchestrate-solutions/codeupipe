@@ -40,6 +40,7 @@ func (s *State) Errors() []StepFailure {
 }
 
 // Timings gives the time of each step, by label, when timing is on.
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (s *State) Timings() map[string]time.Duration {
 	if s.timings == nil {
 		return map[string]time.Duration{}
@@ -59,6 +60,7 @@ func (s *State) recordError(label string, err error) {
 	s.errors = append(s.errors, StepFailure{Label: label, Err: err})
 }
 
+// cup: allow-plain a primitive itself: the framework makes the primitives, so it is not written with them
 func (s *State) recordTiming(label string, elapsed time.Duration) {
 	if s.timings == nil {
 		s.timings = make(map[string]time.Duration)

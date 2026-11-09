@@ -20,6 +20,7 @@ type Hook = HookOf[*Payload]
 
 // HookBaseOf has the three methods of a Hook, and they do nothing. Embed it,
 // and write only the methods that you need.
+// cup: allow-name a part that a Hook embeds, not a Hook: it gives the three methods that do nothing
 type HookBaseOf[P any] struct{}
 
 // Before does nothing.

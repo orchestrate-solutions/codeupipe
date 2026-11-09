@@ -175,6 +175,7 @@ func TestAFailureInANestedPipelineLeavesThePayloadOfTheOuterOneAsItWas(t *testin
 	hook := &KeepErrorHook{}
 	pipeline := codeupipe.NewPipeline()
 	pipeline.AddFilter(AddFilter{})
+	// cup: allow-anonymous the test checks a plain Pipeline nested as a step
 	pipeline.AddPipeline(inner)
 	pipeline.UseHook(hook)
 	_, err := pipeline.Run(context.Background(), codeupipe.NewPayload(nil))
@@ -263,6 +264,7 @@ func TestThePipelineGivesTheContextToEachStep(t *testing.T) {
 	pipeline.AddFilter(SeeRequestFilter{&seen})
 	pipeline.AddValve(SeeRequestPredicate{&seen}, SeeRequestFilter{&seen})
 	pipeline.AddTap(SeeRequestTap{&seen})
+	// cup: allow-anonymous the test checks a plain Pipeline nested as a step
 	pipeline.AddPipeline(inner)
 	pipeline.UseHook(SeeRequestHook{seen: &seen})
 	ctx := context.WithValue(context.Background(), requestKey{}, "r-7")
