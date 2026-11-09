@@ -1,0 +1,15 @@
+{
+ "lang": "rust",
+ "cmd": ["cargo", "run", "--quiet", "--offline", "--manifest-path", "{repo}/packages/codeupipe-add-rs/Cargo.toml", "--"],
+ "env": {"CARGO_TARGET_DIR": "{repo}/target"},
+ "setup": {
+  "Cargo.toml": "[package]\nname = \"the-project\"\nversion = \"0.1.0\"\nedition = \"2021\"\nrust-version = \"1.75\"\n\n[dependencies]\ncodeupipe = { path = \"{repo}/packages/codeupipe-rs\" }\n\n[workspace]\n",
+  "src/lib.rs": "// The project of the case: each file that `add` makes is declared here.\n"
+ },
+ "lint": [
+  {"cmd": ["cargo", "run", "--quiet", "--offline", "--manifest-path", "{repo}/packages/codeupipe-lint-rs/Cargo.toml", "--bin", "codeupipe-lint", "--", "--strict", "{component}"],
+   "env": {"CARGO_TARGET_DIR": "{repo}/target"}}
+ ],
+ "test": {"cmd": ["cargo", "test", "--offline", "--test", "{test_stem}"],
+          "env": {"CARGO_TARGET_DIR": "{project}/target"}}
+}

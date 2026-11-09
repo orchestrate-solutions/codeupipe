@@ -28,7 +28,7 @@ If you know Unix, these are close to things you know.
 | Hook | A git hook: code that runs before and after a step |
 | State | `$?` and `PIPESTATUS` |
 
-This repository has ten packages.
+This repository has fourteen packages.
 
 | Package | Contents | Reference |
 |---|---|---|
@@ -42,6 +42,7 @@ This repository has ten packages.
 | `codeupipe-compile` for Rust | Writes a pipeline as plain Rust: a struct and functions, with no codeupipe | [packages/codeupipe-compile-rs/README.md](packages/codeupipe-compile-rs/README.md) |
 | `codeupipe` for Go | The eight primitives, 0.1.0. No dependencies | [packages/codeupipe-go/README.md](packages/codeupipe-go/README.md) |
 | `codeupipe-lint` for Go | A linter for pipeline code in Go, for the rules that the compiler does not check. No dependencies | [packages/codeupipe-lint-go/README.md](packages/codeupipe-lint-go/README.md) |
+| `codeupipe-add` for Python, TypeScript, Rust and Go | `codeupipe add`: makes the files of a component, ready for the linter and a first failing test | [conformance/ADD.md](conformance/ADD.md) |
 
 ## Install
 
@@ -219,6 +220,7 @@ An editable install needs pip 21.3 or later.
 | `packages/codeupipe-compile-rs/` | The Rust compiler, with its tests. A Cargo workspace of its own |
 | `packages/codeupipe-go/` | The Go runtime, with its tests and its example. A Go module of its own |
 | `packages/codeupipe-lint-go/` | The Go linter, with its tests. A Go module of its own |
+| `packages/codeupipe-add`, `-add-ts`, `-add-rs`, `-add-go` | `codeupipe add` in each language, judged by `python conformance/add.py` |
 | `conformance/` | The contract ([API.md](conformance/API.md)), the cases, the runners, the benchmark |
 | `tests/` | The tests for the two Python packages |
 | `examples/pricing/` | The example, with its test in `tests/examples/` |

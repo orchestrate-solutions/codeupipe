@@ -1,0 +1,1294 @@
+[
+ {
+  "id": "add/a-filter-gets-its-suffix",
+  "args": [
+   "filter",
+   "Discount"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "DiscountFilter",
+   "files": {
+    "python": [
+     "discount_filter.py",
+     "tests/test_discount_filter.py"
+    ],
+    "typescript": [
+     "discount-filter.ts",
+     "tests/discount-filter.test.ts"
+    ],
+    "rust": [
+     "src/discount_filter.rs",
+     "tests/discount_filter.rs"
+    ],
+    "go": [
+     "discount_filter.go",
+     "discount_filter_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/a-name-with-its-suffix-keeps-it",
+  "args": [
+   "filter",
+   "DiscountFilter"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "DiscountFilter",
+   "files": {
+    "python": [
+     "discount_filter.py",
+     "tests/test_discount_filter.py"
+    ],
+    "typescript": [
+     "discount-filter.ts",
+     "tests/discount-filter.test.ts"
+    ],
+    "rust": [
+     "src/discount_filter.rs",
+     "tests/discount_filter.rs"
+    ],
+    "go": [
+     "discount_filter.go",
+     "discount_filter_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/a-snake-case-name-becomes-pascal-case",
+  "args": [
+   "predicate",
+   "at_least"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "AtLeastPredicate",
+   "files": {
+    "python": [
+     "at_least_predicate.py",
+     "tests/test_at_least_predicate.py"
+    ],
+    "typescript": [
+     "at-least-predicate.ts",
+     "tests/at-least-predicate.test.ts"
+    ],
+    "rust": [
+     "src/at_least_predicate.rs",
+     "tests/at_least_predicate.rs"
+    ],
+    "go": [
+     "at_least_predicate.go",
+     "at_least_predicate_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/a-kebab-case-name-becomes-pascal-case",
+  "args": [
+   "tap",
+   "audit-log"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "AuditLogTap",
+   "files": {
+    "python": [
+     "audit_log_tap.py",
+     "tests/test_audit_log_tap.py"
+    ],
+    "typescript": [
+     "audit-log-tap.ts",
+     "tests/audit-log-tap.test.ts"
+    ],
+    "rust": [
+     "src/audit_log_tap.rs",
+     "tests/audit_log_tap.rs"
+    ],
+    "go": [
+     "audit_log_tap.go",
+     "audit_log_tap_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/capitals-together-are-one-word",
+  "args": [
+   "filter",
+   "HTTPGet"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "HTTPGetFilter",
+   "files": {
+    "python": [
+     "http_get_filter.py",
+     "tests/test_http_get_filter.py"
+    ],
+    "typescript": [
+     "http-get-filter.ts",
+     "tests/http-get-filter.test.ts"
+    ],
+    "rust": [
+     "src/http_get_filter.rs",
+     "tests/http_get_filter.rs"
+    ],
+    "go": [
+     "http_get_filter.go",
+     "http_get_filter_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/a-predicate",
+  "args": [
+   "predicate",
+   "AtLeast"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "AtLeastPredicate",
+   "files": {
+    "python": [
+     "at_least_predicate.py",
+     "tests/test_at_least_predicate.py"
+    ],
+    "typescript": [
+     "at-least-predicate.ts",
+     "tests/at-least-predicate.test.ts"
+    ],
+    "rust": [
+     "src/at_least_predicate.rs",
+     "tests/at_least_predicate.rs"
+    ],
+    "go": [
+     "at_least_predicate.go",
+     "at_least_predicate_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/a-tap",
+  "args": [
+   "tap",
+   "Audit"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "AuditTap",
+   "files": {
+    "python": [
+     "audit_tap.py",
+     "tests/test_audit_tap.py"
+    ],
+    "typescript": [
+     "audit-tap.ts",
+     "tests/audit-tap.test.ts"
+    ],
+    "rust": [
+     "src/audit_tap.rs",
+     "tests/audit_tap.rs"
+    ],
+    "go": [
+     "audit_tap.go",
+     "audit_tap_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/a-hook",
+  "args": [
+   "hook",
+   "PrintSteps"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "PrintStepsHook",
+   "files": {
+    "python": [
+     "print_steps_hook.py",
+     "tests/test_print_steps_hook.py"
+    ],
+    "typescript": [
+     "print-steps-hook.ts",
+     "tests/print-steps-hook.test.ts"
+    ],
+    "rust": [
+     "src/print_steps_hook.rs",
+     "tests/print_steps_hook.rs"
+    ],
+    "go": [
+     "print_steps_hook.go",
+     "print_steps_hook_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/a-pipeline",
+  "args": [
+   "pipeline",
+   "Pricing"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "PricingPipeline",
+   "files": {
+    "python": [
+     "pricing_pipeline.py",
+     "tests/test_pricing_pipeline.py"
+    ],
+    "typescript": [
+     "pricing-pipeline.ts",
+     "tests/pricing-pipeline.test.ts"
+    ],
+    "rust": [
+     "src/pricing_pipeline.rs",
+     "tests/pricing_pipeline.rs"
+    ],
+    "go": [
+     "pricing_pipeline.go",
+     "pricing_pipeline_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/the-component-goes-in-the-dir",
+  "args": [
+   "filter",
+   "Discount",
+   "src/pricing"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "DiscountFilter",
+   "files": {
+    "python": [
+     "src/pricing/discount_filter.py",
+     "tests/test_discount_filter.py"
+    ],
+    "typescript": [
+     "src/pricing/discount-filter.ts",
+     "tests/discount-filter.test.ts"
+    ],
+    "rust": [
+     "src/pricing/discount_filter.rs",
+     "tests/discount_filter.rs"
+    ],
+    "go": [
+     "src/pricing/discount_filter.go",
+     "src/pricing/discount_filter_test.go"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/the-description-goes-in-the-header",
+  "args": [
+   "filter",
+   "Discount",
+   "--description",
+   "Takes a rate off the price."
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "DiscountFilter",
+   "files": {
+    "python": [
+     "discount_filter.py",
+     "tests/test_discount_filter.py"
+    ],
+    "typescript": [
+     "discount-filter.ts",
+     "tests/discount-filter.test.ts"
+    ],
+    "rust": [
+     "src/discount_filter.rs",
+     "tests/discount_filter.rs"
+    ],
+    "go": [
+     "discount_filter.go",
+     "discount_filter_test.go"
+    ]
+   },
+   "contains": [
+    "Takes a rate off the price."
+   ]
+  }
+ },
+ {
+  "id": "add/with-no-description-the-header-says-todo",
+  "args": [
+   "tap",
+   "Audit"
+  ],
+  "expect": {
+   "exit": 0,
+   "type": "AuditTap",
+   "files": {
+    "python": [
+     "audit_tap.py",
+     "tests/test_audit_tap.py"
+    ],
+    "typescript": [
+     "audit-tap.ts",
+     "tests/audit-tap.test.ts"
+    ],
+    "rust": [
+     "src/audit_tap.rs",
+     "tests/audit_tap.rs"
+    ],
+    "go": [
+     "audit_tap.go",
+     "audit_tap_test.go"
+    ]
+   },
+   "contains": [
+    "TODO: say what AuditTap does."
+   ]
+  }
+ },
+ {
+  "id": "add/an-existing-component-file-is-not-overwritten",
+  "args": [
+   "filter",
+   "Discount"
+  ],
+  "given": {
+   "python": {
+    "discount_filter.py": "existing\n"
+   },
+   "typescript": {
+    "discount-filter.ts": "existing\n"
+   },
+   "rust": {
+    "src/discount_filter.rs": "existing\n"
+   },
+   "go": {
+    "discount_filter.go": "existing\n"
+   }
+  },
+  "expect": {
+   "exit": 1,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "exists"
+  }
+ },
+ {
+  "id": "add/an-existing-test-file-stops-both-files",
+  "args": [
+   "filter",
+   "Discount"
+  ],
+  "given": {
+   "python": {
+    "tests/test_discount_filter.py": "existing\n"
+   },
+   "typescript": {
+    "tests/discount-filter.test.ts": "existing\n"
+   },
+   "rust": {
+    "tests/discount_filter.rs": "existing\n"
+   },
+   "go": {
+    "discount_filter_test.go": "existing\n"
+   }
+  },
+  "expect": {
+   "exit": 1,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "exists"
+  }
+ },
+ {
+  "id": "add/a-valve-is-not-a-type",
+  "args": [
+   "valve",
+   "AtLeast"
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "add_valve(predicate, filter)"
+  }
+ },
+ {
+  "id": "add/a-payload-is-not-made-by-a-user",
+  "args": [
+   "payload",
+   "Order"
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "runtime"
+  }
+ },
+ {
+  "id": "add/state-is-not-made-by-a-user",
+  "args": [
+   "state",
+   "Run"
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "runtime"
+  }
+ },
+ {
+  "id": "add/an-unknown-kind-is-refused",
+  "args": [
+   "widget",
+   "Thing"
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "filter, predicate, tap, hook"
+  }
+ },
+ {
+  "id": "add/a-name-that-starts-with-a-digit-is-refused",
+  "args": [
+   "filter",
+   "2Fast"
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "2Fast"
+  }
+ },
+ {
+  "id": "add/a-name-with-a-space-is-refused",
+  "args": [
+   "filter",
+   "Take Rate"
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "Take Rate"
+  }
+ },
+ {
+  "id": "add/an-empty-name-is-refused",
+  "args": [
+   "filter",
+   ""
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "name"
+  }
+ },
+ {
+  "id": "add/a-missing-name-is-refused",
+  "args": [
+   "filter"
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "name"
+  }
+ },
+ {
+  "id": "add/an-option-is-not-read-from-its-first-letters",
+  "args": [
+   "filter",
+   "Discount",
+   "--desc",
+   "Takes a rate off the price."
+  ],
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   }
+  }
+ },
+ {
+  "id": "add/layout-makes-each-component-and-its-pipeline",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - kind: filter\n    name: Discount\n    description: \"Takes a rate off the price.\"\n  - kind: predicate\n    name: AtLeast\n    description: \"The order has ten items or more.\"\n  - kind: filter\n    name: MarkBulk\n  - kind: tap\n    name: Audit\n  - kind: hook\n    name: PrintSteps\n  - kind: pipeline\n    name: Pricing\n    description: \"Prices an order: the discount, then the bulk mark.\"\n    steps:\n      - Discount\n      - valve: [AtLeast, MarkBulk]\n      - Audit\n    hooks:\n      - PrintSteps\n"
+  },
+  "expect": {
+   "exit": 0,
+   "types": [
+    "DiscountFilter",
+    "AtLeastPredicate",
+    "MarkBulkFilter",
+    "AuditTap",
+    "PrintStepsHook",
+    "PricingPipeline"
+   ],
+   "files": {
+    "python": [
+     "src/pricing/discount_filter.py",
+     "tests/test_discount_filter.py",
+     "src/pricing/at_least_predicate.py",
+     "tests/test_at_least_predicate.py",
+     "src/pricing/mark_bulk_filter.py",
+     "tests/test_mark_bulk_filter.py",
+     "src/pricing/audit_tap.py",
+     "tests/test_audit_tap.py",
+     "src/pricing/print_steps_hook.py",
+     "tests/test_print_steps_hook.py",
+     "src/pricing/pricing_pipeline.py",
+     "tests/test_pricing_pipeline.py"
+    ],
+    "typescript": [
+     "src/pricing/discount-filter.ts",
+     "tests/discount-filter.test.ts",
+     "src/pricing/at-least-predicate.ts",
+     "tests/at-least-predicate.test.ts",
+     "src/pricing/mark-bulk-filter.ts",
+     "tests/mark-bulk-filter.test.ts",
+     "src/pricing/audit-tap.ts",
+     "tests/audit-tap.test.ts",
+     "src/pricing/print-steps-hook.ts",
+     "tests/print-steps-hook.test.ts",
+     "src/pricing/pricing-pipeline.ts",
+     "tests/pricing-pipeline.test.ts"
+    ],
+    "rust": [
+     "src/pricing/discount_filter.rs",
+     "tests/discount_filter.rs",
+     "src/pricing/at_least_predicate.rs",
+     "tests/at_least_predicate.rs",
+     "src/pricing/mark_bulk_filter.rs",
+     "tests/mark_bulk_filter.rs",
+     "src/pricing/audit_tap.rs",
+     "tests/audit_tap.rs",
+     "src/pricing/print_steps_hook.rs",
+     "tests/print_steps_hook.rs",
+     "src/pricing/pricing_pipeline.rs",
+     "tests/pricing_pipeline.rs"
+    ],
+    "go": [
+     "src/pricing/discount_filter.go",
+     "src/pricing/discount_filter_test.go",
+     "src/pricing/at_least_predicate.go",
+     "src/pricing/at_least_predicate_test.go",
+     "src/pricing/mark_bulk_filter.go",
+     "src/pricing/mark_bulk_filter_test.go",
+     "src/pricing/audit_tap.go",
+     "src/pricing/audit_tap_test.go",
+     "src/pricing/print_steps_hook.go",
+     "src/pricing/print_steps_hook_test.go",
+     "src/pricing/pricing_pipeline.go",
+     "src/pricing/pricing_pipeline_test.go"
+    ]
+   },
+   "contains": [
+    "Takes a rate off the price."
+   ],
+   "steps": {
+    "PricingPipeline": [
+     "DiscountFilter",
+     "AtLeastPredicate",
+     "MarkBulkFilter",
+     "AuditTap",
+     "PrintStepsHook"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/layout-nests-a-pipeline",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - {kind: filter, name: Trim}\n  - {kind: pipeline, name: Clean, steps: [Trim]}\n  - {kind: filter, name: QueueWelcome}\n  - {kind: pipeline, name: Signup, steps: [CleanPipeline, QueueWelcome]}\n"
+  },
+  "expect": {
+   "exit": 0,
+   "types": [
+    "TrimFilter",
+    "CleanPipeline",
+    "QueueWelcomeFilter",
+    "SignupPipeline"
+   ],
+   "files": {
+    "python": [
+     "src/pricing/trim_filter.py",
+     "tests/test_trim_filter.py",
+     "src/pricing/clean_pipeline.py",
+     "tests/test_clean_pipeline.py",
+     "src/pricing/queue_welcome_filter.py",
+     "tests/test_queue_welcome_filter.py",
+     "src/pricing/signup_pipeline.py",
+     "tests/test_signup_pipeline.py"
+    ],
+    "typescript": [
+     "src/pricing/trim-filter.ts",
+     "tests/trim-filter.test.ts",
+     "src/pricing/clean-pipeline.ts",
+     "tests/clean-pipeline.test.ts",
+     "src/pricing/queue-welcome-filter.ts",
+     "tests/queue-welcome-filter.test.ts",
+     "src/pricing/signup-pipeline.ts",
+     "tests/signup-pipeline.test.ts"
+    ],
+    "rust": [
+     "src/pricing/trim_filter.rs",
+     "tests/trim_filter.rs",
+     "src/pricing/clean_pipeline.rs",
+     "tests/clean_pipeline.rs",
+     "src/pricing/queue_welcome_filter.rs",
+     "tests/queue_welcome_filter.rs",
+     "src/pricing/signup_pipeline.rs",
+     "tests/signup_pipeline.rs"
+    ],
+    "go": [
+     "src/pricing/trim_filter.go",
+     "src/pricing/trim_filter_test.go",
+     "src/pricing/clean_pipeline.go",
+     "src/pricing/clean_pipeline_test.go",
+     "src/pricing/queue_welcome_filter.go",
+     "src/pricing/queue_welcome_filter_test.go",
+     "src/pricing/signup_pipeline.go",
+     "src/pricing/signup_pipeline_test.go"
+    ]
+   },
+   "steps": {
+    "CleanPipeline": [
+     "TrimFilter"
+    ],
+    "SignupPipeline": [
+     "CleanPipeline",
+     "QueueWelcomeFilter"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/layout-reads-json",
+  "args": [
+   "--layout",
+   "cup.layout.json"
+  ],
+  "layout": {
+   "path": "cup.layout.json",
+   "text": "{\"lang\": \"{lang}\", \"root\": \"src/pricing\", \"components\": [{\"kind\": \"filter\", \"name\": \"Discount\"}, {\"kind\": \"pipeline\", \"name\": \"Pricing\", \"steps\": [\"Discount\"]}]}\n"
+  },
+  "expect": {
+   "exit": 0,
+   "types": [
+    "DiscountFilter",
+    "PricingPipeline"
+   ],
+   "files": {
+    "python": [
+     "src/pricing/discount_filter.py",
+     "tests/test_discount_filter.py",
+     "src/pricing/pricing_pipeline.py",
+     "tests/test_pricing_pipeline.py"
+    ],
+    "typescript": [
+     "src/pricing/discount-filter.ts",
+     "tests/discount-filter.test.ts",
+     "src/pricing/pricing-pipeline.ts",
+     "tests/pricing-pipeline.test.ts"
+    ],
+    "rust": [
+     "src/pricing/discount_filter.rs",
+     "tests/discount_filter.rs",
+     "src/pricing/pricing_pipeline.rs",
+     "tests/pricing_pipeline.rs"
+    ],
+    "go": [
+     "src/pricing/discount_filter.go",
+     "src/pricing/discount_filter_test.go",
+     "src/pricing/pricing_pipeline.go",
+     "src/pricing/pricing_pipeline_test.go"
+    ]
+   },
+   "steps": {
+    "PricingPipeline": [
+     "DiscountFilter"
+    ]
+   }
+  }
+ },
+ {
+  "id": "add/layout-keeps-a-file-that-exists",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - {kind: filter, name: Discount}\n  - {kind: filter, name: Tax}\n"
+  },
+  "given": {
+   "python": {
+    "src/pricing/discount_filter.py": "# kept\n",
+    "tests/test_discount_filter.py": "# kept\n"
+   },
+   "typescript": {
+    "src/pricing/discount-filter.ts": "// kept\n",
+    "tests/discount-filter.test.ts": "// kept\n"
+   },
+   "rust": {
+    "src/pricing/discount_filter.rs": "// kept\n",
+    "tests/discount_filter.rs": "// kept\n"
+   },
+   "go": {
+    "src/pricing/discount_filter.go": "// kept\npackage pricing\n",
+    "src/pricing/discount_filter_test.go": "// kept\npackage pricing\n"
+   }
+  },
+  "expect": {
+   "exit": 0,
+   "types": [
+    "TaxFilter"
+   ],
+   "files": {
+    "python": [
+     "src/pricing/tax_filter.py",
+     "tests/test_tax_filter.py"
+    ],
+    "typescript": [
+     "src/pricing/tax-filter.ts",
+     "tests/tax-filter.test.ts"
+    ],
+    "rust": [
+     "src/pricing/tax_filter.rs",
+     "tests/tax_filter.rs"
+    ],
+    "go": [
+     "src/pricing/tax_filter.go",
+     "src/pricing/tax_filter_test.go"
+    ]
+   },
+   "message_contains": "exists, kept"
+  }
+ },
+ {
+  "id": "add/layout-names-a-kept-pipeline-whose-steps-changed",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - {kind: filter, name: Discount}\n  - {kind: pipeline, name: Pricing, steps: [Discount]}\n"
+  },
+  "given": {
+   "python": {
+    "src/pricing/pricing_pipeline.py": "# kept\n",
+    "tests/test_pricing_pipeline.py": "# kept\n"
+   },
+   "typescript": {
+    "src/pricing/pricing-pipeline.ts": "// kept\n",
+    "tests/pricing-pipeline.test.ts": "// kept\n"
+   },
+   "rust": {
+    "src/pricing/pricing_pipeline.rs": "// kept\n",
+    "tests/pricing_pipeline.rs": "// kept\n"
+   },
+   "go": {
+    "src/pricing/pricing_pipeline.go": "// kept\npackage pricing\n",
+    "src/pricing/pricing_pipeline_test.go": "// kept\npackage pricing\n"
+   }
+  },
+  "expect": {
+   "exit": 0,
+   "types": [
+    "DiscountFilter"
+   ],
+   "files": {
+    "python": [
+     "src/pricing/discount_filter.py",
+     "tests/test_discount_filter.py"
+    ],
+    "typescript": [
+     "src/pricing/discount-filter.ts",
+     "tests/discount-filter.test.ts"
+    ],
+    "rust": [
+     "src/pricing/discount_filter.rs",
+     "tests/discount_filter.rs"
+    ],
+    "go": [
+     "src/pricing/discount_filter.go",
+     "src/pricing/discount_filter_test.go"
+    ]
+   },
+   "message_contains": "its steps are not those of the layout"
+  }
+ },
+ {
+  "id": "add/layout-refuses-a-file-it-cannot-read",
+  "args": [
+   "--layout",
+   "missing.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - {kind: filter, name: Discount}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "cannot be read"
+  }
+ },
+ {
+  "id": "add/layout-refuses-a-layout-that-is-not-a-mapping",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "- lang: {lang}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "is not a mapping"
+  }
+ },
+ {
+  "id": "add/layout-refuses-a-key-two-times",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - kind: filter\n    name: Discount\n    name: Tax\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "two times"
+  }
+ },
+ {
+  "id": "add/layout-refuses-a-layout-with-no-lang",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "root: src/pricing\ncomponents:\n  - {kind: filter, name: Discount}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "has no lang"
+  }
+ },
+ {
+  "id": "add/layout-refuses-a-layout-for-another-language",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: cobol\nroot: src/pricing\ncomponents:\n  - {kind: filter, name: Discount}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "is for cobol"
+  }
+ },
+ {
+  "id": "add/layout-refuses-an-unknown-key",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - kind: pipeline\n    name: Pricing\n    step: [Discount]\n  - {kind: filter, name: Discount}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "Unknown key step"
+  }
+ },
+ {
+  "id": "add/layout-refuses-no-components",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents: []\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "components:"
+  }
+ },
+ {
+  "id": "add/layout-refuses-a-component-with-no-kind",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - {name: Discount}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "has no kind"
+  }
+ },
+ {
+  "id": "add/layout-refuses-a-name-that-phase-1-refuses",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - {kind: filter, name: 9lives}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "name"
+  }
+ },
+ {
+  "id": "add/layout-refuses-a-kind-that-phase-1-refuses",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - {kind: valve, name: Bulk}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "add_valve"
+  }
+ },
+ {
+  "id": "add/layout-refuses-two-components-with-one-type-name",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - {kind: filter, name: Discount}\n  - {kind: filter, name: DiscountFilter}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "Two components are DiscountFilter"
+  }
+ },
+ {
+  "id": "add/layout-refuses-steps-on-a-filter",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - {kind: filter, name: Discount, steps: [Discount]}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "is only for a pipeline"
+  }
+ },
+ {
+  "id": "add/layout-refuses-a-step-that-is-not-a-component",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - {kind: pipeline, name: Pricing, steps: [Tax]}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "is not a component of the layout"
+  }
+ },
+ {
+  "id": "add/layout-refuses-a-predicate-as-a-step",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - {kind: predicate, name: AtLeast}\n  - {kind: pipeline, name: Pricing, steps: [AtLeast]}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "A predicate is not a step"
+  }
+ },
+ {
+  "id": "add/layout-refuses-a-hook-as-a-step",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - {kind: hook, name: PrintSteps}\n  - {kind: pipeline, name: Pricing, steps: [PrintSteps]}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "A hook is not a step"
+  }
+ },
+ {
+  "id": "add/layout-refuses-a-valve-in-the-wrong-order",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - {kind: filter, name: Discount}\n  - {kind: predicate, name: AtLeast}\n  - {kind: pipeline, name: Pricing, steps: [{valve: [Discount, AtLeast]}]}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "a valve is [Predicate, Filter]"
+  }
+ },
+ {
+  "id": "add/layout-refuses-a-hook-that-is-not-a-hook",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - {kind: filter, name: Discount}\n  - {kind: pipeline, name: Pricing, steps: [Discount], hooks: [Discount]}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "not a hook"
+  }
+ },
+ {
+  "id": "add/layout-refuses-a-pipeline-in-itself",
+  "args": [
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - {kind: pipeline, name: Outer, steps: [Inner]}\n  - {kind: pipeline, name: Inner, steps: [Outer]}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "A pipeline has itself as a step"
+  }
+ },
+ {
+  "id": "add/layout-refuses-a-kind-with-the-layout",
+  "args": [
+   "filter",
+   "--layout",
+   "cup.layout.yaml"
+  ],
+  "layout": {
+   "path": "cup.layout.yaml",
+   "text": "lang: {lang}\nroot: src/pricing\ncomponents:\n  - {kind: filter, name: Discount}\n"
+  },
+  "expect": {
+   "exit": 2,
+   "files": {
+    "python": [],
+    "typescript": [],
+    "rust": [],
+    "go": []
+   },
+   "message_contains": "--layout takes no"
+  }
+ }
+]
